@@ -1,0 +1,58 @@
+"""Configuration module for VERA Backend.
+
+Architecture Rule 11: Secrets must never be committed.
+All settings read from environment variables or .env file with fail-safe defaults.
+"""
+
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
+
+    # Service Info
+    PROJECT_NAME: str = "VERA Fraud Investigation Platform"
+    ENVIRONMENT: str = "development"
+    DEBUG: bool = True
+    API_V1_STR: str = "/api/v1"
+    VERSION: str = "1.0.0"
+
+    # CORS
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+
+    # Supabase (Database, Auth, Storage)
+    SUPABASE_URL: str | None = None
+    SUPABASE_KEY: str | None = None
+    SUPABASE_SERVICE_ROLE_KEY: str | None = None
+    SUPABASE_STORAGE_BUCKET: str = "evidence-vault"
+    DATABASE_URL: str | None = "postgresql+asyncpg://postgres:postgres@localhost:5432/vera_db"
+
+    # Upstash Redis & Rate Limiting
+    UPSTASH_REDIS_REST_URL: str | None = None
+    UPSTASH_REDIS_REST_TOKEN: str | None = None
+    UPSTASH_QSTASH_URL: str | None = None
+    UPSTASH_QSTASH_TOKEN: str | None = None
+
+    # AI Providers (Zero-cost requirement / Architecture Rule 15)
+    GEMINI_API_KEY: str | None = None
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3.2:latest"
+    GROQ_API_KEY: str | None = None
+
+    # Observability
+    SENTRY_DSN: str | None = None
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1
+
+    # Security
+    API_KEY_SECRET: str = "dev-insecure-secret-key-change-in-prod"
+
+
+settings = Settings()

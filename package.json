@@ -1,0 +1,26 @@
+{
+  "name": "vera-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VERA - MNC-grade Agentic Investment-Fraud Investigation Platform",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=@vera/contracts && npm run build --workspace=@vera/web",
+    "build:contracts": "npm run build --workspace=@vera/contracts",
+    "build:web": "npm run build --workspace=@vera/web",
+    "dev:web": "npm run dev --workspace=@vera/web",
+    "lint": "npm run lint --workspace=@vera/web",
+    "lint:web": "npm run lint --workspace=@vera/web",
+    "typecheck": "npm run typecheck --workspace=@vera/contracts && npm run typecheck --workspace=@vera/web",
+    "typecheck:web": "npm run typecheck --workspace=@vera/web",
+    "typecheck:contracts": "npm run typecheck --workspace=@vera/contracts",
+    "test:contracts": "npm run test --workspace=@vera/contracts",
+    "validate": "npm run typecheck && npm run test:contracts"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
+}

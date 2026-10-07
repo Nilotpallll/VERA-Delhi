@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "models": [
+    {
+      "modelId": "model.deepfake.mesonet.v1",
+      "name": "MesoNet-4 Video Authenticity Classifier",
+      "version": "1.0.0",
+      "task": "video_frame_deepfake_detection",
+      "framework": "PyTorch",
+      "weightsDigestSha256": "8f4e2b10a9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2",
+      "inputShape": [1, 3, 256, 256],
+      "outputFormat": "probability_manipulated_float",
+      "license": "Apache-2.0"
+    },
+    {
+      "modelId": "model.fraud.xgboost.v1",
+      "name": "XGBoost Investment Fraud Risk Tabular Classifier",
+      "version": "1.0.0",
+      "task": "tabular_risk_feature_attribution",
+      "framework": "XGBoost",
+      "weightsDigestSha256": "4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b",
+      "inputFeatureCount": 38,
+      "outputFormat": "risk_feature_vector",
+      "license": "Apache-2.0"
+    },
+    {
+      "modelId": "model.embeddings.bge-m3.v1",
+      "name": "BAAI BGE-M3 Multilingual Semantic Embeddings",
+      "version": "1.0.0",
+      "task": "dense_sparse_hybrid_embedding",
+      "framework": "sentence-transformers",
+      "weightsDigestSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dimension": 1024,
+      "maxSequenceLength": 8192,
+      "license": "MIT"
+    }
+  ]
+}

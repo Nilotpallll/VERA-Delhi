@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - API_V1_STR=/api/v1
+      - CORS_ORIGINS=http://localhost:3000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/vera_db
+      - SUPABASE_STORAGE_BUCKET=evidence-vault
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app/apps/api
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_VERA_API_URL=http://localhost:8000
+    depends_on:
+      - api
+
+  db:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vera_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+volumes:
+  postgres_data:
+  ollama_data:

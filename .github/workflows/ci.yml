@@ -1,0 +1,82 @@
+name: VERA Platform CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts-and-frontend:
+    name: Contracts & Frontend Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and test contracts
+        run: |
+          npm run build:contracts
+          npm run typecheck:contracts
+          npm run test:contracts
+
+      - name: Lint and typecheck web
+        run: |
+          npm run lint:web
+          npm run typecheck:web
+
+      - name: Build web application
+        run: npm run build:web
+
+  backend-and-contracts:
+    name: Backend API & Scoring Engine
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r apps/api/requirements.txt
+          pip install ruff pytest pytest-asyncio httpx
+
+      - name: Run Ruff Lint Check
+        run: ruff check apps/api
+
+      - name: Run Pytest Suite
+        run: pytest apps/api/tests -v
+
+  secret-detection:
+    name: Secret & Credential Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for committed .env files (Rule 11)
+        run: |
+          if git ls-files | grep -E '^\.env(\.|$)' | grep -v '\.env\.example'; then
+            echo "ERROR: Committed .env file detected! Architecture Rule 11 violated."
+            exit 1
+          fi
+          echo "No committed secret files found."

@@ -1,0 +1,31 @@
+# VERA Repository Code Owners
+# Architecture review and boundary enforcement
+
+# Global fallback: Architecture & Core Platform Leads
+* @vera-platform/architects
+
+# Contracts & Schemas (Architecture Rule 1 & Rule 2: Strict contract sync)
+/packages/contracts/ @vera-platform/architects @vera-platform/contracts-team
+
+# Backend API & Engines
+/apps/api/ @vera-platform/backend-core
+/apps/api/src/scoring/ @vera-platform/architects @vera-platform/risk-scoring
+/apps/api/src/ai/ @vera-platform/ai-engineers
+/apps/api/src/engines/ @vera-platform/forensics-team
+
+# Frontend Web Application
+/apps/web/ @vera-platform/frontend-core
+
+# Machine Learning & Detection Engines
+/ml/ @vera-platform/ml-team @vera-platform/architects
+
+# Database & Migrations
+/data/ @vera-platform/data-team
+
+# Infrastructure & CI
+/infra/ @vera-platform/devops
+/.github/ @vera-platform/architects @vera-platform/devops
+
+# Security & Policies
+/SECURITY.md @vera-platform/security-team
+/docs/policies/ @vera-platform/security-team @vera-platform/architects

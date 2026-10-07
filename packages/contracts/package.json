@@ -1,0 +1,26 @@
+{
+  "name": "@vera/contracts",
+  "version": "1.0.0",
+  "description": "Canonical engineering and API contracts for VERA fraud investigation platform",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-reporter=spec"
+  },
+  "keywords": ["vera", "fraud-investigation", "contracts", "api-schemas"],
+  "author": "VERA Engineering Architecture Team",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

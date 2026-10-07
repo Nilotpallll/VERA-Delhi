@@ -1,0 +1,26 @@
+# Normalize line endings to LF on checkout across all platforms
+* text=auto eol=lf
+
+# Force specific file types to LF
+*.py text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.css text eol=lf
+*.env.example text eol=lf
+
+# Binary files — do not modify
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.whl binary
+*.zip binary
+*.tar.gz binary
