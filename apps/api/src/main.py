@@ -8,13 +8,17 @@ Architecture Rule 14: Do not introduce unnecessary microservices.
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .api.v1.router import api_v1_router
 from .contracts.investigation import HealthCheckResponse
 from .core.config import settings
+from .core.database import dispose_engine
+from .core.middleware import RequestContextMiddleware
 from .core.observability import init_observability, logger
+from .core.redis_client import redis_client
 
 
 @asynccontextmanager
@@ -24,6 +28,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting %s v%s in %s mode", settings.PROJECT_NAME, settings.VERSION, settings.ENVIRONMENT)
     yield
     logger.info("Shutting down %s", settings.PROJECT_NAME)
+    await dispose_engine()
+    await redis_client.close()
 
 
 app = FastAPI(
@@ -34,6 +40,24 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+# Custom Global Exception Handler for structured JSON error responses
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.error("Unhandled exception for request [%s]: %s", request_id, exc, exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "InternalServerError",
+            "message": "An unexpected server error occurred.",
+            "request_id": request_id,
+        },
+    )
+
+
+# Request ID and Access Logging Middleware
+app.add_middleware(RequestContextMiddleware)
 
 # CORS Configuration
 app.add_middleware(

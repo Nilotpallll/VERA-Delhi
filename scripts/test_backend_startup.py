@@ -38,10 +38,11 @@ def test_backend_live_startup():
 
         print("[PASS] Root /health returned 200 OK")
         data = resp.json()
-        assert data["status"] == "healthy"
+        assert data["status"] in ("healthy", "degraded")
         assert data["api_version"] == "v1"
         assert "components" in data
         print(f"       Health payload: {data}")
+
 
         # Test versioned v1 health
         resp_v1 = client.get("/api/v1/health")

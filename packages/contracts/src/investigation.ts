@@ -19,24 +19,46 @@ export enum InvestigationStatus {
 export interface InvestigationCreateRequest {
   title: string;
   targetEntityName?: string;
+  target_entity_name?: string;
   primaryUrl?: string;
+  primary_url?: string;
   summaryNote?: string;
+  summary_note?: string;
   initialEvidenceItems?: Array<{
-    mediaType: EvidenceMediaType;
+    mediaType?: EvidenceMediaType;
+    media_type?: EvidenceMediaType;
     contentPayload?: string;
-    sourceOrigin: string;
+    content_payload?: string;
+    sourceOrigin?: string;
+    source_origin?: string;
+    tags?: string[];
+  }>;
+  initial_evidence_items?: Array<{
+    mediaType?: EvidenceMediaType;
+    media_type?: EvidenceMediaType;
+    contentPayload?: string;
+    content_payload?: string;
+    sourceOrigin?: string;
+    source_origin?: string;
     tags?: string[];
   }>;
 }
 
 export interface InvestigationManifest {
-  investigationId: string;
-  createdAt: string;
-  engineSemver: string;
-  scoringAlgorithmVersion: string;
-  analyzerVersions: Record<string, string>;
-  configurationDigest: string;
-  inputDigest: string;
+  investigationId?: string;
+  investigation_id?: string;
+  createdAt?: string;
+  created_at?: string;
+  engineSemver?: string;
+  engine_semver?: string;
+  scoringAlgorithmVersion?: string;
+  scoring_algorithm_version?: string;
+  analyzerVersions?: Record<string, string>;
+  analyzer_versions?: Record<string, string>;
+  configurationDigest?: string;
+  configuration_digest?: string;
+  inputDigest?: string;
+  input_digest?: string;
 }
 
 export interface InvestigationResponse {
@@ -44,15 +66,23 @@ export interface InvestigationResponse {
   status: InvestigationStatus;
   title: string;
   targetEntityName?: string;
+  target_entity_name?: string;
   primaryUrl?: string;
-  evidenceCount: number;
+  primary_url?: string;
+  evidenceCount?: number;
+  evidence_count?: number;
   evidence: CanonicalEvidenceItem[];
   riskAssessment?: DeterministicRiskAssessment;
-  analyzerRecords: AnalyzerExecutionRecord[];
+  risk_assessment?: DeterministicRiskAssessment;
+  analyzerRecords?: AnalyzerExecutionRecord[];
+  analyzer_records?: AnalyzerExecutionRecord[];
   manifest: InvestigationManifest;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  created_at?: string;
+  updatedAt?: string;
+  updated_at?: string;
 }
+
 
 export interface HealthCheckResponse {
   status: "healthy" | "degraded" | "unhealthy";

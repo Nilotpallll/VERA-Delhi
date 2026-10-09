@@ -27,17 +27,22 @@ export interface ScoreFactorContribution {
 
 export interface DeterministicRiskAssessment {
   /** Overall computed score strictly from 0 to 100 */
-  finalScore: number;
+  finalScore?: number;
+  final_score?: number;
   /** Categorized severity tier */
   tier: RiskSeverityTier;
   /** Mathematical breakdown of all factors contributing to the final score */
   factors: ScoreFactorContribution[];
   /** Penalty applied when analyzers fail or evidence is UNAVAILABLE */
-  uncertaintyPenalty: number;
+  uncertaintyPenalty?: number;
+  uncertainty_penalty?: number;
   /** Deterministic algorithm version code, e.g. "scoring.v1.0" */
-  algorithmVersion: string;
+  algorithmVersion?: string;
+  algorithm_version?: string;
   /** Explanation generated from deterministic rule traces */
   summary: string;
   /** Explicit architectural assertion: LLM cannot override this score directly */
-  isLlmAssigned: false;
+  isLlmAssigned?: false;
+  is_llm_assigned?: false;
 }
+

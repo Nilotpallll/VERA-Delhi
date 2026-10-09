@@ -13,27 +13,92 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_VERA_API_URL || "http://localhost:8000";
 
+export interface ApiClientOptions {
+  apiKey?: string;
+  authToken?: string;
+  idempotencyKey?: string;
+}
+
+export class VeraApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly statusText: string,
+    public readonly data: any,
+    public readonly requestId?: string
+  ) {
+    super(`VERA API Error [${status}]: ${typeof data === "string" ? data : JSON.stringify(data)}`);
+    this.name = "VeraApiError";
+  }
+}
+
 class VeraApiClient {
   private readonly baseUrl: string;
   private readonly versionPrefix: string;
+  private apiKey?: string;
+  private authToken?: string;
 
-  constructor() {
+  constructor(options?: ApiClientOptions) {
     this.baseUrl = API_BASE_URL.replace(/\/$/, "");
     this.versionPrefix = VERA_API_PREFIX;
+    this.apiKey = options?.apiKey || process.env.NEXT_PUBLIC_VERA_API_KEY;
+    this.authToken = options?.authToken;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  public setAuthToken(token: string) {
+    this.authToken = token;
+  }
+
+  public setApiKey(key: string) {
+    this.apiKey = key;
+  }
+
+  private generateRequestId(): string {
+    return `req_ui_${Math.random().toString(36).substring(2, 10)}`;
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    customOptions?: ApiClientOptions
+  ): Promise<T> {
     const url = `${this.baseUrl}${this.versionPrefix}${endpoint}`;
-    const headers = {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      ...(options.headers || {}),
+    const requestId = this.generateRequestId();
+
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "X-Request-ID": requestId,
+      ...(options.headers as Record<string, string> || {}),
     };
 
+    if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    const key = customOptions?.apiKey || this.apiKey;
+    if (key) {
+      headers["X-API-Key"] = key;
+    }
+
+    const token = customOptions?.authToken || this.authToken;
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    if (customOptions?.idempotencyKey) {
+      headers["Idempotency-Key"] = customOptions.idempotencyKey;
+    }
+
     const response = await fetch(url, { ...options, headers });
+    const responseRequestId = response.headers.get("X-Request-ID") || requestId;
+
     if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`VERA API Error [${response.status}] ${url}: ${errorBody}`);
+      let errorBody: any;
+      try {
+        errorBody = await response.json();
+      } catch {
+        errorBody = await response.text();
+      }
+      throw new VeraApiError(response.status, response.statusText, errorBody, responseRequestId);
     }
 
     return response.json() as Promise<T>;
@@ -43,18 +108,24 @@ class VeraApiClient {
    * Health check contract endpoint
    */
   async getHealth(): Promise<HealthCheckResponse> {
-    // Health is exposed at root and at /api/v1/health
     return this.request<HealthCheckResponse>("/health");
   }
 
   /**
    * Create new fraud investigation
    */
-  async createInvestigation(data: InvestigationCreateRequest): Promise<InvestigationResponse> {
-    return this.request<InvestigationResponse>("/investigations", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+  async createInvestigation(
+    data: InvestigationCreateRequest,
+    options?: { idempotencyKey?: string }
+  ): Promise<InvestigationResponse> {
+    return this.request<InvestigationResponse>(
+      "/investigations",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      { idempotencyKey: options?.idempotencyKey }
+    );
   }
 
   /**
@@ -62,6 +133,19 @@ class VeraApiClient {
    */
   async getInvestigation(id: string): Promise<InvestigationResponse> {
     return this.request<InvestigationResponse>(`/investigations/${id}`);
+  }
+
+  /**
+   * Upload evidence file
+   */
+  async uploadFile(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return this.request<any>("/uploads", {
+      method: "POST",
+      body: formData,
+    });
   }
 }
 

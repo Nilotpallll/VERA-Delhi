@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { AppShell } from "@/components/shell/AppShell";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "VERA | Investment-Fraud Investigation Platform",
-  description: "MNC-grade agentic platform for multi-modal investment fraud analysis, forensic APK inspection, deepfake detection, and deterministic risk attribution.",
+  title: "VERA — Investment Fraud Intelligence Platform",
+  description: "MNC-grade agentic platform for multi-modal investment fraud analysis and deterministic risk scoring.",
 };
 
 export default function RootLayout({
@@ -13,8 +17,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased min-h-screen bg-slate-950 text-slate-100">
-        {children}
+      <body className={inter.className}>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
