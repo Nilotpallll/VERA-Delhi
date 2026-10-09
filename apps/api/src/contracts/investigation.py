@@ -1,25 +1,18 @@
-"""Investigation API contracts.
+"""Investigation API contracts — Phase 1 + Phase 2 compatible.
 
 Architecture Rule 1: Frontend communicates only through API contracts.
 Architecture Rule 2: API contracts are versioned.
-Architecture Rule 13: Every investigation must be reproducible from stored versions/configuration.
+Architecture Rule 13: Every investigation must be reproducible.
 """
 
 from datetime import UTC, datetime
-from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 from .analyzers import AnalyzerExecutionRecord
+from .enums import InvestigationStatus  # Phase 2 canonical status (supersedes Phase 1)
 from .evidence import CanonicalEvidenceItem, EvidenceMediaType
 from .scoring import DeterministicRiskAssessment
-
-
-class InvestigationStatus(StrEnum):
-    PENDING = "PENDING"
-    PROCESSING = "PROCESSING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
 
 
 class InitialEvidenceInput(BaseModel):
@@ -48,6 +41,7 @@ class InvestigationManifest(BaseModel):
 
 
 class InvestigationResponse(BaseModel):
+    """Phase 1 backward-compatible response schema."""
     id: str
     status: InvestigationStatus
     title: str
