@@ -65,10 +65,13 @@ class Settings(BaseSettings):
     ]
 
     # ── AI Providers (Zero-cost requirement / Architecture Rule 15) ───────────
+    LLM_PROVIDER: str = "gemini"  # gemini | ollama | groq | mock
     GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL: str = "gemini-1.5-flash"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3.2:latest"
     GROQ_API_KEY: str | None = None
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
 
     # ── Observability ─────────────────────────────────────────────────────────
     SENTRY_DSN: str | None = None

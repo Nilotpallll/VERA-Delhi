@@ -21,6 +21,7 @@ from .phase2 import (
     UserModel,
     VerificationResultModel,
 )
+from .knowledge import KnowledgeChunkModel, KnowledgeDocumentModel
 
 __all__ = [
     "Base",
@@ -37,4 +38,6 @@ __all__ = [
     "AnalyzerRunModel",
     "ReportModel",
     "AuditLogModel",
+    "KnowledgeDocumentModel",
+    "KnowledgeChunkModel",
 ]
