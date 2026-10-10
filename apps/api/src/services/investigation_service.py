@@ -319,22 +319,54 @@ async def run_analysis_pipeline(
         )
         return inv
 
-    # Process each input with stub analyzers
+    # Process each input with specialized analyzers
     risk_signals_created: list[str] = []
     total_score = 0.0
     signal_count = 0
+    has_any_failure = False
 
     for inp in inputs:
         started = _now()
 
-        # Stub: URL analyzer
+        # ── 1. URL / Domain / Social Profile ──────────────────────────────────
         if inp.type in ("URL", "DOMAIN", "SOCIAL_PROFILE"):
             try:
+                url_engine = analyzer_registry.get("engine.url.forensics_and_ml")
+                suspicious_keywords = _check_suspicious_url(inp.value)
+
                 findings: dict[str, Any] = {
                     "url": inp.value,
-                    "suspicious_keywords": _check_suspicious_url(inp.value),
-                    "stub": True,
+                    "suspicious_keywords": suspicious_keywords,
                 }
+
+                if url_engine:
+                    from ..contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
+                    from ..contracts.verification import VerificationResult, VerificationState
+                    dummy_ev = CanonicalEvidenceItem(
+                        id=f"ev_tmp_{inp.id}",
+                        investigation_id=investigation_id,
+                        media_type=EvidenceMediaType.URL,
+                        sha256=hashlib.sha256(inp.value.encode()).hexdigest(),
+                        title="URL Input",
+                        source_origin=inp.value,
+                        content_payload=inp.value,
+                        verification=VerificationResult(
+                            state=VerificationState.NOT_VERIFIED,
+                            source="user_input",
+                            confidence=1.0,
+                            details="Raw input",
+                        ),
+                    )
+                    url_record = await url_engine.execute(dummy_ev)
+                    findings["forensics"] = url_record.findings
+                    engine_name = url_engine.metadata.name
+                    engine_version = url_engine.metadata.version
+                    weights_digest = url_engine.metadata.weights_or_config_digest
+                else:
+                    engine_name = "engine.url.heuristic"
+                    engine_version = "0.1.0-stub"
+                    weights_digest = hashlib.sha256(b"url-stub-v0.1.0").hexdigest()
+
                 completed = _now()
                 dur_ms = max(0.1, (completed - started).total_seconds() * 1000)
 
@@ -342,34 +374,33 @@ async def run_analysis_pipeline(
                     id=_new_id("ar"),
                     investigation_id=investigation_id,
                     input_id=inp.id,
-                    analyzer_name="engine.url.heuristic",
-                    analyzer_version="0.1.0-stub",
-                    weights_digest=hashlib.sha256(b"url-stub-v0.1.0").hexdigest(),
+                    analyzer_name=engine_name,
+                    analyzer_version=engine_version,
+                    weights_digest=weights_digest,
                     status="SUCCESS",
                     started_at=started,
                     completed_at=completed,
                     duration_ms=dur_ms,
                     findings=findings,
-                    uncertainty=0.3,
+                    uncertainty=0.15 if suspicious_keywords else 0.3,
                     created_at=_now(),
                 )
                 db.add(ar)
 
-                suspicious = findings["suspicious_keywords"]
-                if suspicious:
+                if suspicious_keywords or findings.get("forensics", {}).get("is_suspicious"):
                     ev = await append_evidence(
                         db,
                         investigation_id=investigation_id,
                         type="suspicious_url_pattern",
                         category=EvidenceCategory.TECHNICAL,
                         severity=EvidenceSeverity.HIGH,
-                        description=f"URL contains suspicious keywords: {suspicious}",
+                        description=f"URL contains suspicious keywords: {suspicious_keywords}",
                         source_type=SourceType.DETERMINISTIC_ANALYZER,
                         source_reference=inp.id,
                         confidence=0.85,
-                        analyzer="engine.url.heuristic",
-                        analyzer_version="0.1.0-stub",
-                        metadata={"keywords": suspicious, "url": inp.value},
+                        analyzer=engine_name,
+                        analyzer_version=engine_version,
+                        metadata={"keywords": suspicious_keywords, "url": inp.value},
                     )
                     # Risk signal
                     sig = RiskSignalModel(
@@ -382,7 +413,7 @@ async def run_analysis_pipeline(
                         source_evidence_ids=[ev.id],
                         source_type=SourceType.DETERMINISTIC_ANALYZER.value,
                         deterministic_rule_id="RULE-URL-001",
-                        description=f"Suspicious URL pattern detected: {suspicious}",
+                        description=f"Suspicious URL pattern detected: {suspicious_keywords}",
                         created_at=_now(),
                     )
                     db.add(sig)
@@ -391,8 +422,8 @@ async def run_analysis_pipeline(
                     signal_count += 1
 
             except Exception as exc:
-                # Rule 9: failure → SYSTEM evidence, never safety
-                logger.error("URL analyzer stub failed: %s", exc, exc_info=True)
+                has_any_failure = True
+                logger.error("URL analyzer failed: %s", exc, exc_info=True)
                 completed = _now()
                 dur_ms = max(0.1, (completed - started).total_seconds() * 1000)
                 ev = await append_evidence(
@@ -410,9 +441,9 @@ async def run_analysis_pipeline(
                     id=_new_id("ar"),
                     investigation_id=investigation_id,
                     input_id=inp.id,
-                    analyzer_name="engine.url.heuristic",
-                    analyzer_version="0.1.0-stub",
-                    weights_digest=hashlib.sha256(b"url-stub-v0.1.0").hexdigest(),
+                    analyzer_name="engine.url.forensics_and_ml",
+                    analyzer_version="1.0.0",
+                    weights_digest=hashlib.sha256(b"url-failure").hexdigest(),
                     status="FAILED",
                     started_at=started,
                     completed_at=completed,
@@ -424,45 +455,242 @@ async def run_analysis_pipeline(
                     created_at=_now(),
                 )
                 db.add(ar)
-                # Failure incurs uncertainty penalty
                 total_score += 15.0
                 signal_count += 1
 
-        # Stub: Text/phone/email analyzer
-        elif inp.type in ("TEXT", "PHONE_NUMBER", "EMAIL_ADDRESS", "UPI_ID"):
+        # ── 2. Text / Message / Phone / Email / UPI ───────────────────────────
+        elif inp.type in ("TEXT", "PHONE_NUMBER", "EMAIL_ADDRESS", "UPI_ID", "MESSAGE"):
             started = _now()
-            findings = {"value": inp.value, "type": inp.type, "stub": True}
-            completed = _now()
-            dur_ms = max(0.1, (completed - started).total_seconds() * 1000)
-            ar = AnalyzerRunModel(
-                id=_new_id("ar"),
-                investigation_id=investigation_id,
-                input_id=inp.id,
-                analyzer_name="engine.text.basic",
-                analyzer_version="0.1.0-stub",
-                weights_digest=hashlib.sha256(b"text-stub-v0.1.0").hexdigest(),
-                status="SUCCESS",
-                started_at=started,
-                completed_at=completed,
-                duration_ms=dur_ms,
-                findings=findings,
-                uncertainty=0.5,
-                created_at=_now(),
-            )
-            db.add(ar)
-            ev = await append_evidence(
-                db,
-                investigation_id=investigation_id,
-                type="input_registered",
-                category=EvidenceCategory.COMMUNICATION,
-                severity=EvidenceSeverity.INFO,
-                description=f"Input of type {inp.type} registered for analysis: {inp.value[:100]}",
-                source_type=SourceType.DETERMINISTIC_ANALYZER,
-                source_reference=inp.id,
-                confidence=1.0,
-                analyzer="engine.text.basic",
-                analyzer_version="0.1.0-stub",
-            )
+            try:
+                msg_engine = analyzer_registry.get("engine.message.heuristics")
+                from ..contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
+                from ..contracts.verification import VerificationResult, VerificationState
+                dummy_ev = CanonicalEvidenceItem(
+                    id=f"ev_tmp_{inp.id}",
+                    investigation_id=investigation_id,
+                    media_type=EvidenceMediaType.TEXT,
+                    sha256=hashlib.sha256(inp.value.encode()).hexdigest(),
+                    title="Text Message Input",
+                    source_origin=inp.type,
+                    content_payload=inp.value,
+                    verification=VerificationResult(
+                        state=VerificationState.NOT_VERIFIED,
+                        source="user_input",
+                        confidence=1.0,
+                        details="Raw text input",
+                    ),
+                )
+                if msg_engine:
+                    msg_record = await msg_engine.execute(dummy_ev)
+                    findings = msg_record.findings
+                    engine_name = msg_engine.metadata.name
+                    engine_version = msg_engine.metadata.version
+                    weights_digest = msg_engine.metadata.weights_or_config_digest
+                else:
+                    findings = {"value": inp.value, "type": inp.type, "stub": True}
+                    engine_name = "engine.text.basic"
+                    engine_version = "0.1.0-stub"
+                    weights_digest = hashlib.sha256(b"text-stub").hexdigest()
+
+                completed = _now()
+                dur_ms = max(0.1, (completed - started).total_seconds() * 1000)
+                ar = AnalyzerRunModel(
+                    id=_new_id("ar"),
+                    investigation_id=investigation_id,
+                    input_id=inp.id,
+                    analyzer_name=engine_name,
+                    analyzer_version=engine_version,
+                    weights_digest=weights_digest,
+                    status="SUCCESS",
+                    started_at=started,
+                    completed_at=completed,
+                    duration_ms=dur_ms,
+                    findings=findings,
+                    uncertainty=0.2 if findings.get("is_suspicious") else 0.4,
+                    created_at=_now(),
+                )
+                db.add(ar)
+
+                ev = await append_evidence(
+                    db,
+                    investigation_id=investigation_id,
+                    type="input_registered",
+                    category=EvidenceCategory.COMMUNICATION,
+                    severity=EvidenceSeverity.HIGH if findings.get("is_suspicious") else EvidenceSeverity.INFO,
+                    description=f"Input of type {inp.type} analyzed: {inp.value[:100]}",
+                    source_type=SourceType.DETERMINISTIC_ANALYZER,
+                    source_reference=inp.id,
+                    confidence=1.0,
+                    analyzer=engine_name,
+                    analyzer_version=engine_version,
+                    metadata=findings,
+                )
+                if findings.get("is_suspicious"):
+                    total_score += 50.0 * 0.3
+                    signal_count += 1
+
+            except Exception as exc:
+                has_any_failure = True
+                logger.error("Message analyzer failed: %s", exc, exc_info=True)
+                completed = _now()
+                dur_ms = max(0.1, (completed - started).total_seconds() * 1000)
+                ev = await append_evidence(
+                    db,
+                    investigation_id=investigation_id,
+                    type="analyzer_failure",
+                    category=EvidenceCategory.SYSTEM_EVENT,
+                    severity=EvidenceSeverity.CRITICAL,
+                    description=f"Message analyzer failed: {type(exc).__name__}: {exc}",
+                    source_type=SourceType.SYSTEM,
+                    source_reference="system",
+                    metadata={"rule": "RULE-FAILSAFE-001", "error": str(exc)},
+                )
+                ar = AnalyzerRunModel(
+                    id=_new_id("ar"),
+                    investigation_id=investigation_id,
+                    input_id=inp.id,
+                    analyzer_name="engine.message.heuristics",
+                    analyzer_version="1.0.0",
+                    weights_digest=hashlib.sha256(b"msg-failure").hexdigest(),
+                    status="FAILED",
+                    started_at=started,
+                    completed_at=completed,
+                    duration_ms=dur_ms,
+                    findings={"error": str(exc)},
+                    uncertainty=1.0,
+                    error_message=str(exc),
+                    failure_evidence_id=ev.id,
+                    created_at=_now(),
+                )
+                db.add(ar)
+                total_score += 15.0
+                signal_count += 1
+
+        # ── 3. Media Inputs (Image / Video / Audio / APK) ─────────────────────
+        elif inp.type in ("IMAGE", "VIDEO", "AUDIO", "APK"):
+            started = _now()
+            try:
+                engine_map = {
+                    "IMAGE": ("engine.image.forensics", EvidenceCategory.MEDIA),
+                    "VIDEO": ("engine.video.deepfake.mesonet", EvidenceCategory.MEDIA),
+                    "AUDIO": ("engine.audio.forensics", EvidenceCategory.COMMUNICATION),
+                    "APK": ("engine.apk.static_and_drebin", EvidenceCategory.TECHNICAL),
+                }
+                eng_name, ev_cat = engine_map[inp.type]
+                engine = analyzer_registry.get(eng_name)
+
+                from ..contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
+                from ..contracts.verification import VerificationResult, VerificationState
+                media_type_map = {
+                    "IMAGE": EvidenceMediaType.IMAGE,
+                    "VIDEO": EvidenceMediaType.VIDEO,
+                    "AUDIO": EvidenceMediaType.AUDIO,
+                    "APK": EvidenceMediaType.APK,
+                }
+                dummy_ev = CanonicalEvidenceItem(
+                    id=f"ev_tmp_{inp.id}",
+                    investigation_id=investigation_id,
+                    media_type=media_type_map[inp.type],
+                    sha256=hashlib.sha256(inp.value.encode()).hexdigest(),
+                    title=f"{inp.type} Input",
+                    source_origin=inp.type,
+                    content_payload=inp.value,
+                    verification=VerificationResult(
+                        state=VerificationState.NOT_VERIFIED,
+                        source="user_input",
+                        confidence=1.0,
+                        details=f"Raw {inp.type} input",
+                    ),
+                )
+                if engine:
+                    rec = await engine.execute(dummy_ev)
+                    findings = rec.findings
+                    ar_status = rec.status.value
+                    uncertainty = rec.uncertainty
+                    engine_version = engine.metadata.version
+                    weights_digest = engine.metadata.weights_or_config_digest
+                else:
+                    findings = {"raw": inp.value[:50]}
+                    ar_status = "SUCCESS"
+                    uncertainty = 0.3
+                    engine_version = "1.0.0"
+                    weights_digest = hashlib.sha256(b"media-generic").hexdigest()
+
+                completed = _now()
+                dur_ms = max(0.1, (completed - started).total_seconds() * 1000)
+
+                ar = AnalyzerRunModel(
+                    id=_new_id("ar"),
+                    investigation_id=investigation_id,
+                    input_id=inp.id,
+                    analyzer_name=eng_name,
+                    analyzer_version=engine_version,
+                    weights_digest=weights_digest,
+                    status=ar_status,
+                    started_at=started,
+                    completed_at=completed,
+                    duration_ms=dur_ms,
+                    findings=findings,
+                    uncertainty=uncertainty,
+                    created_at=_now(),
+                )
+                db.add(ar)
+
+                is_susp = findings.get("is_suspicious") or findings.get("facial_manipulation_signals_detected")
+                ev = await append_evidence(
+                    db,
+                    investigation_id=investigation_id,
+                    type=f"{inp.type.lower()}_analysis_result",
+                    category=ev_cat,
+                    severity=EvidenceSeverity.HIGH if is_susp else EvidenceSeverity.INFO,
+                    description=f"{inp.type} analysis: {findings.get('statement') or 'Analyzed successfully'}",
+                    source_type=SourceType.DETERMINISTIC_ANALYZER,
+                    source_reference=inp.id,
+                    confidence=0.88,
+                    analyzer=eng_name,
+                    analyzer_version=engine_version,
+                    metadata=findings,
+                )
+                if is_susp:
+                    total_score += 65.0 * 0.4
+                    signal_count += 1
+
+            except Exception as exc:
+                has_any_failure = True
+                logger.error(f"{inp.type} analyzer failed: %s", exc, exc_info=True)
+                completed = _now()
+                dur_ms = max(0.1, (completed - started).total_seconds() * 1000)
+                ev = await append_evidence(
+                    db,
+                    investigation_id=investigation_id,
+                    type="analyzer_failure",
+                    category=EvidenceCategory.SYSTEM_EVENT,
+                    severity=EvidenceSeverity.CRITICAL,
+                    description=f"{inp.type} analyzer failed: {type(exc).__name__}: {exc}",
+                    source_type=SourceType.SYSTEM,
+                    source_reference="system",
+                    metadata={"rule": "RULE-FAILSAFE-001", "error": str(exc)},
+                )
+                ar = AnalyzerRunModel(
+                    id=_new_id("ar"),
+                    investigation_id=investigation_id,
+                    input_id=inp.id,
+                    analyzer_name=f"engine.{inp.type.lower()}",
+                    analyzer_version="1.0.0",
+                    weights_digest=hashlib.sha256(b"failure").hexdigest(),
+                    status="FAILED",
+                    started_at=started,
+                    completed_at=completed,
+                    duration_ms=dur_ms,
+                    findings={"error": str(exc)},
+                    uncertainty=1.0,
+                    error_message=str(exc),
+                    failure_evidence_id=ev.id,
+                    created_at=_now(),
+                )
+                db.add(ar)
+                total_score += 15.0
+                signal_count += 1
 
         else:
             # Generic passthrough — record input as INFO evidence
@@ -488,7 +716,8 @@ async def run_analysis_pipeline(
         f"Deterministic score {final_score}/100 ({tier}). "
         f"Analyzed {len(inputs)} inputs, generated {len(risk_signals_created)} risk signals."
     )
-    inv.status = InvestigationStatus.COMPLETED.value
+    # Architecture Rule 9: If any detector failed, mark PARTIAL (never safe, never fully COMPLETED)
+    inv.status = InvestigationStatus.PARTIAL.value if has_any_failure else InvestigationStatus.COMPLETED.value
     inv.updated_at = _now()
 
     await _append_audit(
@@ -496,11 +725,13 @@ async def run_analysis_pipeline(
         investigation_id=investigation_id,
         actor_type="system",
         actor_id="analysis_pipeline",
-        action="analysis.completed",
+        action="analysis.completed" if not has_any_failure else "analysis.partial_due_to_analyzer_failure",
         details={
             "risk_score": final_score,
             "risk_tier": tier,
             "inputs_analyzed": len(inputs),
+            "status": inv.status,
+            "has_analyzer_failure": has_any_failure,
         },
     )
 
