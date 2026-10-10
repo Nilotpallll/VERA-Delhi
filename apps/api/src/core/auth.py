@@ -69,6 +69,18 @@ async def verify_api_key(
     )
 
 
+def _get_jwt():
+    try:
+        import jwt
+        return jwt
+    except ImportError:
+        try:
+            from jose import jwt
+            return jwt
+        except ImportError:
+            raise RuntimeError("Neither 'jwt' (PyJWT) nor 'jose' (python-jose) is installed.")
+
+
 # ── JWT Bearer authentication ─────────────────────────────────────────────────
 async def verify_jwt_token(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Security(_bearer_scheme)] = None,
@@ -79,7 +91,7 @@ async def verify_jwt_token(
 
     token = credentials.credentials
     try:
-        from jose import jwt
+        jwt = _get_jwt()
         payload = jwt.decode(
             token,
             settings.JWT_SECRET_KEY,
@@ -114,6 +126,12 @@ async def verify_jwt_token(
     except HTTPException:
         raise
     except Exception as exc:
+        if type(exc).__name__ == "ExpiredSignatureError":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail={"error": "token_expired", "message": "Authentication token has expired."},
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
         logger.warning("JWT validation error: %s", type(exc).__name__)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -162,7 +180,7 @@ def create_access_token(
     expires_minutes: int | None = None,
 ) -> str:
     """Create a signed JWT access token."""
-    from jose import jwt
+    jwt = _get_jwt()
     assigned_roles = roles or ([role] if role else ["investigator"])
     primary_role = role or assigned_roles[0]
 
@@ -175,13 +193,16 @@ def create_access_token(
         "exp": expire,
         "iat": datetime.now(UTC),
     }
-    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    encoded = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    if isinstance(encoded, bytes):
+        encoded = encoded.decode("utf-8")
+    return encoded
 
 
 def decode_access_token(token: str) -> dict | None:
     """Decode and validate a JWT access token, returning payload dict or None."""
     try:
-        from jose import jwt
+        jwt = _get_jwt()
         return jwt.decode(
             token,
             settings.JWT_SECRET_KEY,

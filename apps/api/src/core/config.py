@@ -79,7 +79,7 @@ class Settings(BaseSettings):
 
     # ── Security ──────────────────────────────────────────────────────────────
     API_KEY_SECRET: str = "dev-insecure-secret-key-change-in-prod"
-    JWT_SECRET_KEY: str = "dev-jwt-secret-change-in-prod"
+    JWT_SECRET_KEY: str = "dev-jwt-secret-change-in-prod-32bytes"
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
