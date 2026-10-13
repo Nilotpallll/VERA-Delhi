@@ -1,0 +1,2811 @@
+{
+  "total_samples": 350,
+  "modality_distribution": {
+    "text": 175,
+    "url": 90,
+    "upi": 50,
+    "apk": 35
+  },
+  "samples": [
+    {
+      "id": "eval_seed_000",
+      "modality": "text",
+      "content": "Guaranteed 50% daily return in our VIP Telegram group. Invest 10,000 get 50,000 within 24 hours. SEBI approved registration cert.",
+      "is_fraud": true,
+      "provenance": "SEBI Investor Alert PR No. 14/2024 (Fake Telegram channels)",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_001",
+      "modality": "text",
+      "content": "Earn 5000 to 20000 daily from home. Join institutional VIP insider trading WhatsApp group. 100% risk free.",
+      "is_fraud": true,
+      "provenance": "SEBI Order WTM/ASB/EFD/DRA-1/25890/2023-24",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_002",
+      "modality": "text",
+      "content": "Exclusive pre-IPO allotment for Tata Technologies unlisted shares. Transfer money to personal UPI account.",
+      "is_fraud": true,
+      "provenance": "SEBI Advisory on Unlisted Securities Frauds 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_003",
+      "modality": "text",
+      "content": "Your demat account is frozen by SEBI. Pay 15,000 unfreeze fee to UPI handle sebi-unfreeze@ybl immediately.",
+      "is_fraud": true,
+      "provenance": "SEBI Impersonation Alert 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_004",
+      "modality": "text",
+      "content": "Gu@r@nteed 200% pr0f1t in 3 d@ys. D0uble y0ur m0ney crypto and forex tips with zero loss guarantee.",
+      "is_fraud": true,
+      "provenance": "Cybercrime.gov.in Advisory 2024/09 (Obfuscated Leetspeak Scam)",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_005",
+      "modality": "text",
+      "content": "G u a r a n t e e d   r e t u r n s   5 0 %   d a i l y   i n   o u r   p r i v a t e   c h a n n e l",
+      "is_fraud": true,
+      "provenance": "Cybercrime Pattern #8841 (Spaced Obfuscation)",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_006",
+      "modality": "text",
+      "content": "Bhai log 10,000 lagao aur daily 5,000 fix profit kamao. SEBI certified guaranteed call group. Loss ka no chance.",
+      "is_fraud": true,
+      "provenance": "SEBI Regional Alert North 2024",
+      "language": "hi"
+    },
+    {
+      "id": "eval_seed_007",
+      "modality": "text",
+      "content": "Ghar baithe roz 10,000 kamaye. Sirf 15 minute trading mein. Humare VIP WhatsApp group ko join karein abhi.",
+      "is_fraud": true,
+      "provenance": "SEBI Action on Social Media Finfluencers 2024",
+      "language": "hi"
+    },
+    {
+      "id": "eval_seed_008",
+      "modality": "text",
+      "content": "Aapka bank account freeze ho gaya hai SEBI notice ke kaaran. Turant 5000 UPI karein sebi.officer@paytm par.",
+      "is_fraud": true,
+      "provenance": "Cyber Crime Portal Report #2024-ND-9921",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_009",
+      "modality": "text",
+      "content": "Stock market mein 100% pakka munafa. Bina kisi risk ke capital double hoga 7 dino mein.",
+      "is_fraud": true,
+      "provenance": "SEBI Hindi Advisory 2023",
+      "language": "hi"
+    },
+    {
+      "id": "eval_seed_010",
+      "modality": "text",
+      "content": "Mutual fund investments are subject to market risks, read all scheme related documents carefully.",
+      "is_fraud": false,
+      "provenance": "AMFI Mandatory Disclaimer 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_011",
+      "modality": "text",
+      "content": "Zerodha Broking Limited is a SEBI registered Stock Broker with registration INZ000031633. Member of NSE and BSE.",
+      "is_fraud": false,
+      "provenance": "NSE Member Directory / Zerodha Compliance Page",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_012",
+      "modality": "text",
+      "content": "HDFC Top 100 Fund NAV is 945.20 as of October 2024. Past performance does not guarantee future returns.",
+      "is_fraud": false,
+      "provenance": "HDFC AMC Monthly Factsheet Oct 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_013",
+      "modality": "text",
+      "content": "SEBI cautions investors against dealing with unregistered entities promising guaranteed returns in the securities market.",
+      "is_fraud": false,
+      "provenance": "SEBI Official Press Release PR No. 08/2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_seed_014",
+      "modality": "text",
+      "content": "ICICI Securities reported Q2 revenue growth of 18% YoY. Operating margin stood at 44%.",
+      "is_fraud": false,
+      "provenance": "BSE Corporate Filing ICICISECU 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_001",
+      "modality": "text",
+      "content": "VIP trading alert 1: Guaranteed 21% return weekly. Join telegram t.me/vip_profit_1. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_002",
+      "modality": "text",
+      "content": "VIP trading alert 2: Guaranteed 22% return weekly. Join telegram t.me/vip_profit_2. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_003",
+      "modality": "text",
+      "content": "VIP trading alert 3: Guaranteed 23% return weekly. Join telegram t.me/vip_profit_3. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_004",
+      "modality": "text",
+      "content": "VIP trading alert 4: Guaranteed 24% return weekly. Join telegram t.me/vip_profit_4. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_005",
+      "modality": "text",
+      "content": "VIP trading alert 5: Guaranteed 25% return weekly. Join telegram t.me/vip_profit_5. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_006",
+      "modality": "text",
+      "content": "VIP trading alert 6: Guaranteed 26% return weekly. Join telegram t.me/vip_profit_6. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_007",
+      "modality": "text",
+      "content": "VIP trading alert 7: Guaranteed 27% return weekly. Join telegram t.me/vip_profit_7. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_008",
+      "modality": "text",
+      "content": "VIP trading alert 8: Guaranteed 28% return weekly. Join telegram t.me/vip_profit_8. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_009",
+      "modality": "text",
+      "content": "VIP trading alert 9: Guaranteed 29% return weekly. Join telegram t.me/vip_profit_9. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_010",
+      "modality": "text",
+      "content": "VIP trading alert 10: Guaranteed 30% return weekly. Join telegram t.me/vip_profit_10. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_011",
+      "modality": "text",
+      "content": "VIP trading alert 11: Guaranteed 31% return weekly. Join telegram t.me/vip_profit_11. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_012",
+      "modality": "text",
+      "content": "VIP trading alert 12: Guaranteed 32% return weekly. Join telegram t.me/vip_profit_12. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_013",
+      "modality": "text",
+      "content": "VIP trading alert 13: Guaranteed 33% return weekly. Join telegram t.me/vip_profit_13. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_014",
+      "modality": "text",
+      "content": "VIP trading alert 14: Guaranteed 34% return weekly. Join telegram t.me/vip_profit_14. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_015",
+      "modality": "text",
+      "content": "VIP trading alert 15: Guaranteed 35% return weekly. Join telegram t.me/vip_profit_15. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_016",
+      "modality": "text",
+      "content": "VIP trading alert 16: Guaranteed 36% return weekly. Join telegram t.me/vip_profit_16. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_017",
+      "modality": "text",
+      "content": "VIP trading alert 17: Guaranteed 37% return weekly. Join telegram t.me/vip_profit_17. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_018",
+      "modality": "text",
+      "content": "VIP trading alert 18: Guaranteed 38% return weekly. Join telegram t.me/vip_profit_18. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_019",
+      "modality": "text",
+      "content": "VIP trading alert 19: Guaranteed 39% return weekly. Join telegram t.me/vip_profit_19. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_020",
+      "modality": "text",
+      "content": "VIP trading alert 20: Guaranteed 40% return weekly. Join telegram t.me/vip_profit_20. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_021",
+      "modality": "text",
+      "content": "VIP trading alert 21: Guaranteed 41% return weekly. Join telegram t.me/vip_profit_21. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_022",
+      "modality": "text",
+      "content": "VIP trading alert 22: Guaranteed 42% return weekly. Join telegram t.me/vip_profit_22. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_023",
+      "modality": "text",
+      "content": "VIP trading alert 23: Guaranteed 43% return weekly. Join telegram t.me/vip_profit_23. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_024",
+      "modality": "text",
+      "content": "VIP trading alert 24: Guaranteed 44% return weekly. Join telegram t.me/vip_profit_24. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_025",
+      "modality": "text",
+      "content": "VIP trading alert 25: Guaranteed 45% return weekly. Join telegram t.me/vip_profit_25. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_026",
+      "modality": "text",
+      "content": "VIP trading alert 26: Guaranteed 46% return weekly. Join telegram t.me/vip_profit_26. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_027",
+      "modality": "text",
+      "content": "VIP trading alert 27: Guaranteed 47% return weekly. Join telegram t.me/vip_profit_27. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_028",
+      "modality": "text",
+      "content": "VIP trading alert 28: Guaranteed 48% return weekly. Join telegram t.me/vip_profit_28. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_029",
+      "modality": "text",
+      "content": "VIP trading alert 29: Guaranteed 49% return weekly. Join telegram t.me/vip_profit_29. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_030",
+      "modality": "text",
+      "content": "VIP trading alert 30: Guaranteed 50% return weekly. Join telegram t.me/vip_profit_30. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_031",
+      "modality": "text",
+      "content": "VIP trading alert 31: Guaranteed 51% return weekly. Join telegram t.me/vip_profit_31. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_032",
+      "modality": "text",
+      "content": "VIP trading alert 32: Guaranteed 52% return weekly. Join telegram t.me/vip_profit_32. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_033",
+      "modality": "text",
+      "content": "VIP trading alert 33: Guaranteed 53% return weekly. Join telegram t.me/vip_profit_33. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_034",
+      "modality": "text",
+      "content": "VIP trading alert 34: Guaranteed 54% return weekly. Join telegram t.me/vip_profit_34. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_035",
+      "modality": "text",
+      "content": "VIP trading alert 35: Guaranteed 55% return weekly. Join telegram t.me/vip_profit_35. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_036",
+      "modality": "text",
+      "content": "VIP trading alert 36: Guaranteed 56% return weekly. Join telegram t.me/vip_profit_36. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_037",
+      "modality": "text",
+      "content": "VIP trading alert 37: Guaranteed 57% return weekly. Join telegram t.me/vip_profit_37. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_038",
+      "modality": "text",
+      "content": "VIP trading alert 38: Guaranteed 58% return weekly. Join telegram t.me/vip_profit_38. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_039",
+      "modality": "text",
+      "content": "VIP trading alert 39: Guaranteed 59% return weekly. Join telegram t.me/vip_profit_39. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_040",
+      "modality": "text",
+      "content": "VIP trading alert 40: Guaranteed 60% return weekly. Join telegram t.me/vip_profit_40. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_041",
+      "modality": "text",
+      "content": "VIP trading alert 41: Guaranteed 61% return weekly. Join telegram t.me/vip_profit_41. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_042",
+      "modality": "text",
+      "content": "VIP trading alert 42: Guaranteed 62% return weekly. Join telegram t.me/vip_profit_42. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_043",
+      "modality": "text",
+      "content": "VIP trading alert 43: Guaranteed 63% return weekly. Join telegram t.me/vip_profit_43. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_044",
+      "modality": "text",
+      "content": "VIP trading alert 44: Guaranteed 64% return weekly. Join telegram t.me/vip_profit_44. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_045",
+      "modality": "text",
+      "content": "VIP trading alert 45: Guaranteed 65% return weekly. Join telegram t.me/vip_profit_45. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_046",
+      "modality": "text",
+      "content": "VIP trading alert 46: Guaranteed 66% return weekly. Join telegram t.me/vip_profit_46. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_047",
+      "modality": "text",
+      "content": "VIP trading alert 47: Guaranteed 67% return weekly. Join telegram t.me/vip_profit_47. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_048",
+      "modality": "text",
+      "content": "VIP trading alert 48: Guaranteed 68% return weekly. Join telegram t.me/vip_profit_48. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_049",
+      "modality": "text",
+      "content": "VIP trading alert 49: Guaranteed 69% return weekly. Join telegram t.me/vip_profit_49. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_050",
+      "modality": "text",
+      "content": "VIP trading alert 50: Guaranteed 20% return weekly. Join telegram t.me/vip_profit_50. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_051",
+      "modality": "text",
+      "content": "VIP trading alert 51: Guaranteed 21% return weekly. Join telegram t.me/vip_profit_51. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_052",
+      "modality": "text",
+      "content": "VIP trading alert 52: Guaranteed 22% return weekly. Join telegram t.me/vip_profit_52. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_053",
+      "modality": "text",
+      "content": "VIP trading alert 53: Guaranteed 23% return weekly. Join telegram t.me/vip_profit_53. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_054",
+      "modality": "text",
+      "content": "VIP trading alert 54: Guaranteed 24% return weekly. Join telegram t.me/vip_profit_54. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_055",
+      "modality": "text",
+      "content": "VIP trading alert 55: Guaranteed 25% return weekly. Join telegram t.me/vip_profit_55. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_056",
+      "modality": "text",
+      "content": "VIP trading alert 56: Guaranteed 26% return weekly. Join telegram t.me/vip_profit_56. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_057",
+      "modality": "text",
+      "content": "VIP trading alert 57: Guaranteed 27% return weekly. Join telegram t.me/vip_profit_57. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_058",
+      "modality": "text",
+      "content": "VIP trading alert 58: Guaranteed 28% return weekly. Join telegram t.me/vip_profit_58. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_059",
+      "modality": "text",
+      "content": "VIP trading alert 59: Guaranteed 29% return weekly. Join telegram t.me/vip_profit_59. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_060",
+      "modality": "text",
+      "content": "VIP trading alert 60: Guaranteed 30% return weekly. Join telegram t.me/vip_profit_60. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_061",
+      "modality": "text",
+      "content": "VIP trading alert 61: Guaranteed 31% return weekly. Join telegram t.me/vip_profit_61. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_062",
+      "modality": "text",
+      "content": "VIP trading alert 62: Guaranteed 32% return weekly. Join telegram t.me/vip_profit_62. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_063",
+      "modality": "text",
+      "content": "VIP trading alert 63: Guaranteed 33% return weekly. Join telegram t.me/vip_profit_63. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_064",
+      "modality": "text",
+      "content": "VIP trading alert 64: Guaranteed 34% return weekly. Join telegram t.me/vip_profit_64. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_065",
+      "modality": "text",
+      "content": "VIP trading alert 65: Guaranteed 35% return weekly. Join telegram t.me/vip_profit_65. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_066",
+      "modality": "text",
+      "content": "VIP trading alert 66: Guaranteed 36% return weekly. Join telegram t.me/vip_profit_66. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_067",
+      "modality": "text",
+      "content": "VIP trading alert 67: Guaranteed 37% return weekly. Join telegram t.me/vip_profit_67. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_068",
+      "modality": "text",
+      "content": "VIP trading alert 68: Guaranteed 38% return weekly. Join telegram t.me/vip_profit_68. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_069",
+      "modality": "text",
+      "content": "VIP trading alert 69: Guaranteed 39% return weekly. Join telegram t.me/vip_profit_69. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_070",
+      "modality": "text",
+      "content": "VIP trading alert 70: Guaranteed 40% return weekly. Join telegram t.me/vip_profit_70. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_071",
+      "modality": "text",
+      "content": "VIP trading alert 71: Guaranteed 41% return weekly. Join telegram t.me/vip_profit_71. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_072",
+      "modality": "text",
+      "content": "VIP trading alert 72: Guaranteed 42% return weekly. Join telegram t.me/vip_profit_72. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_073",
+      "modality": "text",
+      "content": "VIP trading alert 73: Guaranteed 43% return weekly. Join telegram t.me/vip_profit_73. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_074",
+      "modality": "text",
+      "content": "VIP trading alert 74: Guaranteed 44% return weekly. Join telegram t.me/vip_profit_74. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_075",
+      "modality": "text",
+      "content": "VIP trading alert 75: Guaranteed 45% return weekly. Join telegram t.me/vip_profit_75. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_076",
+      "modality": "text",
+      "content": "VIP trading alert 76: Guaranteed 46% return weekly. Join telegram t.me/vip_profit_76. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_077",
+      "modality": "text",
+      "content": "VIP trading alert 77: Guaranteed 47% return weekly. Join telegram t.me/vip_profit_77. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_078",
+      "modality": "text",
+      "content": "VIP trading alert 78: Guaranteed 48% return weekly. Join telegram t.me/vip_profit_78. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_079",
+      "modality": "text",
+      "content": "VIP trading alert 79: Guaranteed 49% return weekly. Join telegram t.me/vip_profit_79. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_080",
+      "modality": "text",
+      "content": "VIP trading alert 80: Guaranteed 50% return weekly. Join telegram t.me/vip_profit_80. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_081",
+      "modality": "text",
+      "content": "VIP trading alert 81: Guaranteed 51% return weekly. Join telegram t.me/vip_profit_81. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_082",
+      "modality": "text",
+      "content": "VIP trading alert 82: Guaranteed 52% return weekly. Join telegram t.me/vip_profit_82. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_083",
+      "modality": "text",
+      "content": "VIP trading alert 83: Guaranteed 53% return weekly. Join telegram t.me/vip_profit_83. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_084",
+      "modality": "text",
+      "content": "VIP trading alert 84: Guaranteed 54% return weekly. Join telegram t.me/vip_profit_84. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_085",
+      "modality": "text",
+      "content": "VIP trading alert 85: Guaranteed 55% return weekly. Join telegram t.me/vip_profit_85. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_086",
+      "modality": "text",
+      "content": "VIP trading alert 86: Guaranteed 56% return weekly. Join telegram t.me/vip_profit_86. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_087",
+      "modality": "text",
+      "content": "VIP trading alert 87: Guaranteed 57% return weekly. Join telegram t.me/vip_profit_87. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_088",
+      "modality": "text",
+      "content": "VIP trading alert 88: Guaranteed 58% return weekly. Join telegram t.me/vip_profit_88. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_089",
+      "modality": "text",
+      "content": "VIP trading alert 89: Guaranteed 59% return weekly. Join telegram t.me/vip_profit_89. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_090",
+      "modality": "text",
+      "content": "VIP trading alert 90: Guaranteed 60% return weekly. Join telegram t.me/vip_profit_90. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_091",
+      "modality": "text",
+      "content": "VIP trading alert 91: Guaranteed 61% return weekly. Join telegram t.me/vip_profit_91. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 1",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_092",
+      "modality": "text",
+      "content": "VIP trading alert 92: Guaranteed 62% return weekly. Join telegram t.me/vip_profit_92. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_093",
+      "modality": "text",
+      "content": "VIP trading alert 93: Guaranteed 63% return weekly. Join telegram t.me/vip_profit_93. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 3",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_094",
+      "modality": "text",
+      "content": "VIP trading alert 94: Guaranteed 64% return weekly. Join telegram t.me/vip_profit_94. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_095",
+      "modality": "text",
+      "content": "VIP trading alert 95: Guaranteed 65% return weekly. Join telegram t.me/vip_profit_95. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 5",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_096",
+      "modality": "text",
+      "content": "VIP trading alert 96: Guaranteed 66% return weekly. Join telegram t.me/vip_profit_96. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_097",
+      "modality": "text",
+      "content": "VIP trading alert 97: Guaranteed 67% return weekly. Join telegram t.me/vip_profit_97. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 7",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_098",
+      "modality": "text",
+      "content": "VIP trading alert 98: Guaranteed 68% return weekly. Join telegram t.me/vip_profit_98. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_scam_099",
+      "modality": "text",
+      "content": "VIP trading alert 99: Guaranteed 69% return weekly. Join telegram t.me/vip_profit_99. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 9",
+      "language": "hinglish"
+    },
+    {
+      "id": "eval_text_scam_100",
+      "modality": "text",
+      "content": "VIP trading alert 100: Guaranteed 20% return weekly. Join telegram t.me/vip_profit_100. No risk SEBI verified.",
+      "is_fraud": true,
+      "provenance": "SEBI Action against Telegram Operator Group 0",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_001",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #1. Target price Rs 1015. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 1",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_002",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #2. Target price Rs 1030. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 2",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_003",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #3. Target price Rs 1045. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 3",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_004",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #4. Target price Rs 1060. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 4",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_005",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #5. Target price Rs 1075. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 5",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_006",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #6. Target price Rs 1090. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 6",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_007",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #7. Target price Rs 1105. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 7",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_008",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #8. Target price Rs 1120. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 8",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_009",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #9. Target price Rs 1135. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 9",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_010",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #10. Target price Rs 1150. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 10",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_011",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #11. Target price Rs 1165. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 11",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_012",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #12. Target price Rs 1180. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 12",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_013",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #13. Target price Rs 1195. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 13",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_014",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #14. Target price Rs 1210. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 14",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_015",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #15. Target price Rs 1225. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 15",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_016",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #16. Target price Rs 1240. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 16",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_017",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #17. Target price Rs 1255. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 17",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_018",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #18. Target price Rs 1270. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 18",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_019",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #19. Target price Rs 1285. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 19",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_020",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #20. Target price Rs 1300. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 20",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_021",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #21. Target price Rs 1315. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 21",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_022",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #22. Target price Rs 1330. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 22",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_023",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #23. Target price Rs 1345. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 23",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_024",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #24. Target price Rs 1360. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 24",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_025",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #25. Target price Rs 1375. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 25",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_026",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #26. Target price Rs 1390. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 26",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_027",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #27. Target price Rs 1405. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 27",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_028",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #28. Target price Rs 1420. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 28",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_029",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #29. Target price Rs 1435. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 29",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_030",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #30. Target price Rs 1450. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 30",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_031",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #31. Target price Rs 1465. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 31",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_032",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #32. Target price Rs 1480. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 32",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_033",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #33. Target price Rs 1495. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 33",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_034",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #34. Target price Rs 1510. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 34",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_035",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #35. Target price Rs 1525. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 35",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_036",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #36. Target price Rs 1540. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 36",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_037",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #37. Target price Rs 1555. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 37",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_038",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #38. Target price Rs 1570. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 38",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_039",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #39. Target price Rs 1585. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 39",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_040",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #40. Target price Rs 1600. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 40",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_041",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #41. Target price Rs 1615. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 41",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_042",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #42. Target price Rs 1630. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 42",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_043",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #43. Target price Rs 1645. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 43",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_044",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #44. Target price Rs 1660. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 44",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_045",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #45. Target price Rs 1675. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 45",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_046",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #46. Target price Rs 1690. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 46",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_047",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #47. Target price Rs 1705. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 47",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_048",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #48. Target price Rs 1720. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 48",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_049",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #49. Target price Rs 1735. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 49",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_050",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #50. Target price Rs 1750. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 50",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_051",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #51. Target price Rs 1765. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 51",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_052",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #52. Target price Rs 1780. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 52",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_053",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #53. Target price Rs 1795. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 53",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_054",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #54. Target price Rs 1810. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 54",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_055",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #55. Target price Rs 1825. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 55",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_056",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #56. Target price Rs 1840. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 56",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_057",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #57. Target price Rs 1855. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 57",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_058",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #58. Target price Rs 1870. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 58",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_059",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #59. Target price Rs 1885. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 59",
+      "language": "en"
+    },
+    {
+      "id": "eval_text_legit_060",
+      "modality": "text",
+      "content": "Kotak Mahindra Capital Company research report #60. Target price Rs 1900. Investment involves market volatility risks.",
+      "is_fraud": false,
+      "provenance": "Kotak Institutional Equities Research Bulletin 60",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_001",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure1.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2001",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_002",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure2.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2002",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_003",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure3.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2003",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_004",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure4.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2004",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_005",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure5.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2005",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_006",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure6.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2006",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_007",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure7.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2007",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_008",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure8.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2008",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_009",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure9.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2009",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_010",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure10.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2010",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_011",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure11.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2011",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_012",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure12.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2012",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_013",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure13.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2013",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_014",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure14.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2014",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_015",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure15.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2015",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_016",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure16.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2016",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_017",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure17.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2017",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_018",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure18.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2018",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_019",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure19.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2019",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_020",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure20.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2020",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_021",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure21.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2021",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_022",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure22.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2022",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_023",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure23.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2023",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_024",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure24.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_025",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure25.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2025",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_026",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure26.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2026",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_027",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure27.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2027",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_028",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure28.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2028",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_029",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure29.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2029",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_030",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure30.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2030",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_031",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure31.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2031",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_032",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure32.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2032",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_033",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure33.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2033",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_034",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure34.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2034",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_035",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure35.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2035",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_036",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure36.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2036",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_037",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure37.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2037",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_038",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure38.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2038",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_039",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure39.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2039",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_040",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure40.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2040",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_041",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure41.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2041",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_042",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure42.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2042",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_043",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure43.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2043",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_044",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure44.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2044",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_045",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure45.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2045",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_046",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure46.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2046",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_047",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure47.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2047",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_048",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure48.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2048",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_049",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure49.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2049",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_phish_050",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure50.top/verify",
+      "is_fraud": true,
+      "provenance": "Cert-In Phishing Incident Report #PH-2050",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_001",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_1",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_002",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_2",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_003",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_3",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_004",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_4",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_005",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_5",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_006",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_6",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_007",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_7",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_008",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_8",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_009",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_9",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_010",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_10",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_011",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_11",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_012",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_12",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_013",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_13",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_014",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_14",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_015",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_15",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_016",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_16",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_017",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_17",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_018",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_18",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_019",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_19",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_020",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_20",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_021",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_21",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_022",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_22",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_023",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_23",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_024",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_24",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_025",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_25",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_026",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_26",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_027",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_27",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_028",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_28",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_029",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_29",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_030",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_30",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_031",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_31",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_032",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_32",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_033",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_33",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_034",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_34",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_035",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_35",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_036",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_36",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_037",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_37",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_038",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_38",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_039",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_39",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_url_legit_040",
+      "modality": "url",
+      "content": "https://www.hdfcbank.com/personal/invest/funds/scheme_40",
+      "is_fraud": false,
+      "provenance": "HDFC Bank Official Domain (ICANN Registered)",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_001",
+      "modality": "upi",
+      "content": "sebi-investor-verification-1@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_002",
+      "modality": "upi",
+      "content": "sebi-investor-verification-2@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_003",
+      "modality": "upi",
+      "content": "sebi-investor-verification-3@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_004",
+      "modality": "upi",
+      "content": "sebi-investor-verification-4@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_005",
+      "modality": "upi",
+      "content": "sebi-investor-verification-5@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_006",
+      "modality": "upi",
+      "content": "sebi-investor-verification-6@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_007",
+      "modality": "upi",
+      "content": "sebi-investor-verification-7@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_008",
+      "modality": "upi",
+      "content": "sebi-investor-verification-8@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_009",
+      "modality": "upi",
+      "content": "sebi-investor-verification-9@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_010",
+      "modality": "upi",
+      "content": "sebi-investor-verification-10@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_011",
+      "modality": "upi",
+      "content": "sebi-investor-verification-11@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_012",
+      "modality": "upi",
+      "content": "sebi-investor-verification-12@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_013",
+      "modality": "upi",
+      "content": "sebi-investor-verification-13@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_014",
+      "modality": "upi",
+      "content": "sebi-investor-verification-14@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_015",
+      "modality": "upi",
+      "content": "sebi-investor-verification-15@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_016",
+      "modality": "upi",
+      "content": "sebi-investor-verification-16@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_017",
+      "modality": "upi",
+      "content": "sebi-investor-verification-17@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_018",
+      "modality": "upi",
+      "content": "sebi-investor-verification-18@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_019",
+      "modality": "upi",
+      "content": "sebi-investor-verification-19@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_020",
+      "modality": "upi",
+      "content": "sebi-investor-verification-20@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_021",
+      "modality": "upi",
+      "content": "sebi-investor-verification-21@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_022",
+      "modality": "upi",
+      "content": "sebi-investor-verification-22@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_023",
+      "modality": "upi",
+      "content": "sebi-investor-verification-23@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_024",
+      "modality": "upi",
+      "content": "sebi-investor-verification-24@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_025",
+      "modality": "upi",
+      "content": "sebi-investor-verification-25@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_026",
+      "modality": "upi",
+      "content": "sebi-investor-verification-26@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_027",
+      "modality": "upi",
+      "content": "sebi-investor-verification-27@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_028",
+      "modality": "upi",
+      "content": "sebi-investor-verification-28@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_029",
+      "modality": "upi",
+      "content": "sebi-investor-verification-29@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_scam_030",
+      "modality": "upi",
+      "content": "sebi-investor-verification-30@paytm",
+      "is_fraud": true,
+      "provenance": "NPCI Reported Impersonation VPA Bulletin 2024",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_001",
+      "modality": "upi",
+      "content": "groww.payments1@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_002",
+      "modality": "upi",
+      "content": "groww.payments2@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_003",
+      "modality": "upi",
+      "content": "groww.payments3@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_004",
+      "modality": "upi",
+      "content": "groww.payments4@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_005",
+      "modality": "upi",
+      "content": "groww.payments5@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_006",
+      "modality": "upi",
+      "content": "groww.payments6@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_007",
+      "modality": "upi",
+      "content": "groww.payments7@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_008",
+      "modality": "upi",
+      "content": "groww.payments8@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_009",
+      "modality": "upi",
+      "content": "groww.payments9@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_010",
+      "modality": "upi",
+      "content": "groww.payments10@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_011",
+      "modality": "upi",
+      "content": "groww.payments11@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_012",
+      "modality": "upi",
+      "content": "groww.payments12@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_013",
+      "modality": "upi",
+      "content": "groww.payments13@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_014",
+      "modality": "upi",
+      "content": "groww.payments14@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_015",
+      "modality": "upi",
+      "content": "groww.payments15@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_016",
+      "modality": "upi",
+      "content": "groww.payments16@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_017",
+      "modality": "upi",
+      "content": "groww.payments17@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_018",
+      "modality": "upi",
+      "content": "groww.payments18@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_019",
+      "modality": "upi",
+      "content": "groww.payments19@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_upi_legit_020",
+      "modality": "upi",
+      "content": "groww.payments20@icici",
+      "is_fraud": false,
+      "provenance": "Billionbrains Garage Services Verified Merchant VPA",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_001",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader1 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-1",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_002",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader2 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-2",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_003",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader3 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-3",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_004",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader4 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-4",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_005",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader5 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-5",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_006",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader6 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-6",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_007",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader7 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-7",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_008",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader8 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-8",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_009",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader9 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-9",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_010",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader10 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-10",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_011",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader11 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-11",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_012",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader12 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-12",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_013",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader13 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-13",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_014",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader14 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-14",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_015",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader15 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-15",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_016",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader16 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-16",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_017",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader17 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-17",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_018",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader18 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-18",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_019",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader19 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-19",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_scam_020",
+      "modality": "apk",
+      "content": "com.goldenshare.vip.trader20 (Permissions: READ_SMS, SYSTEM_ALERT_WINDOW, RECEIVE_BOOT_COMPLETED)",
+      "is_fraud": true,
+      "provenance": "Cyber Security Bureau Malware Advisory MB-20",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_001",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro1 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_002",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro2 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_003",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro3 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_004",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro4 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_005",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro5 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_006",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro6 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_007",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro7 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_008",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro8 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_009",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro9 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_010",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro10 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_011",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro11 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_012",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro12 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_013",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro13 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_014",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro14 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    },
+    {
+      "id": "eval_apk_legit_015",
+      "modality": "apk",
+      "content": "com.angelbroking.speedpro15 (Permissions: INTERNET, ACCESS_NETWORK_STATE)",
+      "is_fraud": false,
+      "provenance": "Google Play Store Verified FinTech App Package",
+      "language": "en"
+    }
+  ]
+}

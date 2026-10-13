@@ -1,5 +1,5 @@
 # VERA Phase 8 Production Progress
 
-- **Done**: Block B Scale & Throttling: ChainedLLMProvider (Gemini 15 RPM smoothed -> Groq -> Ollama -> Rule Engine), circuit breakers, evidence hash cache, Hugging Face Spaces ML Worker container with signature auth, Groq Whisper consent check, psutil benchmarks in docs/HOSTING.md, 268/268 tests passing.
-- **Next**: Block C Detection Quality: Labeled eval set (≥300 items) covering Hindi/Hinglish/SEBI orders/VIP groups, evaluation harness with CI thresholds, registry lookup outage verification, MesoNet low-confidence disclosure.
+- **Done**: Block C Detection Quality: 350-sample multi-modal labeled eval dataset (`data/eval/labeled_eval_set_300.json`) with provenance, evaluation harness enforcing CI thresholds (Recall >= 0.85, Precision >= 0.80, F1 >= 0.82), registry lookup outage returns UNAVAILABLE (never VERIFIED), MesoNet low-confidence UI disclosure, 272/272 tests passing.
+- **Next**: Block D Retail Frontend & Public Access: Default public flow, English + Hindi bilingual i18n, anonymous Turnstile abuse model, docs/THREAT_MODEL.md, NEXT_PUBLIC_ENABLE_SIMULATOR flag, Rename Court-Ready to Evidence Report.
 - **Blockers**: None.

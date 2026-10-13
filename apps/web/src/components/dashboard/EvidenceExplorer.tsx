@@ -206,6 +206,13 @@ export function EvidenceExplorer({
                   <span className="text-amber-400 font-medium">Findings: </span>
                   {item.findings}
                 </div>
+
+                {item.type === "video" && (
+                  <div className="p-2 rounded bg-amber-950/30 border border-amber-900/60 text-[10px] text-amber-300/90 leading-tight">
+                    <span className="font-semibold block mb-0.5">⚠️ LOW-CONFIDENCE SCREENING SIGNAL</span>
+                    MesoNet provides an exploratory facial artifact screening heuristic, not conclusive forensic proof.
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2 pt-2 border-t border-slate-800/80 text-[10px]">
