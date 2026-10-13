@@ -11,7 +11,7 @@ from .base import LLMGenerationResult, LLMProvider
 
 
 class GeminiProvider(LLMProvider):
-    def __init__(self, api_key: str | None = None, model: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str | None = None, model: str = "gemini-3.1-flash-lite"):
         self.api_key = api_key or settings.GEMINI_API_KEY
         self.model = model
 
