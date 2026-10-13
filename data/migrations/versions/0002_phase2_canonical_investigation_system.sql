@@ -38,6 +38,13 @@ CREATE TABLE IF NOT EXISTS investigations (
         risk_score IS NULL OR (risk_score >= 0.0 AND risk_score <= 100.0)
     )
 );
+
+-- Ensure all Phase 2 columns exist on investigations (in case table was created by 0001 baseline)
+ALTER TABLE investigations ADD COLUMN IF NOT EXISTS summary_note TEXT;
+ALTER TABLE investigations ADD COLUMN IF NOT EXISTS submitted_by VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE investigations ADD COLUMN IF NOT EXISTS risk_score DOUBLE PRECISION;
+ALTER TABLE investigations ADD COLUMN IF NOT EXISTS risk_tier VARCHAR(32);
+ALTER TABLE investigations ADD COLUMN IF NOT EXISTS risk_summary TEXT;
 CREATE INDEX IF NOT EXISTS ix_investigations_status ON investigations(status);
 CREATE INDEX IF NOT EXISTS ix_investigations_submitted_by ON investigations(submitted_by);
 
