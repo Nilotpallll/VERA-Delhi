@@ -93,12 +93,15 @@ def init_observability() -> None:
 
 def _before_send_sentry(event: dict, hint: dict) -> dict | None:
     """Scrub sensitive fields before sending events to Sentry."""
-    sensitive_keys = {"password", "token", "api_key", "secret", "authorization"}
+    sensitive_keys = {
+        "password", "token", "api_key", "secret", "authorization",
+        "evidence_text", "user_message", "raw_evidence", "pii",
+    }
 
     def _scrub(obj: object) -> object:
         if isinstance(obj, dict):
             return {
-                k: "***REDACTED***" if k.lower() in sensitive_keys else _scrub(v)
+                k: "[REDACTED]" if k.lower() in sensitive_keys else _scrub(v)
                 for k, v in obj.items()
             }
         if isinstance(obj, list):
@@ -107,3 +110,7 @@ def _before_send_sentry(event: dict, hint: dict) -> dict | None:
 
     event = _scrub(event)
     return event
+
+
+# Public alias for testability — same function, importable by name
+_scrub_pii_from_sentry_event = _before_send_sentry

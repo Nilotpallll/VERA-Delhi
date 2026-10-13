@@ -19,6 +19,7 @@ from .core.database import dispose_engine
 from .core.middleware import RequestContextMiddleware
 from .core.observability import init_observability, logger
 from .core.redis_client import redis_client
+from .core.security_headers import SecurityHeadersMiddleware
 
 
 @asynccontextmanager
@@ -59,13 +60,16 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 # Request ID and Access Logging Middleware
 app.add_middleware(RequestContextMiddleware)
 
+# Security Headers Middleware (CSP, HSTS, X-Frame-Options, etc.)
+app.add_middleware(SecurityHeadersMiddleware)
+
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Request-ID", "X-Correlation-ID"],
 )
 
 # Mount Versioned API (Architecture Rule 2)
