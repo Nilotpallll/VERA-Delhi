@@ -11,7 +11,7 @@ from .base import LLMGenerationResult, LLMProvider
 
 
 class GroqProvider(LLMProvider):
-    def __init__(self, api_key: str | None = None, model: str = "llama-3.1-8b-instant"):
+    def __init__(self, api_key: str | None = None, model: str = "openai/gpt-oss-20b"):
         self.api_key = api_key or settings.GROQ_API_KEY
         self.model = model
 
