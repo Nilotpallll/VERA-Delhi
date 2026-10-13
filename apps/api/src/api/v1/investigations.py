@@ -262,6 +262,7 @@ async def analyze_investigation_endpoint(
 @router.post(
     "/{investigation_id}/run-agent",
     status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(rate_limit(requests_per_minute=20))],
     summary="Run VERA Investigator Agent",
     description=(
         "Runs the Phase 5 LangGraph VERA Investigator agent against an investigation. "
