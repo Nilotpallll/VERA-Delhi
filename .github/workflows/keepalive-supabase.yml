@@ -1,0 +1,28 @@
+name: Supabase Keep-Alive Cron
+
+on:
+  schedule:
+    # Runs every 3 days at 04:00 UTC to prevent Supabase 7-day idle pause
+    - cron: '0 4 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    name: Ping Database to Prevent Pause
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database via API Health Probe
+        env:
+          PROD_API_URL: ${{ secrets.PROD_API_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -n "$PROD_API_URL" ]; then
+            echo "Pinging production /ready endpoint..."
+            curl -f -s "$PROD_API_URL/ready" || echo "API ping attempted"
+          elif [ -n "$DATABASE_URL" ]; then
+            echo "Pinging database directly via psql..."
+            sudo apt-get update && sudo apt-get install -y postgresql-client
+            psql "$DATABASE_URL" -c "SELECT 1 as keepalive;"
+          else
+            echo "Keep-alive workflow configured (requires PROD_API_URL or DATABASE_URL secret)."
+          fi

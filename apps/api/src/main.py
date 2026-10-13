@@ -72,11 +72,17 @@ app.add_middleware(
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
 
-# Root health alias for load balancers and orchestrators
+# Root health and ready aliases for load balancers and orchestrators
 @app.get("/health", response_model=HealthCheckResponse, tags=["Health"])
 async def root_health():
     from .api.v1.health import check_health
     return await check_health()
+
+
+@app.get("/ready", tags=["Health"])
+async def root_ready():
+    from .api.v1.health import check_ready
+    return await check_ready()
 
 
 @app.get("/", tags=["Root"])

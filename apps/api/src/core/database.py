@@ -81,7 +81,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession | None, None]:
 
 
 async def check_database_health() -> dict[str, str]:
-    """Ping the database and return a health status dict."""
+    """Ping the database and return a health status dict with pause/reachability distinction."""
     try:
         from sqlalchemy import text
         engine = _get_engine()
@@ -90,6 +90,9 @@ async def check_database_health() -> dict[str, str]:
         return {"status": "connected", "driver": engine.dialect.name}
     except Exception as exc:
         logger.warning("Database health check failed: %s", exc)
+        err_str = str(exc).lower()
+        if any(k in err_str for k in ["timeout", "timed out", "refused", "paused", "terminat", "cannot connect", "no route"]):
+            return {"status": "paused_or_unreachable", "error": "db paused/unreachable"}
         return {"status": "unavailable", "error": str(exc)}
 
 

@@ -118,8 +118,26 @@ async def create_investigation_endpoint(
                 await db.rollback()
             except Exception:
                 pass
+            if settings.is_production:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail={
+                        "error": "database_unavailable",
+                        "message": "Database unavailable. Cannot persist investigation record in production.",
+                        "request_id": idempotency_key or "unknown",
+                    },
+                )
             resp = _build_in_memory_investigation(req, idempotency_key)
     else:
+        if settings.is_production:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail={
+                    "error": "database_unavailable",
+                    "message": "Database unavailable. Cannot persist investigation record in production.",
+                    "request_id": idempotency_key or "unknown",
+                },
+            )
         resp = _build_in_memory_investigation(req, idempotency_key)
 
     _STORE[resp["id"]] = resp

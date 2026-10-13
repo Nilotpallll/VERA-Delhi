@@ -1,0 +1,38 @@
+name: Supabase Scheduled Backup (pg_dump)
+
+on:
+  schedule:
+    # Runs daily at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Run pg_dump Export
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL Client tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Export Schema and Data Backup
+        env:
+          SUPABASE_DB_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "DATABASE_URL secret is not configured. Backup skipped."
+            exit 0
+          fi
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="vera_backup_${TIMESTAMP}.sql.gz"
+          echo "Running pg_dump export..."
+          pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges | gzip > "$BACKUP_FILE"
+          echo "Backup generated: $BACKUP_FILE ($(ls -lh $BACKUP_FILE | awk '{print $5}'))"
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-database-backup
+          path: vera_backup_*.sql.gz
+          retention-days: 14

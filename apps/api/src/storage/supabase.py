@@ -60,7 +60,19 @@ class SupabaseStorageProvider(StorageProvider):
             async with httpx.AsyncClient(timeout=30.0) as client:
                 res = await client.post(upload_url, content=content, headers=headers)
                 if res.status_code not in (200, 201):
-                    logger.warning("Supabase storage upload returned %d: %s", res.status_code, res.text)
+                    logger.error("Supabase storage upload failed with %d: %s", res.status_code, res.text)
+                    if settings.is_production:
+                        from fastapi import HTTPException
+                        raise HTTPException(
+                            status_code=503,
+                            detail={"error": "storage_unavailable", "message": "Failed to upload evidence to cloud storage."},
+                        )
+        elif settings.is_production:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=503,
+                detail={"error": "storage_unconfigured", "message": "Production cloud storage is unconfigured."},
+            )
 
         return StorageReference(
             bucket=self._bucket,

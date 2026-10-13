@@ -38,3 +38,48 @@ async def check_health() -> HealthCheckResponse:
             },
         },
     )
+
+
+@router.get("/ready")
+async def check_ready() -> dict:
+    """Readiness probe checking DB, Redis, and AI availability. Returns HTTP 503 if unready."""
+    import uuid
+    from fastapi.responses import JSONResponse
+    from ...queue.qstash import qstash_client
+
+    db_health = await check_database_health()
+    redis_healthy = await redis_client.ping()
+
+    is_db_ready = db_health.get("status") == "connected"
+    is_redis_ready = redis_healthy
+    is_qstash_ready = qstash_client.is_configured or not settings.is_production
+    has_llm = bool(settings.GEMINI_API_KEY or settings.GROQ_API_KEY or not settings.is_production)
+
+    ready = is_db_ready and is_redis_ready and is_qstash_ready and has_llm
+
+    db_stat = db_health.get("status", "unknown")
+    db_display = "db paused/unreachable" if db_stat == "paused_or_unreachable" else db_stat
+
+    checks = {
+        "database": db_display,
+        "redis": "connected" if redis_healthy else "unavailable",
+        "qstash": "configured" if qstash_client.is_configured else ("mock" if not settings.is_production else "unavailable"),
+        "ai": "available" if has_llm else "unavailable",
+    }
+
+    if not ready:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "not_ready",
+                "message": "Core infrastructure components are not ready.",
+                "request_id": str(uuid.uuid4()),
+                "checks": checks,
+            },
+        )
+
+    return {
+        "status": "ready",
+        "timestamp": datetime.now(UTC).isoformat(),
+        "checks": checks,
+    }

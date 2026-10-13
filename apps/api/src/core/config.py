@@ -113,6 +113,47 @@ class Settings(BaseSettings):
                 return [origin.strip() for origin in v.split(",")]
         return v
 
+    @classmethod
+    def validate_production_config(cls, values: dict) -> None:
+        """Reject empty, placeholder, or default secrets in production."""
+        if values.get("ENVIRONMENT") != "production":
+            return
+
+        bad_keys = []
+        required_vars = [
+            ("SUPABASE_URL", ["placeholder", "example", "None"]),
+            ("SUPABASE_KEY", ["placeholder", "your-supabase", "None"]),
+            ("SUPABASE_SERVICE_ROLE_KEY", ["placeholder", "your-supabase", "None"]),
+            ("UPSTASH_REDIS_REST_URL", ["placeholder", "example", "None"]),
+            ("UPSTASH_REDIS_REST_TOKEN", ["placeholder", "your-upstash", "None"]),
+            ("UPSTASH_QSTASH_TOKEN", ["placeholder", "your-upstash", "None"]),
+            ("API_KEY_SECRET", ["dev-insecure", "change-me", "default", "None"]),
+            ("JWT_SECRET_KEY", ["dev-jwt-secret", "change-me", "None"]),
+        ]
+
+        # In production, at least one real LLM key is mandatory
+        has_llm = bool(values.get("GEMINI_API_KEY") or values.get("GROQ_API_KEY"))
+        if not has_llm:
+            bad_keys.append("GEMINI_API_KEY (or GROQ_API_KEY)")
+
+        for var_name, forbidden_substrings in required_vars:
+            val = str(values.get(var_name) or "").strip()
+            if not val or val == "None":
+                bad_keys.append(var_name)
+            elif any(sub.lower() in val.lower() for sub in forbidden_substrings):
+                bad_keys.append(var_name)
+
+        if bad_keys:
+            raise ValueError(
+                f"Invalid production configuration. The following environment variables are missing, "
+                f"empty, or set to placeholder/insecure defaults: {', '.join(bad_keys)}. "
+                f"Set real production credentials in environment variables."
+            )
+
+    def __init__(self, **values):
+        super().__init__(**values)
+        self.validate_production_config(self.__dict__)
+
     @property
     def is_production(self) -> bool:
         return self.ENVIRONMENT == "production"
