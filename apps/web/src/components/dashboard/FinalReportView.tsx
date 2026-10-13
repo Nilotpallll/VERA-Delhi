@@ -60,7 +60,7 @@ export function FinalReportView({
         <div>
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <FileText className="w-5 h-5 text-indigo-400" />
-            Court-Ready Forensic Fraud Investigation Report
+            Evidence Report (Forensic Fraud Investigation)
           </h2>
           <span className="text-slate-400 font-mono text-[11px]">
             Case ID: {report.investigation_id} • Rule 13 Reproducible

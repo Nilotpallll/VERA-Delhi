@@ -1,0 +1,56 @@
+/**
+ * Bilingual i18n localization dictionary for VERA Retail Public Flow (English & Hindi).
+ */
+
+export type Locale = "en" | "hi";
+
+export const translations = {
+  en: {
+    title: "VERA Fraud Screening",
+    subtitle: "Verify investment solicitations, suspicious trading links, and unverified brokers against SEBI regulations.",
+    badge: "Public Consumer Shield",
+    tabPublic: "Quick Scam Check",
+    tabAnalyst: "Analyst Portal",
+    inputPlaceholder: "Paste message, URL, UPI handle, or company name here...",
+    inputHelp: "Examples: 'Earn 50k daily in VIP group', 'http://zerodha-trading.vip', 'sebi-verify@paytm'",
+    checkButton: "Screen for Fraud",
+    checking: "Analyzing Evidence against SEBI Databases...",
+    verdictTitle: "Forensic Screening Verdict",
+    riskLevel: "Risk Level",
+    topReasons: "Top Risk Indicators Detected",
+    whatChecked: "Verified Elements",
+    whatCouldNotCheck: "What We Couldn't Check",
+    whatNextTitle: "What You Should Do Next",
+    step1: "1. Cross-verify credentials on official SEBI intermediary search portal (sebi.gov.in).",
+    step2: "2. If defrauded, lodge an immediate complaint on SCORES (scores.sebi.gov.in).",
+    step3: "3. Report cyber fraud on National Cybercrime Portal (cybercrime.gov.in) or call 1930.",
+    step4: "4. Contact your bank immediately to request a payment reversal / dispute charge.",
+    disclaimer: "DISCLAIMER: VERA is an automated forensic risk-screening aid developed for educational and consumer fraud prevention purposes. It does not provide SEBI-registered investment advice or legal guarantees. Never invest capital based solely on automated signals.",
+    langSwitch: "हिंदी",
+    evidenceReport: "Evidence Report",
+  },
+  hi: {
+    title: "वेरा (VERA) निवेश धोखाधड़ी जाँच",
+    subtitle: "सेबी (SEBI) नियमों के तहत निवेश संदेशों, संदिग्ध ट्रेडिंग लिंक और फर्जी ब्रोकरों की तुरंत जाँच करें।",
+    badge: "उपभोक्ता सुरक्षा कवच",
+    tabPublic: "त्वरित जाँच",
+    tabAnalyst: "एनालिस्ट पोर्टल",
+    inputPlaceholder: "यहाँ संदेश, लिंक (URL), यूपीआई आईडी (UPI ID), या कंपनी का नाम दर्ज करें...",
+    inputHelp: "उदाहरण: 'VIP ग्रुप में रोज़ 50,000 कमाएं', 'sebi-officer@paytm', 'http://zerodha-login.vip'",
+    checkButton: "धोखाधड़ी की जाँच करें",
+    checking: "सेबी डेटाबेस और रिस्क इंजनों से मिलान किया जा रहा है...",
+    verdictTitle: "जाँच परिणाम (Verdict)",
+    riskLevel: "जोखिम स्तर (Risk Level)",
+    topReasons: "पाए गए मुख्य संदिग्ध संकेत",
+    whatChecked: "जाँची गई जानकारी",
+    whatCouldNotCheck: "जो जाँचा नहीं जा सका",
+    whatNextTitle: "अब आपको क्या करना चाहिए",
+    step1: "1. सेबी के आधिकारिक पोर्टल (sebi.gov.in) पर ब्रोकर की पंजीकरण संख्या का मिलान करें।",
+    step2: "2. धोखाधड़ी की स्थिति में तुरंत सेबी SCORES (scores.sebi.gov.in) पर शिकायत दर्ज करें।",
+    step3: "3. नेशनल साइबर क्राइम पोर्टल (cybercrime.gov.in) पर शिकायत करें या 1930 डायल करें।",
+    step4: "4. तुरंत अपने बैंक को सूचित कर अनधिकृत यूपीआई/खाता ट्रांसफर रोकने का अनुरोध करें।",
+    disclaimer: "अस्वीकरण: वेरा एक स्वचालित फोरेंसिक जाँच प्रणाली है। यह सेबी-पंजीकृत वित्तीय सलाह या कानूनी गारंटी नहीं है। केवल इन संकेतों के आधार पर निवेश न करें।",
+    langSwitch: "English",
+    evidenceReport: "साक्ष्य रिपोर्ट (Evidence Report)",
+  },
+};

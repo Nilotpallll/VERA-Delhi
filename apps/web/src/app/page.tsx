@@ -58,8 +58,11 @@ import {
   CompletedState,
   InsufficientEvidenceState,
 } from "@/components/states/States";
+import { PublicConsumerFlow } from "@/components/dashboard/PublicConsumerFlow";
+import { translations, Locale } from "@/lib/i18n";
 
 type ActiveTab =
+  | "PUBLIC_CHECK"
   | "OVERVIEW"
   | "NEW_CASE"
   | "EVIDENCE"
@@ -71,7 +74,8 @@ type ActiveTab =
   | "STATES_SIMULATOR";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("OVERVIEW");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("PUBLIC_CHECK");
+  const [locale, setLocale] = useState<Locale>("en");
   const [health, setHealth] = useState<HealthCheckResponse | null>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
 
@@ -226,6 +230,13 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2.5 text-xs font-mono">
+          <button
+            onClick={() => setLocale(locale === "en" ? "hi" : "en")}
+            className="bg-slate-900 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/60 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-all"
+            title="Toggle Language"
+          >
+            <span>{locale === "en" ? "हिंदी" : "English"}</span>
+          </button>
           <div className="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2">
             <span
               className={`h-2 w-2 rounded-full ${
@@ -249,6 +260,7 @@ export default function Home() {
       {/* ── Navigation Tabs ─────────────────────────────────────────────────── */}
       <nav className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-xl text-xs overflow-x-auto">
         {[
+          { id: "PUBLIC_CHECK", label: locale === "hi" ? "त्वरित जाँच (Public Check)" : "Quick Scam Check", icon: ShieldAlert },
           { id: "OVERVIEW", label: "Executive Dashboard", icon: BarChart3 },
           { id: "NEW_CASE", label: "New Investigation", icon: Sparkles },
           { id: "EVIDENCE", label: "Evidence Explorer", icon: FileText },
@@ -257,7 +269,9 @@ export default function Home() {
           { id: "VERIFICATION", label: "Verification Panel", icon: FileCheck2 },
           { id: "TIMELINE", label: "Investigation Timeline", icon: Clock },
           { id: "FINAL_REPORT", label: "Final Report", icon: FileText },
-          { id: "STATES_SIMULATOR", label: "UX States Simulator", icon: Activity },
+          ...(process.env.NEXT_PUBLIC_ENABLE_SIMULATOR === "true"
+            ? [{ id: "STATES_SIMULATOR", label: "UX States Simulator", icon: Activity }]
+            : []),
         ].map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -275,6 +289,11 @@ export default function Home() {
       </nav>
 
       {/* ── Tab Content Rendering ───────────────────────────────────────────── */}
+
+      {/* TAB 0: PUBLIC CONSUMER FLOW */}
+      {activeTab === "PUBLIC_CHECK" && (
+        <PublicConsumerFlow locale={locale} />
+      )}
 
       {/* TAB 1: EXECUTIVE DASHBOARD */}
       {activeTab === "OVERVIEW" && (
