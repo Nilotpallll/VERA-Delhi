@@ -17,6 +17,9 @@ class LLMGenerationResult(BaseModel):
     output_text: str
     raw_response: dict[str, Any] = {}
     tokens_used: int = 0
+    tier: str = "primary"
+    degraded: bool = False
+    confidence_discount: float = 0.0
 
 
 class LLMProvider(ABC):

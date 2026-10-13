@@ -32,6 +32,16 @@ class QStashClient:
     ) -> JobDispatchResult:
         """Publish an asynchronous job invocation via QStash REST API."""
         if not self.is_configured:
+            if settings.is_production:
+                logger.error("QStash unconfigured in production; refusing mock dispatch for %s", payload.investigation_id)
+                from fastapi import HTTPException
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "error": "queue_unavailable",
+                        "message": "Asynchronous job dispatcher unconfigured in production.",
+                    },
+                )
             logger.info("QStash unconfigured or in stub mode; queuing investigation %s locally", payload.investigation_id)
             return JobDispatchResult(
                 message_id=f"mock_msg_{payload.investigation_id}",

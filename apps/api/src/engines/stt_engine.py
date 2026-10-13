@@ -17,6 +17,7 @@ from ..contracts.analyzers import AnalyzerExecutionRecord, AnalyzerMetadata
 from ..contracts.enums import EvidenceCategory, EvidenceSeverity, SourceType
 from ..contracts.evidence import CanonicalEvidenceItem
 from ..contracts.phase2 import EvidenceItem
+from ..core.config import settings
 from ..engines.base import BaseAnalyzer
 
 
@@ -59,7 +60,32 @@ class FasterWhisperEngine(BaseAnalyzer):
         start_t = time.perf_counter()
         raw_bytes = getattr(evidence, "content_bytes", None)
         text_payload = getattr(evidence, "content_payload", None)
+        user_consent = getattr(evidence, "third_party_consent", True)
 
+        # 1. Groq Whisper Cloud Inference (Zero RAM, high accuracy) if configured & consented
+        if settings.GROQ_API_KEY and user_consent and raw_bytes:
+            try:
+                import httpx
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    files = {"file": ("audio.mp3", raw_bytes, "audio/mpeg")}
+                    data = {"model": "whisper-large-v3", "response_format": "json"}
+                    headers = {"Authorization": f"Bearer {settings.GROQ_API_KEY}"}
+                    resp = await client.post("https://api.groq.com/openai/v1/audio/transcriptions", files=files, data=data, headers=headers)
+                    if resp.status_code == 200:
+                        res_json = resp.json()
+                        duration_ms = (time.perf_counter() - start_t) * 1000.0
+                        return {
+                            "transcript": res_json.get("text", ""),
+                            "language": "en",
+                            "segments": [],
+                            "duration_ms": duration_ms,
+                            "engine": "groq-whisper-large-v3",
+                            "consent_recorded": True,
+                        }, 0.04
+            except Exception:
+                pass
+
+        # 2. Worker-side / local faster-whisper fallback
         try:
             if self._model is None:
                 from faster_whisper import WhisperModel
