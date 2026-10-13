@@ -20,8 +20,8 @@ export function AppShell({ children }: AppShellProps) {
               <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
                 VERA
               </span>
-              <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                Phase 1 Core
+              <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                Phase 6 Forensic
               </span>
             </div>
             <p className="text-xs text-slate-400">Investment Fraud Investigation Platform</p>

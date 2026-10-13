@@ -1,12 +1,14 @@
-"""Phase 2 Investigation API endpoints.
+"""Phase 2 & Phase 6 Investigation API endpoints.
 
 Implements the full investigation lifecycle:
   POST /v1/investigations
   POST /v1/investigations/{id}/inputs
   POST /v1/investigations/{id}/analyze
+  POST /v1/investigations/{id}/run-agent   [Phase 6 — VERAInvestigator LangGraph agent]
   GET  /v1/investigations/{id}
   GET  /v1/investigations/{id}/evidence
   GET  /v1/investigations/{id}/report
+  GET  /v1/investigations/{id}/agent-report [Phase 6 — Forensic agent report]
 
 Architecture Rules:
   Rule 1  — Frontend communicates only through API contracts.
@@ -57,12 +59,15 @@ from ...services.investigation_service import (
     run_analysis_pipeline,
 )
 from ..deps import get_db_session, rate_limit
+from ...investigator.graph import VERAInvestigator
 
 router = APIRouter(prefix="/investigations", tags=["Investigations v2"])
 
 # In-memory fallback for dev/test without DB
 _STORE: dict[str, dict[str, Any]] = {}
 _IDEMPOTENCY_CACHE: dict[str, dict[str, Any]] = {}
+# Phase 6: In-memory store for agent investigation reports
+_AGENT_REPORTS: dict[str, dict[str, Any]] = {}
 
 
 # ── POST /investigations ──────────────────────────────────────────────────────
@@ -250,6 +255,129 @@ async def analyze_investigation_endpoint(
         "risk_summary": "Stub analysis completed (no DB).",
         "message": "Analysis pipeline completed (in-memory).",
     }
+
+
+# ── POST /investigations/{id}/run-agent ──────────────────────────────────────
+# Phase 6: Wire VERAInvestigator LangGraph agent into the API
+@router.post(
+    "/{investigation_id}/run-agent",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Run VERA Investigator Agent",
+    description=(
+        "Runs the Phase 5 LangGraph VERA Investigator agent against an investigation. "
+        "Accepts a list of raw inputs (text, URL, etc.), runs the full agentic loop, "
+        "and stores the forensic report. Architecture Rule 13: report is deterministically "
+        "reproducible from stored evidence and ruleset version."
+    ),
+)
+async def run_agent_endpoint(
+    investigation_id: str,
+    req: dict,
+    db: AsyncSession | None = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Invoke VERAInvestigator and store the resulting forensic report."""
+    # Verify investigation exists (in-memory fallback if DB unavailable)
+    if db is not None:
+        try:
+            inv = await get_investigation(db, investigation_id)
+            if inv is None:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Investigation '{investigation_id}' not found.",
+                )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.warning("DB check skipped in run-agent: %s", exc)
+    elif investigation_id not in _STORE:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Investigation '{investigation_id}' not found.",
+        )
+
+    inputs: list[dict[str, Any]] = req.get("inputs", [])
+    if not inputs:
+        raise HTTPException(
+            status_code=400,
+            detail="'inputs' list is required and must contain at least one item.",
+        )
+
+    max_iterations: int = int(req.get("max_iterations", 5))
+
+    try:
+        investigator = VERAInvestigator()
+        final_state = await investigator.run_investigation(
+            investigation_id=investigation_id,
+            inputs=inputs,
+            max_iterations=max_iterations,
+        )
+    except Exception as exc:
+        logger.error("VERAInvestigator run failed: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Agent investigation failed: {exc}",
+        )
+
+    report = final_state.get("final_report", {})
+
+    # Store for retrieval via GET /agent-report
+    _AGENT_REPORTS[investigation_id] = {
+        "investigation_id": investigation_id,
+        "report": report,
+        "risk_score": final_state.get("risk_score", 0.0),
+        "risk_level": final_state.get("risk_level", "LOW"),
+        "investigation_status": final_state.get("investigation_status", "COMPLETED"),
+        "evidence_count": len(final_state.get("evidence_items", [])),
+        "entity_count": len(final_state.get("extracted_entities", [])),
+        "generated_at": datetime.now(UTC).isoformat(),
+        "ruleset_version": report.get("ruleset_version", "rules.v2.0"),
+    }
+
+    # Also update main investigation record in-memory
+    if investigation_id in _STORE:
+        _STORE[investigation_id]["status"] = "COMPLETED"
+        _STORE[investigation_id]["risk_score"] = final_state.get("risk_score", 0.0)
+        _STORE[investigation_id]["risk_tier"] = final_state.get("risk_level", "LOW")
+        _STORE[investigation_id]["risk_summary"] = report.get("executive_summary", "")
+
+    return {
+        "investigation_id": investigation_id,
+        "status": "COMPLETED",
+        "risk_score": final_state.get("risk_score", 0.0),
+        "risk_level": final_state.get("risk_level", "LOW"),
+        "investigation_status": final_state.get("investigation_status", "COMPLETED"),
+        "evidence_count": len(final_state.get("evidence_items", [])),
+        "entity_count": len(final_state.get("extracted_entities", [])),
+        "message": "VERA agent investigation complete. Retrieve full forensic report via GET /agent-report.",
+        "ruleset_version": report.get("ruleset_version", "rules.v2.0"),
+        "generated_at": _AGENT_REPORTS[investigation_id]["generated_at"],
+    }
+
+
+# ── GET /investigations/{id}/agent-report ────────────────────────────────────
+@router.get(
+    "/{investigation_id}/agent-report",
+    summary="Get Agent Forensic Report",
+    description=(
+        "Returns the full forensic report generated by the VERA LangGraph Investigator agent. "
+        "The report includes executive summary, risk score, entities, claims, evidence, "
+        "verification results, SEBI guidance matches, and recommended actions. "
+        "Architecture Rule 13: reproducible from stored evidence + ruleset version."
+    ),
+)
+async def get_agent_report_endpoint(
+    investigation_id: str,
+) -> dict[str, Any]:
+    """Return the stored VERA agent forensic report."""
+    if investigation_id not in _AGENT_REPORTS:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"No agent report for investigation '{investigation_id}'. "
+                "Run POST /run-agent first."
+            ),
+        )
+    return _AGENT_REPORTS[investigation_id]
 
 
 # ── GET /investigations/{id} ──────────────────────────────────────────────────

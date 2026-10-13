@@ -9,6 +9,9 @@ import {
   HealthCheckResponse,
   InvestigationResponse,
   InvestigationCreateRequest,
+  AgentRunRequest,
+  AgentRunResponse,
+  AgentForensicReport,
 } from "@vera/contracts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_VERA_API_URL || "http://localhost:8000";
@@ -146,6 +149,35 @@ class VeraApiClient {
       method: "POST",
       body: formData,
     });
+  }
+
+  // ── Phase 6: Agent methods ────────────────────────────────────────────────
+
+  /**
+   * Run the VERA LangGraph investigator agent on an investigation.
+   * POST /api/v1/investigations/{id}/run-agent
+   */
+  async runAgent(
+    investigationId: string,
+    data: AgentRunRequest
+  ): Promise<AgentRunResponse> {
+    return this.request<AgentRunResponse>(
+      `/investigations/${investigationId}/run-agent`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  /**
+   * Retrieve the stored VERA agent forensic report.
+   * GET /api/v1/investigations/{id}/agent-report
+   */
+  async getAgentReport(investigationId: string): Promise<AgentForensicReport> {
+    return this.request<AgentForensicReport>(
+      `/investigations/${investigationId}/agent-report`
+    );
   }
 }
 

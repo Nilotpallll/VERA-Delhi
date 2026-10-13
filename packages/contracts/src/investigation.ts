@@ -83,6 +83,76 @@ export interface InvestigationResponse {
   updated_at?: string;
 }
 
+// ── Phase 6: VERA Agent Contracts ────────────────────────────────────────────
+
+/** Request body for POST /investigations/{id}/run-agent */
+export interface AgentRunRequest {
+  /** Raw inputs for the investigator agent */
+  inputs: Array<{
+    type: string;         // "text" | "url" | "image" | "audio" | "video" | "apk"
+    value: string;        // The content or URL
+    description?: string;
+    source_label?: string;
+    metadata?: Record<string, unknown>;
+  }>;
+  /** Max agentic loop iterations (default 5) */
+  max_iterations?: number;
+}
+
+/** Response from POST /investigations/{id}/run-agent */
+export interface AgentRunResponse {
+  investigation_id: string;
+  status: string;
+  risk_score: number;
+  risk_level: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+  investigation_status: string;
+  evidence_count: number;
+  entity_count: number;
+  message: string;
+  ruleset_version: string;
+  generated_at: string;
+}
+
+/** A suspicious indicator detected by the risk engine */
+export interface SuspiciousIndicator {
+  signal_type: string;
+  weight: number;
+  description: string;
+  source: string;
+}
+
+/** Full forensic report from GET /investigations/{id}/agent-report */
+export interface AgentForensicReport {
+  investigation_id: string;
+  report: {
+    investigation_id: string;
+    generated_at: string;
+    executive_summary: string;
+    risk_score: number;
+    risk_level: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+    investigation_status: string;
+    model_confidence: number;
+    detected_entities: Array<Record<string, unknown>>;
+    claims: Array<Record<string, unknown>>;
+    evidence: Array<Record<string, unknown>>;
+    verification_results: Array<Record<string, unknown>>;
+    sebi_guidance_matches: Array<Record<string, unknown>>;
+    suspicious_indicators: SuspiciousIndicator[];
+    scam_lifecycle_stage: string;
+    missing_evidence: string[];
+    recommended_actions: string[];
+    source_citations: Array<Record<string, unknown>>;
+    disclaimer: string;
+    ruleset_version: string;
+  };
+  risk_score: number;
+  risk_level: string;
+  investigation_status: string;
+  evidence_count: number;
+  entity_count: number;
+  generated_at: string;
+  ruleset_version: string;
+}
 
 export interface HealthCheckResponse {
   status: "healthy" | "degraded" | "unhealthy";
@@ -96,3 +166,4 @@ export interface HealthCheckResponse {
     aiProviders: Record<string, "available" | "unavailable">;
   };
 }
+
