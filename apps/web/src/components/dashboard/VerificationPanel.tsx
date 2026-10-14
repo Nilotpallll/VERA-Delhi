@@ -57,7 +57,7 @@ const SAMPLE_VERIFICATIONS: VerificationRecord[] = [
 const SAMPLE_ANALYZERS: AnalyzerStatusRecord[] = [
   { name: "PaddleOCR Engine", category: "Vision/OCR", status: "ONLINE", latencyMs: 340, safetyInterpretation: "Signals processed" },
   { name: "faster-whisper Engine", category: "Audio/STT", status: "ONLINE", latencyMs: 510, safetyInterpretation: "Signals processed" },
-  { name: "MesoNet Deepfake Detector", category: "Video/Deepfake", status: "FAILED", latencyMs: 1200, safetyInterpretation: "FAILED: Escalates risk penalty (+25). NEVER treated as safe." },
+  { name: "MesoNet Deepfake Detector", category: "Video/Deepfake", status: "ONLINE", latencyMs: 480, safetyInterpretation: "Operational (Audio-visual screening & Whisper STT)" },
   { name: "Androguard APK Analyzer", category: "APK Static", status: "ONLINE", latencyMs: 620, safetyInterpretation: "Signals processed" },
   { name: "PhishTank & Threat Intel", category: "URL Intelligence", status: "ONLINE", latencyMs: 220, safetyInterpretation: "Signals processed" },
 ];
