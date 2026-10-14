@@ -40,10 +40,20 @@ interface ScanVerdict {
   };
 }
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_API_URL ||
-    process.env.NEXT_PUBLIC_VERA_API_URL ||
-    "https://vera-delhi.onrender.com").replace(/\/$/, "");
+function getApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+  if (process.env.NEXT_PUBLIC_VERA_API_URL) {
+    return process.env.NEXT_PUBLIC_VERA_API_URL.replace(/\/$/, "");
+  }
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:8000";
+    }
+  }
+  return "https://vera-delhi.onrender.com";
+}
 
 export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const t = translations[locale];
@@ -98,7 +108,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     // ── Branch 1: Video file uploaded — call real deepfake API ──────────────
     if (uploadedB64) {
       try {
-        const resp = await fetch(`${API_BASE}/api/v1/deepfake-check`, {
+        const resp = await fetch(`${getApiBase()}/api/v1/deepfake-check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

@@ -14,10 +14,18 @@ import {
   AgentForensicReport,
 } from "@vera/contracts";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_VERA_API_URL ||
-  "https://vera-delhi.onrender.com";
+function resolveApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.NEXT_PUBLIC_VERA_API_URL) return process.env.NEXT_PUBLIC_VERA_API_URL;
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:8000";
+    }
+  }
+  return "https://vera-delhi.onrender.com";
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export interface ApiClientOptions {
   apiKey?: string;
