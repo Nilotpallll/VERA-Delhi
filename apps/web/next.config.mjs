@@ -4,6 +4,14 @@ const nextConfig = {
   transpilePackages: ["@vera/contracts"],
   env: {
     NEXT_PUBLIC_VERA_API_VERSION: "v1",
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.NEXT_PUBLIC_VERA_API_URL ||
+      "https://vera-delhi.onrender.com",
+    NEXT_PUBLIC_VERA_API_URL:
+      process.env.NEXT_PUBLIC_VERA_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "https://vera-delhi.onrender.com",
   },
 };
 
