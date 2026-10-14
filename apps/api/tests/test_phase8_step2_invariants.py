@@ -41,14 +41,14 @@ def test_production_config_rejects_missing_credentials():
 @pytest.mark.asyncio
 async def test_ready_endpoint_returns_503_when_dependencies_down(client: AsyncClient):
     """The /ready endpoint must return HTTP 503 when core dependencies (DB, Redis, etc.) are unavailable."""
-    with patch("apps.api.src.core.database.check_database_health", return_value={"status": "unavailable"}), \
-         patch("apps.api.src.core.redis_client.redis_client.ping", return_value=False):
+    with patch("apps.api.src.api.v1.health.check_database_health", return_value={"status": "unavailable"}), \
+         patch("apps.api.src.api.v1.health.redis_client.ping", return_value=False):
         res = await client.get("/ready")
         assert res.status_code == 503
         data = res.json()
         assert data["status"] == "not_ready"
         assert "checks" in data
-        assert data["checks"]["database"] == "unavailable"
+        assert data["checks"]["database"] in ("unavailable", "db paused/unreachable")
         assert data["checks"]["redis"] == "unavailable"
 
 

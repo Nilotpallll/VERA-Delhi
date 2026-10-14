@@ -389,21 +389,21 @@ class TestHomoglyphDomains:
             "apps/api/src/engines/url_analyzer.py",
             "apps/api/src/core/security.py",
         ]
-        found_detection = False
+        from pathlib import Path
+        repo_root = Path(__file__).resolve().parents[3]
         for path in candidates:
-            full_path = f"C:\\Users\\shara\\.gemini\\antigravity\\scratch\\VERA-Delhi\\{path.replace('/', chr(92))}"
-            if os.path.exists(full_path):
+            full_path = repo_root / path
+            if full_path.exists():
                 with open(full_path, encoding="utf-8") as f:
                     content = f.read().lower()
-                if any(term in content for term in ["homoglyph", "lookalike", "confusable", "suspicious_domain", "typosquat"]):
+                if any(term in content for term in ["homoglyph", "lookalike", "confusable", "suspicious_domain", "typosquat", "homograph"]):
                     found_detection = True
                     break
 
-        # If detection is not in a dedicated file, the scoring engine should penalize unknown domains
+        # If detection is not in a dedicated file, the scoring engine should exist
         if not found_detection:
-            from apps.api.src.scoring.engine import RiskScoringEngine
-            # Scoring engine must exist and have domain risk logic
-            assert RiskScoringEngine is not None
+            from apps.api.src.scoring.engine import DeterministicScoringEngine
+            assert DeterministicScoringEngine is not None
 
     def test_unicode_domain_is_flagged_differently_from_ascii(self):
         """

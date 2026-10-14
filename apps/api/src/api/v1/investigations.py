@@ -308,6 +308,11 @@ async def run_agent_endpoint(
             raise
         except Exception as exc:
             logger.warning("DB check skipped in run-agent: %s", exc)
+            if investigation_id not in _STORE:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Investigation '{investigation_id}' not found.",
+                )
     elif investigation_id not in _STORE:
         raise HTTPException(
             status_code=404,

@@ -32,9 +32,11 @@ def test_endpoint(name: str, check_fn):
 
 
 def run_smoke_tests(base_url: str):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     base_url = base_url.rstrip("/")
     print(f"\n=======================================================")
-    print(f"🚀 VERA PRODUCTION SMOKE TEST: {base_url}")
+    print(f">> VERA PRODUCTION SMOKE TEST: {base_url}")
     print(f"=======================================================\n")
 
     client = httpx.Client(timeout=15.0)
