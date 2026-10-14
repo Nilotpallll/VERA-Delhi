@@ -12,6 +12,7 @@ import {
   Sparkles,
   Lock,
   Search,
+  Upload,
 } from "lucide-react";
 import { translations, Locale } from "@/lib/i18n";
 
@@ -115,25 +116,56 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
               className="w-full bg-slate-950/90 border border-slate-700/80 rounded-lg p-3.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-sans resize-none"
             />
           </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <span className="text-[11px] text-slate-500 font-sans italic">{t.inputHelp}</span>
-            <button
-              type="submit"
-              disabled={isScanning || !inputText.trim()}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-950/50"
-            >
-              {isScanning ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  <span>{t.checking}</span>
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                  <span>{t.checkButton}</span>
-                </>
-              )}
-            </button>
+
+          {/* Quick Deepfake & Video Upload Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-800/80">
+            <div className="flex items-center gap-2">
+              <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 text-xs text-indigo-300 hover:text-white flex items-center gap-2 transition-all">
+                <Upload className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Upload Video / Deepfake File</span>
+                <input
+                  type="file"
+                  accept="video/*,audio/*,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setInputText(
+                        (prev) =>
+                          (prev ? prev + "\n" : "") +
+                          `[ATTACHED EVIDENCE FILE]: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB) - Video/Deepfake Forensic Inspection`
+                      );
+                    }
+                  }}
+                />
+              </label>
+              <span className="text-[11px] text-slate-500 hidden sm:inline">
+                Supports MP4, WebM, AVI (up to 50MB)
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-slate-500 font-sans italic hidden md:inline">
+                {t.inputHelp}
+              </span>
+              <button
+                type="submit"
+                disabled={isScanning || !inputText.trim()}
+                className="w-full sm:w-auto px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-medium text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-950/50"
+              >
+                {isScanning ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <span>{t.checking}</span>
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-3.5 h-3.5" />
+                    <span>{t.checkButton}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>
