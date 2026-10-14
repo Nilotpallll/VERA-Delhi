@@ -29,6 +29,11 @@ _async_session_factory = None
 def _get_engine():
     global _engine
     if _engine is None:
+        connect_args = {}
+        if "asyncpg" in settings.DATABASE_URL:
+            # Supabase PgBouncer pooler requires prepared statements cache to be disabled
+            connect_args["statement_cache_size"] = 0
+
         _engine = create_async_engine(
             settings.DATABASE_URL,
             echo=settings.DEBUG,
@@ -36,6 +41,7 @@ def _get_engine():
             max_overflow=20,
             pool_pre_ping=True,      # validates connections before handing out
             pool_recycle=3600,       # recycle connections after 1 hour
+            connect_args=connect_args,
         )
     return _engine
 
