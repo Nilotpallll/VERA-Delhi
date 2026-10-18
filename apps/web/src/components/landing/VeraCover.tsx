@@ -2,13 +2,38 @@
 
 import { ArrowDown, ArrowRight, Check, Moon, ShieldAlert, Sparkles, Sun } from "lucide-react";
 import { Volume2, VolumeX } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Locale, translations } from "@/lib/i18n";
 import { FinanceBackdrop } from "@/components/shell/FinanceBackdrop";
 import { ScrollEffects } from "@/components/shell/ScrollEffects";
 import { VeraLogo } from "@/components/brand/VeraLogo";
 
 export type VeraTheme = "light" | "dark";
+
+interface SubtitleCue {
+  start: number;
+  end: number;
+  text: string;
+}
+
+const COVER_SUBTITLES: Record<Locale, SubtitleCue[]> = {
+  en: [
+    { start: 0.0, end: 2.5, text: "Intelligently screening every claim." },
+    { start: 2.5, end: 5.0, text: "From the moment evidence is submitted," },
+    { start: 5.0, end: 7.4, text: "VERA instantly maps identity," },
+    { start: 7.4, end: 11.5, text: "Surfacing subtle risk signals for proper screening." },
+    { start: 11.5, end: 16.0, text: "Before you invest, let VERA test." },
+    { start: 16.0, end: 20.0, text: "Verification and Evidence Based Risk Analyser" },
+  ],
+  hi: [
+    { start: 0.0, end: 2.5, text: "हर दावे की बुद्धिमानी से जांच।" },
+    { start: 2.5, end: 5.0, text: "सबूत प्रस्तुत होते ही," },
+    { start: 5.0, end: 7.4, text: "वेरा तुरंत पहचान का विश्लेषण करता है," },
+    { start: 7.4, end: 11.5, text: "और सटीक जांच के लिए सूक्ष्म जोखिम संकेतों को उजागर करता है।" },
+    { start: 11.5, end: 16.0, text: "निवेश करने से पहले, वेरा से जांचें।" },
+    { start: 16.0, end: 20.0, text: "वेरिफिकेशन एंड एविडेंस बेस्ड रिस्क एनालाइज़र" },
+  ],
+};
 
 export function VeraCover({
   locale,
@@ -25,14 +50,51 @@ export function VeraCover({
 }) {
   const t = translations[locale];
   const videoRef = useRef<HTMLVideoElement>(null);
+  const loopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
+  const [showSubtitles, setShowSubtitles] = useState(true);
+
+  // Auto-play on mount and cleanup loop delay timeout on unmount
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.play().catch(() => {});
+
+    return () => {
+      if (loopTimeoutRef.current) {
+        clearTimeout(loopTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleVideoEnded = () => {
+    if (loopTimeoutRef.current) {
+      clearTimeout(loopTimeoutRef.current);
+    }
+    // 3 seconds delay before restarting the video loop
+    loopTimeoutRef.current = setTimeout(() => {
+      const video = videoRef.current;
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+    }, 3000);
+  };
+
+  const activeCue = COVER_SUBTITLES[locale]?.find(
+    (cue) => videoCurrentTime >= cue.start && videoCurrentTime < cue.end
+  );
 
   const toggleVideoSound = async () => {
     const video = videoRef.current;
     if (!video) return;
     if (isMuted) {
       video.muted = false;
-      if (video.ended) video.currentTime = 0;
+      if (video.ended || (video.duration && video.currentTime >= video.duration - 0.2)) {
+        if (loopTimeoutRef.current) clearTimeout(loopTimeoutRef.current);
+        video.currentTime = 0;
+      }
       try {
         await video.play();
         setIsMuted(false);
@@ -171,10 +233,38 @@ export function VeraCover({
             autoPlay
             muted={isMuted}
             playsInline
-            preload="metadata"
+            preload="auto"
             aria-hidden="true"
             tabIndex={-1}
+            onTimeUpdate={() => {
+              if (videoRef.current) {
+                setVideoCurrentTime(videoRef.current.currentTime);
+              }
+            }}
+            onEnded={handleVideoEnded}
           />
+
+          {/* Synchronized Subtitles Overlay */}
+          {showSubtitles && activeCue && (
+            <div className="vera-video-subtitle-overlay" aria-live="polite">
+              <span className="vera-video-subtitle-badge">CC</span>
+              <p className="vera-video-subtitle-text">{activeCue.text}</p>
+            </div>
+          )}
+
+          {/* Subtitles Toggle (Bottom Left) */}
+          <button
+            className={`vera-cover-cc-toggle ${showSubtitles ? "is-active" : ""}`}
+            type="button"
+            onClick={() => setShowSubtitles((s) => !s)}
+            aria-label={showSubtitles ? (locale === "hi" ? "उपशीर्षक बंद करें" : "Disable subtitles") : (locale === "hi" ? "उपशीर्षक चालू करें" : "Enable subtitles")}
+            title={showSubtitles ? (locale === "hi" ? "उपशीर्षक बंद करें" : "Disable subtitles") : (locale === "hi" ? "उपशीर्षक चालू करें" : "Enable subtitles")}
+          >
+            <span className="vera-cc-tag">CC</span>
+            <span>{showSubtitles ? (locale === "hi" ? "उपशीर्षक चालू" : "Subtitles On") : (locale === "hi" ? "उपशीर्षक बंद" : "Subtitles Off")}</span>
+          </button>
+
+          {/* Sound Toggle (Bottom Right) */}
           <button
             className="vera-cover-audio-toggle"
             type="button"
