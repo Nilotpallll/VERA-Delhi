@@ -101,6 +101,7 @@ export const translations = {
     coverEnterHero: "Launch Fraud Scanner",
     coverFeatureVeronica: "Veronica AI Forensic Copilot",
     coverFeatureVeronicaBody: "Interactive bilingual interrogation of fraud claims, SEBI credential screening, and emergency cyber helpline guidance.",
+    backToCover: "Back to Cover",
   },
   hi: {
     title: "वेरा (VERA) निवेश धोखाधड़ी जाँच",
@@ -198,5 +199,6 @@ export const translations = {
     coverEnterHero: "स्कैनर शुरू करें",
     coverFeatureVeronica: "वेरोनिका एआई सुरक्षा सहायक",
     coverFeatureVeronicaBody: "संदिग्ध दावों की दो-तरफ़ा पूछताछ, सेबी लाइसेंस मिलान और तत्काल हेल्पलाइन मार्गदर्शन।",
+    backToCover: "मुख्य कवर",
   },
 };

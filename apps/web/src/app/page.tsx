@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Info,
   FileText,
+  ArrowLeft,
 } from "lucide-react";
 import { VeraNavigation, NavTab } from "@/components/navigation/VeraNavigation";
 import { PublicConsumerFlow } from "@/components/dashboard/PublicConsumerFlow";
@@ -80,21 +81,23 @@ export default function Home() {
 
   if (showCover) {
     return (
-      <VeraCover
-        locale={locale}
-        theme={theme}
-        onLocaleChange={handleToggleLocale}
-        onThemeToggle={handleToggleTheme}
-        onEnter={() => {
-          setShowCover(false);
-          window.scrollTo({ top: 0, behavior: "instant" });
-        }}
-      />
+      <div className="vera-cover-wrapper animate-vera-fade-in w-full">
+        <VeraCover
+          locale={locale}
+          theme={theme}
+          onLocaleChange={handleToggleLocale}
+          onThemeToggle={handleToggleTheme}
+          onEnter={() => {
+            setShowCover(false);
+            window.scrollTo({ top: 0, behavior: "instant" });
+          }}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="vera-investigation-page min-h-screen text-[var(--text-primary)] antialiased relative z-10 flex flex-col items-center">
+    <div className="vera-investigation-page min-h-screen text-[var(--text-primary)] antialiased relative z-10 flex flex-col items-center animate-vera-fade-in">
       <FinanceBackdrop />
       <ScrollEffects />
       {/* ── UNIFIED FLOATING NAVIGATION (Replaces sidebar & topbar) ─────────── */}
@@ -116,6 +119,20 @@ export default function Home() {
         {/* TAB 1: FRAUD CHECK (HOME) */}
         {activeTab === "CHECK" && (
           <div className="w-full flex flex-col items-center">
+            {/* Quick return back-pill */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowCover(true);
+                window.scrollTo({ top: 0, behavior: "instant" });
+              }}
+              className="group inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-solid)] text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs font-semibold shadow-sm transition-all duration-200 active:scale-95 cursor-pointer vera-nav-back-btn"
+              aria-label={locale === "hi" ? "मुख्य कवर पेज पर वापस जाएं" : "Back to Cover"}
+            >
+              <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-200 ease-out group-hover:-translate-x-1" />
+              <span>{locale === "hi" ? "मुख्य कवर पर वापस जाएं" : "Back to Cover Overview"}</span>
+            </button>
+
             {/* H1 Title: white over navy panel in light, text color in dark */}
             <h1 className="text-fluid-h1 text-[var(--hero-h1-color)] max-w-3xl tracking-tight leading-tight">
               {locale === "hi" ? "धोखाधड़ी जाँच" : "Investment Fraud Checker"}

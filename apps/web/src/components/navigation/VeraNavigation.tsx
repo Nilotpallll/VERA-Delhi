@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, BookOpen, PhoneCall, Sun, Moon } from "lucide-react";
+import { ShieldCheck, BookOpen, PhoneCall, Sun, Moon, ArrowLeft } from "lucide-react";
 import { Locale, translations } from "@/lib/i18n";
 import { VeraLogo } from "@/components/brand/VeraLogo";
 
@@ -57,21 +57,36 @@ export function VeraNavigation({
           }
         }}
       >
-        {/* Left: Logo Mark + VERA + Fraud Intelligence */}
-        <button
-          type="button"
-          className="vera-nav-brand-trigger flex items-center gap-2.5 flex-shrink-0 pr-2"
-          aria-expanded={isBrandExpanded}
-          aria-controls="vera-brand-popout"
-          aria-label={isBrandExpanded ? "Close VERA brand details" : "Show VERA brand details"}
-          onClick={() => setIsBrandExpanded((expanded) => !expanded)}
-        >
-          <VeraLogo className="vera-nav-logo" />
-          <span className="flex items-baseline gap-1.5">
-            <span className="font-semibold text-base text-[var(--text-primary)] tracking-tight">VERA</span>
-            <span className="text-[11px] text-[var(--text-muted)] font-normal hidden min-[1100px]:inline">Fraud Intelligence</span>
-          </span>
-        </button>
+        {/* Left: Back Button + Logo Mark + VERA */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {onOpenCover && (
+            <button
+              type="button"
+              onClick={onOpenCover}
+              className="vera-nav-back-btn group h-9 px-3 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold hover:border-[var(--text-muted)] hover:bg-[var(--surface-solid)] transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              title={t.backToCover || "Back to Cover"}
+              aria-label={t.backToCover || "Back to Cover"}
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-200 ease-out group-hover:-translate-x-1" />
+              <span className="font-semibold tracking-tight">{locale === "hi" ? "कवर" : "Cover"}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="vera-nav-brand-trigger flex items-center gap-2.5 flex-shrink-0 pr-2"
+            aria-expanded={isBrandExpanded}
+            aria-controls="vera-brand-popout"
+            aria-label={isBrandExpanded ? "Close VERA brand details" : "Show VERA brand details"}
+            onClick={() => setIsBrandExpanded((expanded) => !expanded)}
+          >
+            <VeraLogo className="vera-nav-logo" />
+            <span className="flex items-baseline gap-1.5">
+              <span className="font-semibold text-base text-[var(--text-primary)] tracking-tight">VERA</span>
+              <span className="text-[11px] text-[var(--text-muted)] font-normal hidden min-[1100px]:inline">Fraud Intelligence</span>
+            </span>
+          </button>
+        </div>
 
         <div id="vera-brand-popout" className={`vera-brand-popout ${isBrandExpanded ? "is-open" : ""}`} aria-hidden={!isBrandExpanded}>
           <VeraLogo className="vera-brand-popout-logo" />
@@ -79,6 +94,19 @@ export function VeraNavigation({
             <strong>VERA</strong>
             <span>Verification and Evidence Based Risk Analyser</span>
             <small>Before You Invest, Let VERA Test</small>
+            {onOpenCover && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBrandExpanded(false);
+                  onOpenCover();
+                }}
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline group cursor-pointer"
+              >
+                <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
+                <span>{locale === "hi" ? "कवर पेज पर वापस जाएं" : "Return to Cover Page"}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -149,6 +177,20 @@ export function VeraNavigation({
 
       {/* ── MOBILE CONTROLS (< 768px) ─────────────────────────────────────── */}
       <div className="md:hidden">
+        {/* Top-Left: Back to Cover Button */}
+        {onOpenCover && (
+          <button
+            type="button"
+            onClick={onOpenCover}
+            className="vera-nav-back-btn fixed top-3 left-3 z-50 h-11 px-3.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold flex items-center gap-1.5 backdrop-blur-xl shadow-md group active:scale-95 transition-all"
+            title={t.backToCover || "Back to Cover"}
+            aria-label={t.backToCover || "Back to Cover"}
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform duration-200 ease-out group-hover:-translate-x-1" />
+            <span>{locale === "hi" ? "कवर" : "Cover"}</span>
+          </button>
+        )}
+
         {/* Top-Right: Floating Veronica + Language + Theme Cluster (44px circles) */}
         <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
           <button

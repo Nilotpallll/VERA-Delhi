@@ -1191,3 +1191,53 @@ body::after { background: radial-gradient(ellipse 800px 420px at 50% 480px, rgba
 [data-vera-scroll-reveal].vera-scroll-visible { opacity: 1; transform: none; filter: none; }
 .vera-cover-feature[data-vera-scroll-reveal] { animation: none; }
 @media (prefers-reduced-motion: reduce) { [data-vera-scroll-reveal], [data-vera-scroll-reveal].vera-scroll-visible { opacity: 1; transform: none; filter: none; transition: none; } }
+
+/* ── 15. VIEW SWITCH & BACK BUTTON MICRO-ANIMATIONS ─────────── */
+@keyframes vera-view-switch {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-vera-fade-in {
+  animation: vera-view-switch 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes vera-back-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(8px) scale(0.88);
+  }
+  60% {
+    transform: translateX(-1.5px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.vera-nav-back-btn {
+  animation: vera-back-pop 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease;
+  cursor: pointer;
+}
+
+.vera-nav-back-btn:hover {
+  transform: translateX(-2px);
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.12);
+}
+
+[data-theme="dark"] .vera-nav-back-btn:hover {
+  box-shadow: 0 0 16px rgba(134, 224, 139, 0.22);
+}
+
+.vera-nav-back-btn:active {
+  transform: scale(0.93) !important;
+}
+
