@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, BookOpen, PhoneCall, Sun, Moon, Phone } from "lucide-react";
+import { ShieldCheck, BookOpen, PhoneCall, Sun, Moon } from "lucide-react";
 import { Locale, translations } from "@/lib/i18n";
+import { VeraLogo } from "@/components/brand/VeraLogo";
 
 export type NavTab = "CHECK" | "SEBI" | "RESOURCES";
 
@@ -24,6 +25,7 @@ export function VeraNavigation({
   onThemeToggle,
 }: VeraNavigationProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [isBrandExpanded, setIsBrandExpanded] = useState(false);
   const t = translations[locale];
 
   useEffect(() => {
@@ -46,28 +48,35 @@ export function VeraNavigation({
       {/* ── DESKTOP FLOATING GLASS PILL (>= 768px) ─────────────────────────── */}
       <nav
         aria-label="Main Navigation"
-        className={`vera-nav-floating hidden md:flex ${
-          scrolled ? "vera-nav-scrolled" : ""
-        }`}
+        className={`vera-nav-floating hidden md:flex ${scrolled ? "vera-nav-scrolled" : ""}`}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setIsBrandExpanded(false);
+          }
+        }}
       >
         {/* Left: Logo Mark + VERA + Fraud Intelligence */}
-        <div className="flex items-center gap-2.5 flex-shrink-0 pr-2">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-sm transition-colors ${
-              theme === "dark"
-                ? "bg-[#86E08B] text-[#04140A]"
-                : "bg-[#1E3A8A] text-white"
-            }`}
-          >
-            V
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-semibold text-base text-[var(--text-primary)] tracking-tight">
-              VERA
-            </span>
-            <span className="text-[11px] text-[var(--text-muted)] font-normal hidden min-[1100px]:inline">
-              Fraud Intelligence
-            </span>
+        <button
+          type="button"
+          className="vera-nav-brand-trigger flex items-center gap-2.5 flex-shrink-0 pr-2"
+          aria-expanded={isBrandExpanded}
+          aria-controls="vera-brand-popout"
+          aria-label={isBrandExpanded ? "Close VERA brand details" : "Show VERA brand details"}
+          onClick={() => setIsBrandExpanded((expanded) => !expanded)}
+        >
+          <VeraLogo className="vera-nav-logo" />
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-semibold text-base text-[var(--text-primary)] tracking-tight">VERA</span>
+            <span className="text-[11px] text-[var(--text-muted)] font-normal hidden min-[1100px]:inline">Fraud Intelligence</span>
+          </span>
+        </button>
+
+        <div id="vera-brand-popout" className={`vera-brand-popout ${isBrandExpanded ? "is-open" : ""}`} aria-hidden={!isBrandExpanded}>
+          <VeraLogo className="vera-brand-popout-logo" />
+          <div className="vera-brand-popout-copy">
+            <strong>VERA</strong>
+            <span>Verification and Evidence Based Risk Analyser</span>
+            <small>Before You Invest, Let VERA Test</small>
           </div>
         </div>
 
@@ -78,7 +87,7 @@ export function VeraNavigation({
             return (
               <button
                 key={id}
-                onClick={() => onTabChange(id)}
+                onClick={() => { setIsBrandExpanded(false); onTabChange(id); }}
                 className={`h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 select-none ${
                   isActive
                     ? "bg-[var(--nav-active-pill)] text-[var(--nav-active-text)] font-semibold shadow-sm"
@@ -91,7 +100,7 @@ export function VeraNavigation({
           })}
         </div>
 
-        {/* Right: Language toggle + Theme toggle + Helpline 1930 */}
+        {/* Right: Language toggle + Theme toggle */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Language Toggle (40px pill) */}
           <button
@@ -111,39 +120,17 @@ export function VeraNavigation({
             aria-label="Toggle theme"
           >
             {theme === "dark" ? (
-              <Sun className="w-4 h-4 text-[#86E08B]" />
+              <Sun className="w-4 h-4 text-[#a9d0df]" />
             ) : (
-              <Moon className="w-4 h-4 text-[#1E3A8A]" />
+              <Moon className="w-4 h-4 text-[#5b8594]" />
             )}
           </button>
 
-          {/* Helpline 1930 Pill */}
-          <a
-            href="tel:1930"
-            className="h-9 px-3.5 rounded-full flex items-center gap-2 bg-[var(--helpline-bg)] text-[var(--helpline-text)] border border-[var(--helpline-border)] transition-transform hover:scale-[1.02] shadow-sm"
-            title="National Cyber Crime Helpline"
-          >
-            <Phone className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="text-xs font-semibold hidden min-[1100px]:inline">
-              {t.cyberHelpline}
-            </span>
-            <span className="font-mono-tabular font-bold text-xs">1930</span>
-          </a>
         </div>
       </nav>
 
       {/* ── MOBILE CONTROLS (< 768px) ─────────────────────────────────────── */}
       <div className="md:hidden">
-        {/* Top-Left: Helpline 1930 Pinned (44px min tap target) */}
-        <a
-          href="tel:1930"
-          className="fixed top-3 left-3 z-50 h-11 px-3.5 rounded-full flex items-center gap-1.5 bg-[var(--helpline-bg)] text-[var(--helpline-text)] border border-[var(--helpline-border)] shadow-md"
-          title="Helpline 1930"
-        >
-          <Phone className="w-4 h-4" />
-          <span className="font-mono-tabular font-bold text-xs">1930</span>
-        </a>
-
         {/* Top-Right: Floating Language + Theme Cluster (44px circles) */}
         <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
           <button
@@ -161,9 +148,9 @@ export function VeraNavigation({
             aria-label="Toggle theme"
           >
             {theme === "dark" ? (
-              <Sun className="w-4 h-4 text-[#86E08B]" />
+              <Sun className="w-4 h-4 text-[#a9d0df]" />
             ) : (
-              <Moon className="w-4 h-4 text-[#1E3A8A]" />
+              <Moon className="w-4 h-4 text-[#5b8594]" />
             )}
           </button>
         </div>

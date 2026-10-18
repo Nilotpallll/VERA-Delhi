@@ -14,12 +14,16 @@ import {
 import { VeraNavigation, NavTab } from "@/components/navigation/VeraNavigation";
 import { PublicConsumerFlow } from "@/components/dashboard/PublicConsumerFlow";
 import { SebiGuidancePanel } from "@/components/dashboard/SebiGuidancePanel";
+import { VeraCover } from "@/components/landing/VeraCover";
+import { FinanceBackdrop } from "@/components/shell/FinanceBackdrop";
+import { ScrollEffects } from "@/components/shell/ScrollEffects";
 import { translations, Locale } from "@/lib/i18n";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>("CHECK");
   const [locale, setLocale] = useState<Locale>("en");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [showCover, setShowCover] = useState(true);
 
   useEffect(() => {
     try {
@@ -52,8 +56,25 @@ export default function Home() {
     setLocale((prev) => (prev === "en" ? "hi" : "en"));
   };
 
+  if (showCover) {
+    return (
+      <VeraCover
+        locale={locale}
+        theme={theme}
+        onLocaleChange={handleToggleLocale}
+        onThemeToggle={handleToggleTheme}
+        onEnter={() => {
+          setShowCover(false);
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen text-[var(--text-primary)] antialiased relative z-10 flex flex-col items-center">
+    <div className="vera-investigation-page min-h-screen text-[var(--text-primary)] antialiased relative z-10 flex flex-col items-center">
+      <FinanceBackdrop />
+      <ScrollEffects />
       {/* ── UNIFIED FLOATING NAVIGATION (Replaces sidebar & topbar) ─────────── */}
       <VeraNavigation
         activeTab={activeTab}
@@ -65,7 +86,7 @@ export default function Home() {
       />
 
       {/* ── MAIN CONTENT AREA (Centered, max 1120px) ────────────────────────── */}
-      <main className="w-full max-w-[1120px] mx-auto px-4 sm:px-6 pt-32 pb-24 flex flex-col items-center text-center">
+      <main className="w-full max-w-[1120px] mx-auto px-4 sm:px-6 pt-20 pb-24 flex flex-col items-center text-center">
         {/* TAB 1: FRAUD CHECK (HOME) */}
         {activeTab === "CHECK" && (
           <div className="w-full flex flex-col items-center">

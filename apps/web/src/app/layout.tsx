@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_Devanagari, Roboto_Mono } from "next/font/google";
+import { IBM_Plex_Sans, Noto_Sans_Devanagari, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/shell/AppShell";
 import { VeronicaWidget } from "@/components/veronica/VeronicaWidget";
 
-const sans = Inter({
+const sans = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
   display: "swap",
 });
