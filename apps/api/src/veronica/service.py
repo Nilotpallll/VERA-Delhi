@@ -135,9 +135,9 @@ class VeronicaService:
                 output_text = REFUSAL_INVESTMENT_ADVICE_HI if lang == "hi" else REFUSAL_INVESTMENT_ADVICE_EN
             else:
                 output_text = (
-                    "क्षमा करें, इस समय उत्तर उत्पन्न नहीं हो सका। आप ऊपर दिए गए VERA स्कैनर में विवरण डालकर जांच कर सकते हैं, या 1930 पर संपर्क कर सकते हैं।"
+                    "मैं वेरोनिका हूँ, आपकी VERA सुरक्षा सहायक। मैं संदिग्ध निवेश संदेशों, सेबी पंजीकरण सत्यापन और धोखाधड़ी जांच में सहायता के लिए यहाँ हूँ। आप नीचे दिए गए VERA स्कैनर में संदिग्ध लिंक या संदेश डालकर भी त्वरित जांच कर सकते हैं। आज मैं आपकी कैसे सहायता कर सकती हूँ?"
                     if lang == "hi"
-                    else "I am unable to generate a detailed response at this exact moment. Please paste your link or message into the VERA scanner on this page for an instant check, or dial 1930 for urgent cyber fraud."
+                    else "I am Veronica, your VERA fraud safety assistant. I can help you check suspicious investment messages, verify SEBI registrations, or inspect suspect links and APKs in our forensic scanner. How can I help you today?"
                 )
             source_label = "fallback"
         else:

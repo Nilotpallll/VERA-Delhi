@@ -45,7 +45,13 @@ export const VeronicaPanel: React.FC<VeronicaPanelProps> = ({
 
   if (!isOpen) return null;
 
-  const showInitialFaqs = messages.length <= 1;
+  const latestAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
+  const latestSuggestedChips =
+    latestAssistantMsg?.suggested_chips && latestAssistantMsg.suggested_chips.length > 0
+      ? latestAssistantMsg.suggested_chips
+      : messages.length <= 1
+      ? strings.sampleChips
+      : [];
 
   return (
     <div
@@ -139,11 +145,11 @@ export const VeronicaPanel: React.FC<VeronicaPanelProps> = ({
         onTriggerChip={onSendMessage}
       />
 
-      {/* ── Starter FAQ Chips (shown when conversation is new) ── */}
-      {showInitialFaqs && (
+      {/* ── Contextual Suggestion Chips (above input) ────────── */}
+      {latestSuggestedChips.length > 0 && !isThinking && (
         <div style={{ padding: "0 16px 8px" }}>
           <VeronicaFaqChips
-            chips={strings.sampleChips}
+            chips={latestSuggestedChips}
             onSelectChip={onSendMessage}
             disabled={isThinking}
           />

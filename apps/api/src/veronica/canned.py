@@ -61,7 +61,7 @@ CANNED_RESPONSES: dict[str, dict[str, Any]] = {
     "what_is_vera": {
         "keywords": [
             "what is vera", "about vera", "how does vera work", "how vera works",
-            "what does this do", "what can you do", "who made vera", "what is this platform",
+            "what does this do", "who made vera", "what is this platform",
             "वेरा क्या है", "यह क्या करता है"
         ],
         "en": {
@@ -104,8 +104,10 @@ CANNED_RESPONSES: dict[str, dict[str, Any]] = {
     },
     "check_whatsapp": {
         "keywords": [
-            "whatsapp", "telegram", "group", "message", "chat", "trading tips", "guaranteed return",
-            "व्हाट्सएप", "टेलीग्राम", "ग्रुप", "ट्रेडिंग टिप्स"
+            "whatsapp", "telegram", "group chat", "whatsapp group", "telegram group",
+            "trading group", "vip group", "advisory group", "suspicious message", "whatsapp message",
+            "telegram message", "trading tips", "guaranteed return",
+            "व्हाट्सएप", "टेलीग्राम", "व्हाट्सएप ग्रुप", "टेलीग्राम ग्रुप", "ट्रेडिंग टिप्स"
         ],
         "en": {
             "reply": (
@@ -193,8 +195,9 @@ CANNED_RESPONSES: dict[str, dict[str, Any]] = {
             "crypto", "best stock", "recommend stock", "should i invest", "buy shares",
             "trading tip", "intraday", "portfolio", "target price", "penny stock",
             "algorithmic trading", "which ipo", "forex trading", "guaranteed profit",
-            "guaranteed return", "शेयर खरीदें", "स्टॉक टिप", "शेयर खरीदने की सलाह",
-            "शेयर खरीदने"
+            "guaranteed return", "good buy", "should i buy", "worth buying", "invest in",
+            "buy", "sell", "शेयर खरीदें", "स्टॉक टिप", "शेयर खरीदने की सलाह",
+            "शेयर खरीदने", "शेयर बेचें"
         ],
         "en": {
             "reply": (
@@ -226,21 +229,637 @@ CANNED_RESPONSES: dict[str, dict[str, Any]] = {
                 "VERA स्कैनर का उपयोग कैसे करें?"
             ]
         }
+    },
+    "help_capabilities": {
+        "keywords": [
+            "help", "help me", "how can you help", "what can you do", "what do you do",
+            "menu", "options", "features", "commands",
+            "मदद", "सहायता", "आप क्या कर सकती हैं", "मेरी मदद करें", "क्या सहायता कर सकती हैं"
+        ],
+        "en": {
+            "reply": (
+                "Here is how I can assist you:\n\n"
+                "• **Check Messages & Groups**: Paste suspect WhatsApp or Telegram group chats to detect scam patterns and fake profit claims.\n"
+                "• **Verify SEBI Licenses**: Cross-check research analysts, brokers, and advisors against official SEBI records.\n"
+                "• **Detect Deepfakes & Cloned APKs**: Spot celebrity video endorsements and fake investment applications.\n"
+                "• **Emergency Guidance**: Step-by-step guidance if money was already transferred (calling 1930, bank freeze).\n\n"
+                "What would you like to investigate?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Open Scanner", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 Call 1930 Helpline", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "How do I check a suspicious WhatsApp group?",
+                "How does VERA verify SEBI registration?",
+                "I already sent money. What should I do? 🚨"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "मैं निम्नलिखित कार्यों में आपकी सहायता कर सकती हूँ:\n\n"
+                "• **संदेशों की जांच**: व्हाट्सएप या टेलीग्राम ग्रुप संदेशों में पक्के मुनाफे या धोखाधड़ी के संकेतों की पहचान।\n"
+                "• **SEBI लाइसेंस सत्यापन**: आधिकारिक रिकॉर्ड से रिसर्च एनालिस्ट या एडवाइजर के लाइसेंस की पुष्टि।\n"
+                "• **डीपफेक और नकली ट्रेडिंग ऐप्स (APK)**: नकली प्रचार वीडियो और अनधिकृत ऐप्स की पहचान।\n"
+                "• **आपातकालीन सहायता**: यदि पैसे कट गए हैं, तो तत्काल 1930 पर शिकायत और बैंक खाता फ्रीज कराने के निर्देश।\n\n"
+                "आप किसकी जांच करना चाहते हैं?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खोलें", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 1930 हेल्पलाइन पर कॉल करें", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच कैसे करें?",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "मैंने पैसे भेज दिए हैं, मुझे क्या करना चाहिए? 🚨"
+            ]
+        }
+    },
+    "bot_identity": {
+        "keywords": [
+            "who are you", "what is your name", "who r u", "what are you",
+            "introduce yourself", "tell me about yourself", "your name", "who made you",
+            "आप कौन हैं", "तुम्हारा नाम क्या है", "आपका नाम क्या है", "तुम कौन हो"
+        ],
+        "en": {
+            "reply": (
+                "I am **Veronica**, the official AI forensic guide for the VERA platform. I assist retail investors in identifying financial fraud, verifying SEBI regulatory credentials, detecting deepfakes, and taking immediate emergency actions if scammed."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Try the Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "How does VERA verify SEBI?",
+                "Check a WhatsApp group",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "मैं **वेरोनिका** हूँ, VERA प्लेटफॉर्म की आधिकारिक एआई सुरक्षा सहायक। मैं खुदरा निवेशकों को वित्तीय धोखाधड़ी पहचानने, सेबी लाइसेंस सत्यापित करने, डीपफेक पकड़ने और आपात स्थिति में मार्गदर्शन देने में मदद करती हूँ।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर आज़माएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "SEBI पंजीकरण की जांच कैसे होती है?",
+                "व्हाट्सएप ग्रुप की जांच कैसे करें?",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "how_are_you": {
+        "keywords": [
+            "how are you", "how are you doing", "how r u", "how do you do",
+            "how is it going", "how's it going", "how are u", "how you doing",
+            "आप कैसी हैं", "आप कैसे हैं", "क्या हाल है", "सब कैसा है", "कैसी हो", "कैसे हो"
+        ],
+        "en": {
+            "reply": (
+                "I'm doing great, thank you for asking! I'm here and fully operational to help you analyze suspect investments, verify SEBI credentials, or check fraudulent messages. How can I assist you today?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Check a suspicious WhatsApp group",
+                "Verify SEBI registration",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "मैं बिल्कुल ठीक हूँ, पूछने के लिए धन्यवाद! मैं संदिग्ध निवेशों के विश्लेषण, सेबी पंजीकरण जांच और धोखाधड़ी से सुरक्षा में मदद के लिए तैयार हूँ। आज मैं आपकी कैसे सहायता कर सकती हूँ?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच करें",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "greeting": {
+        "keywords": [
+            "hi", "hello", "hey", "heya", "howdy", "hola", "namaste", "namaskar",
+            "good morning", "good afternoon", "good evening", "gm", "greetings",
+            "नमस्ते", "नमस्कार", "हेलो", "हाय", "प्रणाम", "शुभ प्रभात", "शुभ संध्या"
+        ],
+        "en": {
+            "reply": (
+                "Hello! How can I help you today? I am **Veronica**, your VERA fraud safety assistant.\n\n"
+                "I can help you check suspicious investment messages, verify SEBI registrations, screen unknown trading links, or test an APK in our scanner. What would you like to investigate?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Open Scanner", "payload": "#scanner-section"},
+                {"type": "run_sample", "label": "🧪 Try Sample Case", "payload": "sample_whatsapp_scam"}
+            ],
+            "suggested_chips": [
+                "How do I check a suspicious WhatsApp group?",
+                "How does VERA verify SEBI registration?",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "नमस्ते! मैं आपकी कैसे सहायता कर सकती हूँ? मैं **वेरोनिका** हूँ, आपकी VERA सुरक्षा सहायक।\n\n"
+                "मैं संदिग्ध निवेश संदेशों, सेबी (SEBI) पंजीकृत सलाहकारों के सत्यापन, डीपफेक वीडियो और फर्जी ऐप्स (APK) की पहचान में आपकी मदद कर सकती हूँ। आप क्या जांचना चाहते हैं?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खोलें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच कैसे करें?",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "वेरा क्या है?"
+            ]
+        }
+    },
+    "gratitude": {
+        "keywords": [
+            "thank you", "thanks", "thx", "thank u", "many thanks", "thank you so much",
+            "appreciate it", "thanks a lot", "grateful", "dhanyawad", "shukriya",
+            "धन्यवाद", "शुक्रिया", "बहुत धन्यवाद", "थैंक यू", "थैंक्स", "आभार"
+        ],
+        "en": {
+            "reply": (
+                "You're very welcome! Glad I could help. Protecting investors from financial fraud is what VERA is here for. Stay safe, and always verify before you invest!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Open Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "What are common scam red flags?",
+                "Can you check a suspicious website URL?",
+                "How does bank account freezing work?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "आपका बहुत-बहुत स्वागत है! मदद करके मुझे प्रसन्नता हुई। खुदरा निवेशकों को घोटालों से सुरक्षित रखना ही VERA का मुख्य उद्देश्य है। सुरक्षित रहें और हमेशा निवेश से पहले सत्यापन करें!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खोलें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "सामान्य धोखाधड़ी के लक्षण क्या हैं?",
+                "संदिग्ध वेबसाइट की जांच कैसे करें?",
+                "बैंक खाता फ्रीज कैसे होता है?"
+            ]
+        }
+    },
+    "acknowledgment": {
+        "keywords": [
+            "okay", "ok", "k", "got it", "understood", "sure", "alright", "all right",
+            "fine", "noted", "sounds good", "i see", "i understand", "thik hai", "theek hai",
+            "sahi hai", "achha", "accha", "ठीक है", "ओके", "समझ गया", "समझ गई", "सही है", "अच्छा"
+        ],
+        "en": {
+            "reply": (
+                "Thank you! Let me know if you need anything else or if you have any suspicious links, group chats, or advisor credentials you'd like to check."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "How do I check a suspicious WhatsApp group?",
+                "How does VERA verify SEBI registration?",
+                "What are common investment scam red flags?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "धन्यवाद! यदि आपको किसी और लिंक, ग्रुप संदेश या निवेश सलाहकार की जांच करनी हो, तो मुझे अवश्य बताएं। मैं आपकी मदद के लिए सदैव तैयार हूँ।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप के खतरे के संकेत क्या हैं?",
+                "SEBI पंजीकरण की जांच कैसे करें?",
+                "VERA स्कैनर का उपयोग कैसे करें?"
+            ]
+        }
+    },
+    "farewell": {
+        "keywords": [
+            "bye", "goodbye", "good bye", "see you", "see ya", "take care",
+            "have a nice day", "have a good day", "cya", "gn", "good night", "alvida",
+            "अलविदा", "बाय", "शुभ रात्रि", "फिर मिलेंगे", "अपना ध्यान रखें"
+        ],
+        "en": {
+            "reply": (
+                "Goodbye! Stay vigilant against unverified investment schemes and suspicious trading tips. Have a wonderful and safe day!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Keep Scanner Handy", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Call 1930 Helpline",
+                "How does VERA work?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "अलविदा! फर्जी निवेश योजनाओं और संदिग्ध ट्रेडिंग ग्रुप्स से हमेशा सतर्क रहें। आपका दिन शुभ और सुरक्षित हो!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खुला रखें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "1930 हेल्पलाइन पर कॉल करें",
+                "VERA कैसे काम करता है?"
+            ]
+        }
+    },
+    "praise_positive": {
+        "keywords": [
+            "great", "awesome", "cool", "nice", "good", "super", "excellent",
+            "wonderful", "perfect", "amazing", "shabash", "badhiya",
+            "बढ़िया", "बहुत अच्छा", "शाबाश", "शानदार", "सुपर"
+        ],
+        "en": {
+            "reply": (
+                "Thank you! I'm here whenever you need assistance. Stay vigilant, and don't hesitate to screen any suspicious offers in our forensic scanner."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "How does VERA verify SEBI registration?",
+                "Check a WhatsApp group",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "धन्यवाद! आपकी सहायता के लिए मैं सदैव तत्पर हूँ। सुरक्षित रहें और किसी भी संदिग्ध ऑफर की जांच हमारे स्कैनर से अवश्य करें।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "SEBI पंजीकरण की जांच कैसे करें?",
+                "व्हाट्सएप ग्रुप के खतरे के संकेत क्या हैं?",
+                "VERA स्कैनर का उपयोग कैसे करें?"
+            ]
+        }
+    },
+    "affirmation": {
+        "keywords": [
+            "yes", "yep", "yeah", "haan", "ha", "sure thing", "definitely",
+            "हाँ", "हा", "अवश्य", "ज़रूर"
+        ],
+        "en": {
+            "reply": (
+                "Great! How can I assist you further? Feel free to paste any message, URL, or advisor name you'd like to check."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Open Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Check a suspicious WhatsApp group",
+                "Verify SEBI registration",
+                "How does VERA work?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "बहुत अच्छा! मैं आगे आपकी कैसे सहायता करूँ? आप कोई भी संदेश, लिंक या सलाहकार का नाम यहाँ साझा कर सकते हैं।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खोलें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच करें",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "negation": {
+        "keywords": [
+            "no", "nah", "nope", "nahi", "not now", "nothing",
+            "नहीं", "ना", "कुछ नहीं"
+        ],
+        "en": {
+            "reply": (
+                "No problem! Let me know if you ever need help verifying an investment or checking suspicious claims. Have a safe day!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Keep Scanner Ready", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Emergency 1930 Helpline",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "कोई बात नहीं! यदि आपको कभी भी किसी निवेश सत्यापन या धोखाधड़ी जांच में सहायता चाहिए, तो मुझे अवश्य बताएं। सुरक्षित रहें!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर तैयार रखें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "1930 हेल्पलाइन",
+                "VERA कैसे काम करता है?"
+            ]
+        }
+    },
+    "where_is_scanner": {
+        "keywords": [
+            "where is the scanner", "where is scanner", "how to use scanner", "open scanner",
+            "show scanner", "access scanner", "find scanner", "स्कैनर कहाँ है", "स्कैनर कैसे उपयोग करें",
+            "स्कैनर खोलें", "स्कैनर दिखाएं"
+        ],
+        "en": {
+            "reply": (
+                "The VERA forensic scanner is located right on this page! You can scroll up to the scanner section or click the button below to paste text, verify URLs, test APKs, or scan audio/video for fraud signals."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "How do I check a suspicious WhatsApp group?",
+                "How does VERA verify SEBI registration?",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "VERA फोरेंसिक स्कैनर इसी पेज पर उपलब्ध है! आप ऊपर स्क्रॉल कर सकते हैं या नीचे दिए गए बटन पर क्लिक करके संदिग्ध संदेश, वेबसाइट लिंक, मोबाइल ऐप (APK) या वीडियो की जांच कर सकते हैं।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच कैसे करें?",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "what_next": {
+        "keywords": [
+            "what should i do", "what next", "what to do", "now what", "how to proceed",
+            "what can i do", "guide me", "ab kya kare", "ab kya karu", "अब क्या करें",
+            "अब क्या करूँ", "आगे क्या करें", "मुझे क्या करना चाहिए"
+        ],
+        "en": {
+            "reply": (
+                "Here is how you can proceed right now:\n\n"
+                "1. **Screen Suspicious Content**: If you have a suspicious stock tip, group link, or APK, paste it into our forensic scanner below for an instant risk score.\n"
+                "2. **Verify Credentials**: Check if the person or entity giving advice is genuinely registered with SEBI.\n"
+                "3. **If Money Was Transferred**: Call the National Cyber Crime Helpline **1930** immediately so authorities can attempt an emergency account freeze.\n\n"
+                "How can I assist you with the next step?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Open Scanner", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 Call 1930 Helpline", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "How do I check a suspicious WhatsApp group?",
+                "How does VERA verify SEBI registration?",
+                "What are common investment scam red flags?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "आप आगे ये कदम उठा सकते हैं:\n\n"
+                "1. **संदिग्ध सामग्री की जांच**: यदि आपको कोई स्टॉक टिप, ग्रुप लिंक या ऐप मिला है, तो उसे नीचे VERA स्कैनर में डालकर जांचें।\n"
+                "2. **लाइसेंस की पुष्टि**: सेबी की आधिकारिक सूची में जांचें कि क्या सलाहकार अधिकृत है।\n"
+                "3. **यदि पैसे ट्रांसफर कर दिए हैं**: बिना देर किए **1930** हेल्पलाइन पर कॉल करें ताकि पुलिस तुरंत संबंधित बैंक खाते को फ्रीज कर सके।\n\n"
+                "मैं इनमें से किसमें आपकी सहायता करूँ?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खोलें", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 1930 हेल्पलाइन पर कॉल करें", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच कैसे करें?",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "धोखाधड़ी के मुख्य लक्षण क्या हैं?"
+            ]
+        }
+    },
+    "bot_nature": {
+        "keywords": [
+            "are you human", "are you a robot", "are you a bot", "are you real", "are you ai",
+            "are you automated", "are u human", "are u a bot", "क्या आप इंसान हैं", "क्या तुम रोबोट हो",
+            "क्या तुम एआई हो", "क्या तुम इंसान हो"
+        ],
+        "en": {
+            "reply": (
+                "I am **Veronica**, an AI assistant built specifically for the VERA investor protection platform. While I am an AI, I am powered by deterministic forensic analysis engines, pattern matching for cyber fraud, and direct verification against official SEBI records."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Try the Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "What is VERA?",
+                "How does VERA verify SEBI registration?",
+                "Check a suspicious WhatsApp group"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "मैं **वेरोनिका** हूँ, VERA निवेशक सुरक्षा प्लेटफॉर्म के लिए बनाई गई एक एआई सहायक। मैं वित्तीय घोटालों की पहचान, सेबी रिकॉर्ड सत्यापन और खुदरा निवेशकों को सुरक्षित रखने के लिए फोरेंसिक तकनीकों का उपयोग करती हूँ।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर आज़माएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "VERA क्या है?",
+                "SEBI रजिस्ट्रेशन कैसे चेक करें?",
+                "व्हाट्सएप ग्रुप की जांच कैसे करें?"
+            ]
+        }
+    },
+    "is_free_service": {
+        "keywords": [
+            "is this free", "is vera free", "do you charge", "is it paid", "pricing",
+            "charges", "fees", "how much does it cost", "subscription", "free to use",
+            "क्या यह फ्री है", "पैसे लगेंगे", "कोई शुल्क है", "क्या यह मुफ्त है"
+        ],
+        "en": {
+            "reply": (
+                "Yes, **VERA is 100% free** for Indian retail investors! You can check suspicious messages, verify SEBI credentials, scan APKs, and generate audit-ready forensic dossiers without any subscription or hidden fees."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Use Free Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "How does VERA work?",
+                "How do I check a suspicious WhatsApp group?",
+                "Verify SEBI registration"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "हाँ, **VERA खुदरा निवेशकों के लिए 100% निःशुल्क (Free) है!** आप बिना किसी शुल्क या सब्सक्रिप्शन के व्हाट्सएप संदेशों, सेबी लाइसेंस और संदिग्ध मोबाइल ऐप्स (APK) की फोरेंसिक जांच कर सकते हैं।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 मुफ्त स्कैनर का उपयोग करें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "VERA कैसे काम करता है?",
+                "व्हाट्सएप ग्रुप की जांच करें",
+                "SEBI रजिस्ट्रेशन चेक करें"
+            ]
+        }
+    },
+    "check_presence": {
+        "keywords": [
+            "are you there", "you there", "anyone there", "hello?", "can you hear me",
+            "sun rahe ho", "क्या आप सुन रहे हैं", "सुनो", "सुन रहे हो"
+        ],
+        "en": {
+            "reply": (
+                "Yes, I'm here and ready to help! How can I assist you with fraud screening or verifying an investment today?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Open Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Check a suspicious WhatsApp group",
+                "Verify SEBI registration",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "हाँ, मैं यहीं हूँ और आपकी सहायता के लिए तैयार हूँ! आज मैं आपकी सुरक्षा या निवेश जांच में कैसे मदद करूँ?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खोलें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच करें",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "has_question": {
+        "keywords": [
+            "i have a question", "can i ask a question", "one question", "have a query",
+            "have a doubt", "ek sawal", "sawal hai", "एक सवाल है", "एक प्रश्न है",
+            "पूछना है", "सवाल है"
+        ],
+        "en": {
+            "reply": (
+                "Of course! Please go ahead and ask your question, or paste any suspicious message, website link, or advisor name you'd like to verify. I'm right here to help!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "How do I check a suspicious WhatsApp group?",
+                "How does VERA verify SEBI registration?",
+                "What are common investment scam red flags?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "बिल्कुल! कृपया अपना प्रश्न पूछें, या कोई भी संदिग्ध लिंक, संदेश या सलाहकार का नाम यहाँ साझा करें। मैं सहायता के लिए तैयार हूँ!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच कैसे करें?",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "apology": {
+        "keywords": [
+            "sorry", "my bad", "apologies", "excuse me", "pardon", "माफ करें",
+            "माफ़ी", "माफ कीजिए", "सॉरी", "गलती हो गई"
+        ],
+        "en": {
+            "reply": (
+                "No need to apologize at all! How can I help you today? Feel free to ask any question or paste any investment message you'd like to check."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Check a suspicious WhatsApp group",
+                "Verify SEBI registration",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "माफ़ी की कोई बात नहीं है! मैं आगे आपकी कैसे सहायता करूँ? आप कोई भी सवाल पूछ सकते हैं या संदिग्ध संदेश की जांच कर सकते हैं।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच करें",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
     }
 }
 
 PRIORITIZED_INTENTS = [
+    # 1. Critical Emergency & Legal Refusals (Highest Priority)
     "emergency_money_sent",
     "refusal_stock_tip",
+
+    # 2. Specific Platform & Regulatory Inquiries
     "what_is_vera",
     "check_sebi",
-    "check_whatsapp"
+    "where_is_scanner",
+    "check_whatsapp",
+    "what_next",
+
+    # 3. Conversational Capabilities & Bot Identity
+    "help_capabilities",
+    "bot_identity",
+    "bot_nature",
+    "is_free_service",
+    "how_are_you",
+    "check_presence",
+    "has_question",
+    "apology",
+
+    # 4. Standard Conversational Turns
+    "greeting",
+    "gratitude",
+    "acknowledgment",
+    "farewell",
+    "praise_positive",
+    "affirmation",
+    "negation",
 ]
+
+import re
+
+
+def _extract_tokens(text: str) -> set[str]:
+    """Extracts lowercase tokens stripped of punctuation."""
+    return set(re.findall(r'[^\s.,!?:;"\'`()\[\]{}]+', text.lower()))
+
+
+def _normalize_padded(text: str) -> str:
+    """Returns space-padded string with normalized punctuation for multi-word phrase matching."""
+    cleaned = re.sub(r'[\s.,!?:;"\'`()\[\]{}]+', ' ', text.lower()).strip()
+    return f" {cleaned} " if cleaned else " "
 
 
 def find_canned_response(text: str, language: str = "en") -> dict[str, Any] | None:
-    """Matches text against vetted canned intents using normalized keyword scanning."""
-    normalized = text.lower().strip()
+    """Matches text against vetted canned intents using token and phrase boundary scanning."""
+    tokens = _extract_tokens(text)
+    padded = _normalize_padded(text)
     lang_key = "hi" if language == "hi" else "en"
 
     for intent_name in PRIORITIZED_INTENTS:
@@ -248,7 +867,19 @@ def find_canned_response(text: str, language: str = "en") -> dict[str, Any] | No
         if not intent_data:
             continue
         for kw in intent_data["keywords"]:
-            if kw in normalized:
+            kw_norm = kw.strip().lower()
+            if not kw_norm:
+                continue
+
+            matched = False
+            if " " in kw_norm:
+                # Multi-word phrase: match as space-bounded subphrase
+                matched = f" {kw_norm} " in padded
+            else:
+                # Single token: exact token match (prevents false matches like 'ok' in 'book' or 'hi' in 'this')
+                matched = kw_norm in tokens
+
+            if matched:
                 content = intent_data.get(lang_key) or intent_data.get("en")
                 if content:
                     return {

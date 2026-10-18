@@ -7,7 +7,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(r"c:\Users\shara\OneDrive\Desktop\VERA_Delhi\VERA-Delhi\VERA-Delhi")
+ROOT = Path(__file__).resolve().parent.parent
 
 # 1. Read declared Python requirements
 def parse_requirements(req_path: Path) -> dict[str, str]:

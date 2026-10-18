@@ -66,6 +66,7 @@ export const VeronicaWidget: React.FC = () => {
       role: "assistant",
       content: VERONICA_STRINGS.en.welcomeMessage,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      suggested_chips: VERONICA_STRINGS.en.sampleChips,
     };
     setMessages([initialGreeting]);
   }, []);
@@ -91,6 +92,7 @@ export const VeronicaWidget: React.FC = () => {
           role: "assistant",
           content: VERONICA_STRINGS[nextLang].welcomeMessage,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          suggested_chips: VERONICA_STRINGS[nextLang].sampleChips,
         },
       ]);
     }
@@ -102,6 +104,7 @@ export const VeronicaWidget: React.FC = () => {
       role: "assistant",
       content: VERONICA_STRINGS[language].welcomeMessage,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      suggested_chips: VERONICA_STRINGS[language].sampleChips,
     };
     setMessages([initialGreeting]);
     try {

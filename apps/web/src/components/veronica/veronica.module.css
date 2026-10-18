@@ -346,6 +346,17 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  max-height: 135px;
+  overflow-y: auto;
+}
+
+.vrnFaqContainer::-webkit-scrollbar {
+  width: 4px;
+}
+
+.vrnFaqContainer::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 4px;
 }
 
 .vrnFaqChip {
