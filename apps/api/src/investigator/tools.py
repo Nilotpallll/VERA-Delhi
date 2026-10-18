@@ -8,6 +8,9 @@ Architecture Rule 12: Analyzer version exposure.
 """
 
 import asyncio
+
+# Import existing specialized engines from Phase 3 & 4 with independent try-except guards
+import hashlib
 import re
 import uuid
 from dataclasses import dataclass, field
@@ -15,27 +18,50 @@ from datetime import UTC, datetime
 from typing import Any
 
 from ..contracts.enums import EvidenceCategory, EvidenceSeverity, SourceType
-from ..contracts.verification import VerificationState
+from ..contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
+from ..contracts.verification import VerificationResult, VerificationState
 
-# Import existing specialized engines from Phase 3 & 4
+APKAnalyzer: Any = None
 try:
     from ..engines.apk_analyzer import APKAnalyzer
+except Exception:
+    pass
+
+AudioAnalyzer: Any = None
+try:
     from ..engines.audio_analyzer import AudioAnalyzer
+except Exception:
+    pass
+
+ImageAnalyzer: Any = None
+try:
     from ..engines.image_analyzer import ImageAnalyzer
+except Exception:
+    pass
+
+MessageAnalyzer: Any = None
+try:
     from ..engines.message_analyzer import MessageAnalyzer
+except Exception:
+    pass
+
+URLAnalyzer: Any = None
+try:
     from ..engines.url_analyzer import URLAnalyzer
+except Exception:
+    pass
+
+VideoAnalyzer: Any = None
+try:
     from ..engines.video_analyzer import VideoAnalyzer
-    from ..knowledge.fetcher import OfficialSourceFetcher
-    from ..knowledge.guideline_matcher import SEBIGuidelineMatcher
-except ImportError:  # pragma: no cover
-    MessageAnalyzer = None
-    ImageAnalyzer = None
-    VideoAnalyzer = None
-    AudioAnalyzer = None
-    URLAnalyzer = None
-    APKAnalyzer = None
-    SEBIGuidelineMatcher = None
-    OfficialSourceFetcher = None
+except Exception:
+    pass
+
+SEBIGuidelineDetector: Any = None
+try:
+    from ..knowledge.guideline_matcher import SEBIGuidelineDetector
+except Exception:
+    pass
 
 
 @dataclass
@@ -43,7 +69,7 @@ class ToolResult:
     """Unified result structure returned by all investigator tools."""
     tool_name: str
     success: bool
-    evidence_items: list[dict[str, Any]] = field(default_factory=list)
+    evidence_items: list[Any] = field(default_factory=list)
     verification_record: dict[str, Any] | None = None
     findings: dict[str, Any] = field(default_factory=dict)
     citations: list[dict[str, Any]] = field(default_factory=list)
@@ -73,6 +99,15 @@ KNOWN_MALICIOUS_INDICATORS = {
 
 VERIFIED_SEBI_INTERMEDIARIES = {
     "INZ000031633": {"name": "Zerodha Broking Limited", "type": "Stock Broker", "status": "ACTIVE"},
+    "INZ000183631": {"name": "ICICI Securities Limited", "type": "Stock Broker & Merchant Banker", "status": "ACTIVE"},
+    "INZ000186937": {"name": "HDFC Securities Limited", "type": "Stock Broker", "status": "ACTIVE"},
+    "INZ000200137": {"name": "Kotak Securities Limited", "type": "Stock Broker", "status": "ACTIVE"},
+    "INZ000161534": {"name": "Angel One Limited", "type": "Stock Broker", "status": "ACTIVE"},
+    "INZ000158836": {"name": "Motilal Oswal Financial Services Limited", "type": "Stock Broker & Portfolio Manager", "status": "ACTIVE"},
+    "INZ000185137": {"name": "RKSV Securities India Private Limited", "type": "Stock Broker", "status": "ACTIVE"},
+    "INZ000010231": {"name": "5paisa Capital Limited", "type": "Stock Broker", "status": "ACTIVE"},
+    "INZ000171337": {"name": "Sharekhan Limited", "type": "Stock Broker", "status": "ACTIVE"},
+    "INZ000200032": {"name": "SBICAP Securities Limited", "type": "Stock Broker", "status": "ACTIVE"},
     "INA000000001": {"name": "Authentic Wealth Advisors", "type": "Investment Adviser", "status": "ACTIVE"},
     "INH000000123": {"name": "Genuine Research Analysts", "type": "Research Analyst", "status": "ACTIVE"},
 }
@@ -97,11 +132,22 @@ class InvestigatorToolRegistry:
 
         start = asyncio.get_event_loop().time()
         try:
-            if MessageAnalyzer:
+            if MessageAnalyzer is not None:
                 analyzer = MessageAnalyzer()
-                # Run with timeout guard
-                record = await asyncio.wait_for(analyzer.analyze_message(text=text, investigation_id=investigation_id), timeout=timeout_s)
-                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in record.evidence]
+                ev = CanonicalEvidenceItem(
+                    id=f"ev_msg_{investigation_id}",
+                    investigation_id=investigation_id,
+                    media_type=EvidenceMediaType.TEXT,
+                    sha256=hashlib.sha256(text.encode()).hexdigest(),
+                    title="Message Forensic Target",
+                    source_origin="investigator_tool",
+                    content_payload=text,
+                    verification=VerificationResult(state=VerificationState.NOT_VERIFIED, source="engine.message.heuristics", confidence=0.9, details="Message analysis evidence"),
+                    created_at=datetime.now(UTC),
+                )
+                record = await asyncio.wait_for(analyzer.execute(ev), timeout=timeout_s)
+                canonical_evs = analyzer.normalize_to_canonical_evidence(investigation_id, record.findings)
+                evidence = [e.model_dump() for e in canonical_evs]
                 findings = record.findings
             else:
                 evidence = []
@@ -128,10 +174,22 @@ class InvestigatorToolRegistry:
 
         start = asyncio.get_event_loop().time()
         try:
-            if ImageAnalyzer:
+            if ImageAnalyzer is not None:
                 analyzer = ImageAnalyzer()
-                record = await asyncio.wait_for(analyzer.analyze_image(image_bytes=image_path.encode(), filename="evidence.png", investigation_id=investigation_id), timeout=timeout_s)
-                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in record.evidence]
+                ev = CanonicalEvidenceItem(
+                    id=f"ev_img_{investigation_id}_{uuid.uuid4().hex[:6]}",
+                    investigation_id=investigation_id,
+                    media_type=EvidenceMediaType.IMAGE,
+                    sha256=hashlib.sha256(image_path.encode()).hexdigest(),
+                    title="Image Forensic Target",
+                    source_origin="investigator_tool",
+                    content_payload=image_path,
+                    verification=VerificationResult(state=VerificationState.NOT_VERIFIED, source="engine.image.forensics", confidence=0.9, details="Image analysis target"),
+                    created_at=datetime.now(UTC),
+                )
+                record = await asyncio.wait_for(analyzer.execute(ev), timeout=timeout_s)
+                canonical_evs = analyzer.normalize_to_canonical_evidence(investigation_id, record.findings)
+                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in canonical_evs]
                 findings = record.findings
             else:
                 evidence = []
@@ -158,10 +216,22 @@ class InvestigatorToolRegistry:
 
         start = asyncio.get_event_loop().time()
         try:
-            if VideoAnalyzer:
+            if VideoAnalyzer is not None:
                 analyzer = VideoAnalyzer()
-                record = await asyncio.wait_for(analyzer.analyze_video(video_bytes=video_path.encode(), filename="video.mp4", investigation_id=investigation_id), timeout=timeout_s)
-                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in record.evidence]
+                ev = CanonicalEvidenceItem(
+                    id=f"ev_vid_{investigation_id}_{uuid.uuid4().hex[:6]}",
+                    investigation_id=investigation_id,
+                    media_type=EvidenceMediaType.VIDEO,
+                    sha256=hashlib.sha256(video_path.encode()).hexdigest(),
+                    title="Video Deepfake Target",
+                    source_origin="investigator_tool",
+                    content_payload=video_path,
+                    verification=VerificationResult(state=VerificationState.NOT_VERIFIED, source="engine.video.deepfake_and_stt", confidence=0.9, details="Video analysis target"),
+                    created_at=datetime.now(UTC),
+                )
+                record = await asyncio.wait_for(analyzer.execute(ev), timeout=timeout_s)
+                canonical_evs = analyzer.normalize_to_canonical_evidence(investigation_id, record.findings)
+                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in canonical_evs]
                 findings = record.findings
             else:
                 evidence = []
@@ -188,10 +258,22 @@ class InvestigatorToolRegistry:
 
         start = asyncio.get_event_loop().time()
         try:
-            if AudioAnalyzer:
+            if AudioAnalyzer is not None:
                 analyzer = AudioAnalyzer()
-                record = await asyncio.wait_for(analyzer.analyze_audio(audio_bytes=audio_path.encode(), filename="audio.wav", investigation_id=investigation_id), timeout=timeout_s)
-                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in record.evidence]
+                ev = CanonicalEvidenceItem(
+                    id=f"ev_aud_{investigation_id}_{uuid.uuid4().hex[:6]}",
+                    investigation_id=investigation_id,
+                    media_type=EvidenceMediaType.AUDIO,
+                    sha256=hashlib.sha256(audio_path.encode()).hexdigest(),
+                    title="Audio Forensic Target",
+                    source_origin="investigator_tool",
+                    content_payload=audio_path,
+                    verification=VerificationResult(state=VerificationState.NOT_VERIFIED, source="engine.audio.whisper_and_forensics", confidence=0.9, details="Audio analysis target"),
+                    created_at=datetime.now(UTC),
+                )
+                record = await asyncio.wait_for(analyzer.execute(ev), timeout=timeout_s)
+                canonical_evs = analyzer.normalize_to_canonical_evidence(investigation_id, record.findings)
+                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in canonical_evs]
                 findings = record.findings
             else:
                 evidence = []
@@ -218,10 +300,22 @@ class InvestigatorToolRegistry:
 
         start = asyncio.get_event_loop().time()
         try:
-            if URLAnalyzer:
+            if URLAnalyzer is not None:
                 analyzer = URLAnalyzer()
-                record = await asyncio.wait_for(analyzer.analyze_url(url=url, investigation_id=investigation_id), timeout=timeout_s)
-                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in record.evidence]
+                ev = CanonicalEvidenceItem(
+                    id=f"ev_url_{investigation_id}_{uuid.uuid4().hex[:6]}",
+                    investigation_id=investigation_id,
+                    media_type=EvidenceMediaType.URL,
+                    sha256=hashlib.sha256(url.encode()).hexdigest(),
+                    title="URL Forensic Target",
+                    source_origin=url,
+                    content_payload=url,
+                    verification=VerificationResult(state=VerificationState.NOT_VERIFIED, source="engine.url.forensics_and_ml", confidence=0.9, details="URL analysis target"),
+                    created_at=datetime.now(UTC),
+                )
+                record = await asyncio.wait_for(analyzer.execute(ev), timeout=timeout_s)
+                canonical_evs = analyzer.normalize_to_canonical_evidence(investigation_id, record.findings)
+                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in canonical_evs]
                 findings = record.findings
             else:
                 evidence = []
@@ -248,10 +342,22 @@ class InvestigatorToolRegistry:
 
         start = asyncio.get_event_loop().time()
         try:
-            if APKAnalyzer:
+            if APKAnalyzer is not None:
                 analyzer = APKAnalyzer()
-                record = await asyncio.wait_for(analyzer.analyze_apk(apk_bytes=apk_path.encode(), filename="app.apk", investigation_id=investigation_id), timeout=timeout_s)
-                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in record.evidence]
+                ev = CanonicalEvidenceItem(
+                    id=f"ev_apk_{investigation_id}_{uuid.uuid4().hex[:6]}",
+                    investigation_id=investigation_id,
+                    media_type=EvidenceMediaType.APK,
+                    sha256=hashlib.sha256(apk_path.encode()).hexdigest(),
+                    title="APK Forensic Target",
+                    source_origin="investigator_tool",
+                    content_payload=apk_path,
+                    verification=VerificationResult(state=VerificationState.NOT_VERIFIED, source="engine.apk.drebin_and_static", confidence=0.9, details="APK analysis target"),
+                    created_at=datetime.now(UTC),
+                )
+                record = await asyncio.wait_for(analyzer.execute(ev), timeout=timeout_s)
+                canonical_evs = analyzer.normalize_to_canonical_evidence(investigation_id, record.findings)
+                evidence = [e.model_dump() if hasattr(e, "model_dump") else e for e in canonical_evs]
                 findings = record.findings
             else:
                 evidence = []
@@ -295,9 +401,10 @@ class InvestigatorToolRegistry:
             details = f"Positively verified in SEBI database: {record['name']} ({record['type']})."
             verified_meta = record
         else:
-            # Check by exact name match
+            # Check by name match (exact or substring)
             for reg_no, data in VERIFIED_SEBI_INTERMEDIARIES.items():
-                if data["name"].lower() == name_clean:
+                d_name = data["name"].lower()
+                if d_name == name_clean or d_name in name_clean or name_clean in d_name:
                     state = VerificationState.VERIFIED
                     details = f"Positively verified by name in SEBI database: {data['name']} (Reg: {reg_no})."
                     verified_meta = data
@@ -471,17 +578,41 @@ class InvestigatorToolRegistry:
 
         evidence = []
         is_mismatch = False
-        reasons = []
+        reasons: list[str] = []
 
-        # Check blacklist
-        if upi_id and upi_id.lower() in KNOWN_MALICIOUS_INDICATORS["upi"]:
-            is_mismatch = True
-            reasons.append(f"UPI ID '{upi_id}' is in the high-risk fraudulent recipient register.")
+        # Whitelisted verified merchant escrow handles
+        VERIFIED_BROKER_ESCROWS = {
+            "zerodha.funds@hdfcbank", "groww.pay@icici", "angelone.pay@axisbank",
+            "icicisecurities.funds@icici", "kotaksec.funds@kotak", "motilaloswal.pay@hdfcbank",
+            "upstox.funds@hdfcbank", "5paisa.pay@yesbank", "dhan.funds@icici",
+            "amfi.investors@sbi", "cdsl.investor@icici", "nsdl.investor@hdfcbank",
+            "uti.mutualfund@sbi", "hdfcmf.invest@hdfcbank", "sbimf.sip@sbi",
+        }
+        upi_clean = (upi_id or "").strip().lower()
+        if upi_clean in VERIFIED_BROKER_ESCROWS:
+            is_mismatch = False
+            reasons = []
+        else:
+            # Check blacklist
+            if upi_clean in KNOWN_MALICIOUS_INDICATORS["upi"] or "scam" in upi_clean:
+                is_mismatch = True
+                reasons.append(f"UPI ID '{upi_id}' is in the high-risk fraudulent recipient register.")
 
-        # Personal handles masquerading as corporate
-        if upi_id and any(h in upi_id.lower() for h in ["vip", "profit", "return", "bonus", "scam"]):
-            is_mismatch = True
-            reasons.append("Payment handle uses deceptive solicitation terminology.")
+            # Regulatory, exchange, and IPO allotment impersonation on consumer VPAs
+            impersonation_words = ["sebi", "rbi", "nse", "bse", "ipo", "allotment", "unfreeze", "nodal", "recovery", "preipo", "dabba"]
+            consumer_psps = ["paytm", "ybl", "okhdfc", "okaxis", "ibl", "postbank", "freecharge", "airtel", "oksbi", "axl", "icici", "barodampay"]
+
+            handle_parts = upi_clean.split("@")
+            if len(handle_parts) == 2:
+                prefix, psp = handle_parts[0], handle_parts[1]
+                has_imp = any(w in prefix for w in impersonation_words)
+                if has_imp and any(c_psp in psp for c_psp in consumer_psps):
+                    is_mismatch = True
+                    reasons.append("Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.")
+
+            if any(h in upi_clean for h in ["vip", "profit", "return", "bonus", "tips", "signals", "cashless"]):
+                is_mismatch = True
+                reasons.append("Payment handle uses deceptive solicitation terminology.")
 
         if is_mismatch:
             evidence.append({
@@ -517,14 +648,24 @@ class InvestigatorToolRegistry:
             return ToolResult(tool_name="retrieve_guidance", success=False, error="Missing query")
 
         try:
-            if SEBIGuidelineMatcher:
-                matcher = SEBIGuidelineMatcher()
-                matches = await matcher.match_violations(text=query)
+            if SEBIGuidelineDetector is not None:
+                matcher = SEBIGuidelineDetector()
+                match_res = await matcher.match_guideline(claim_text=query)
                 citations = [
-                    {"title": m.guideline_title, "url": m.source_url, "regulation_ref": m.regulation_ref}
-                    for m in matches
+                    {
+                        "title": getattr(c, "title", "SEBI Advisory"),
+                        "url": getattr(c, "url", "https://www.sebi.gov.in"),
+                        "regulation_ref": getattr(c, "regulation_ref", ""),
+                    }
+                    for c in match_res.citations
                 ]
-                findings = {"matches_count": len(matches), "matches": [m.model_dump() if hasattr(m, "model_dump") else m for m in matches]}
+                findings = {
+                    "matches_count": 1 if match_res.is_violation else 0,
+                    "is_violation": match_res.is_violation,
+                    "status": match_res.status,
+                    "official_rule_summary": match_res.official_rule_summary,
+                    "confidence": match_res.confidence,
+                }
             else:
                 citations = [{"title": "SEBI (Investment Advisers) Regulations, 2013", "url": "https://www.sebi.gov.in"}]
                 findings = {"matches_count": 1}

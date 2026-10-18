@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "authority": "Securities and Exchange Board of India (SEBI)",
+  "canonical_corpus": [
+    {
+      "circular_id": "CIR/2023/123",
+      "citation_title": "Prohibition of Assured Returns (SEBI Circular CIR/2023/123)",
+      "full_title": "SEBI Investor Caution: Advisory Against Schemes Offering Guaranteed/Assured Returns",
+      "date": "2023-08-10",
+      "official_url": "https://www.sebi.gov.in/enforcement/orders/advisory-on-guaranteed-returns.html",
+      "governing_act": "SEBI (Investment Advisers) Regulations, 2013 and SEBI (Research Analysts) Regulations, 2014",
+      "key_clauses": [
+        "Prohibition of offering or promising assured, fixed, or guaranteed returns on securities investments.",
+        "Prohibition of zero-risk, capital protection, or sure-shot profit claims on social media or messaging platforms.",
+        "Mandatory disclosure that securities investments are subject to market risks."
+      ]
+    },
+    {
+      "circular_id": "CIR/2024/45",
+      "citation_title": "Unregistered Intermediaries & Closed Group Solicitation (SEBI Circular CIR/2024/45)",
+      "full_title": "SEBI Master Circular on Unregistered Online Investment Platforms and Virtual Trading Apps",
+      "date": "2024-03-15",
+      "official_url": "https://www.sebi.gov.in/legal/circulars/mar-2024/unregistered-virtual-entities.html",
+      "governing_act": "SEBI Act, 1992 Section 12(1) and SEBI (Intermediaries) Regulations, 2008",
+      "key_clauses": [
+        "Prohibition of unregistered entities soliciting investments through closed channels including Telegram, WhatsApp, and private groups.",
+        "Prohibition of claiming institutional FII/FPI quota access for retail investors through dedicated mobile applications.",
+        "Requirement that every intermediary display valid registration numbers starting with INA, INH, or INZ verified on sebi.gov.in."
+      ]
+    },
+    {
+      "circular_id": "RBI/2023/ALERT-LIST",
+      "citation_title": "RBI Cautionary Alert List on Unauthorized Forex & Trading Apps",
+      "full_title": "Reserve Bank of India Advisory on Unauthorized Online Forex and Investment Trading Platforms",
+      "date": "2023-11-24",
+      "official_url": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=54321",
+      "governing_act": "Foreign Exchange Management Act, 1999 (FEMA) and PMLA, 2002",
+      "key_clauses": [
+        "Unauthorized offshore digital trading apps are illegal for Indian residents.",
+        "Collection of funds through personal domestic UPI IDs for foreign speculative schemes violates FEMA rules."
+      ]
+    },
+    {
+      "circular_id": "NSE/2024/SOCIAL-ALERT",
+      "citation_title": "NSE Public Alert on Social Media Stock Tipsters and Pump-and-Dump Schemes",
+      "full_title": "National Stock Exchange Public Notice: Advisory on Unsolicited Stock Recommendations",
+      "date": "2024-01-18",
+      "official_url": "https://www.nseindia.com/invest/investor-awareness-against-social-media-pump-and-dump",
+      "governing_act": "SEBI (Prohibition of Fraudulent and Unfair Trade Practices) Regulations, 2003 (PFUTP)",
+      "key_clauses": [
+        "Caution against trading penny stocks based on speculative messages in Telegram/WhatsApp groups.",
+        "Only SEBI-registered Research Analysts (INH) and Investment Advisers (INA) may publish recommendations with research reports."
+      ]
+    }
+  ]
+}

@@ -14,7 +14,6 @@ from starlette.types import ASGIApp
 
 from .config import settings
 
-
 # Content-Security-Policy: strict for API (no HTML served from API)
 _API_CSP = (
     "default-src 'none'; "

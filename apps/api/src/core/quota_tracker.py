@@ -15,7 +15,6 @@ from typing import Any
 
 from fastapi import HTTPException, status
 
-from .config import settings
 from .redis_client import get_redis_client
 
 logger = logging.getLogger("vera.core.quota")

@@ -1,6 +1,7 @@
 """Health check endpoint enforcing versioned contract with real component pings."""
 
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter
 
@@ -41,10 +42,12 @@ async def check_health() -> HealthCheckResponse:
 
 
 @router.get("/ready")
-async def check_ready() -> dict:
+async def check_ready() -> Any:
     """Readiness probe checking DB, Redis, and AI availability. Returns HTTP 503 if unready."""
     import uuid
+
     from fastapi.responses import JSONResponse
+
     from ...queue.qstash import qstash_client
 
     db_health = await check_database_health()

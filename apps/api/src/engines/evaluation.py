@@ -7,7 +7,8 @@ Architecture Rule 13: Every investigation is reproducible.
 from __future__ import annotations
 
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -110,7 +111,7 @@ class ModelEvaluator:
         tp = cm.true_positives
         fp = cm.false_positives
         fn = cm.false_negatives
-        tn = cm.true_negatives
+        _tn = cm.true_negatives
 
         # Precision = TP / (TP + FP)
         precision = tp / (tp + fp) if (tp + fp) > 0 else 1.0

@@ -13,8 +13,8 @@ NEVER return VERIFIED, NOT_VERIFIED, or interpret an outage as safe.
 """
 
 import logging
+
 import httpx
-from typing import Any
 
 from ..contracts.verification import VerificationResult, VerificationState
 
@@ -35,10 +35,11 @@ class RegistryVerificationService:
                 details="Malformed or empty registration number format.",
             )
 
-        url = f"https://www.sebi.gov.in/sebiweb/other/OtherAction.do?doRecognisedFpi=yes&intmId={reg_number.strip()}"
+        url = "https://www.sebi.gov.in/sebiweb/other/OtherAction.do"
+        params = {"doRecognisedFpi": "yes", "intmId": reg_number.strip()}
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                resp = await client.get(url)
+                resp = await client.get(url, params=params)
                 if resp.status_code == 200 and "Valid Intermediary" in resp.text:
                     return VerificationResult(
                         state=VerificationState.VERIFIED,
@@ -73,9 +74,11 @@ class RegistryVerificationService:
 
     async def verify_mca_cin(self, cin: str) -> VerificationResult:
         """Queries MCA21 Ministry of Corporate Affairs portal."""
+        url = "https://www.mca.gov.in/mcafoportal/companyLLPMasterData.do"
+        params = {"cin": (cin or "").strip()}
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                resp = await client.get(f"https://www.mca.gov.in/mcafoportal/companyLLPMasterData.do?cin={cin}")
+                resp = await client.get(url, params=params)
                 if resp.status_code == 200 and "Company Status: Active" in resp.text:
                     return VerificationResult(
                         state=VerificationState.VERIFIED,
@@ -101,9 +104,11 @@ class RegistryVerificationService:
 
     async def verify_icann_domain(self, domain: str) -> VerificationResult:
         """Queries ICANN RDAP domain registry."""
+        import urllib.parse
+        clean_domain = urllib.parse.quote((domain or "").strip().lower(), safe="")
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                resp = await client.get(f"https://rdap.org/domain/{domain}")
+                resp = await client.get(f"https://rdap.org/domain/{clean_domain}")
                 if resp.status_code == 200:
                     return VerificationResult(
                         state=VerificationState.VERIFIED,

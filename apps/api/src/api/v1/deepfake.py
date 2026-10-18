@@ -11,7 +11,7 @@ POST /api/v1/deepfake-check
 
 import hashlib
 import logging
-from typing import Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
@@ -28,9 +28,17 @@ class DeepfakeCheckRequest(BaseModel):
         ...,
         description="Base64-encoded video bytes (may include data-URI prefix).",
     )
-    source_label: Optional[str] = Field(
+    source_label: str | None = Field(
         default="anonymous_upload",
         description="Optional label for audit log.",
+    )
+    filename: str | None = Field(
+        default="",
+        description="Optional filename of uploaded video.",
+    )
+    transcript: str | None = Field(
+        default="",
+        description="Optional custom spoken dialogue override for interactive testing.",
     )
 
 
@@ -50,10 +58,22 @@ class DeepfakeCheckResponse(BaseModel):
     temporal_flicker_score: float
     facial_manipulation_signals_detected: bool
     statement: str
+    summary_statement: str | None = None
     risk_tier: str
+    composite_risk_tier: str | None = None
+    composite_score: int | None = None
     model_version: str
     weights_digest: str
     uncertainty: float
+    transcript: str | None = None
+    advisory_signals_detected: bool = False
+    advisory_risk_tier: str | None = "NONE"
+    advisory_violations: list[str] = []
+    flagged_advisory_phrases: list[str] = []
+    visual_integrity: str | None = None
+    transcript_segments: list[dict[str, Any]] = []
+    translated_transcript: str | None = None
+    detected_language: str | None = "en"
 
 
 @router.post(
@@ -72,9 +92,9 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
 
     # ── Import engine ───────────────────────────────────────────────────────────
     try:
-        from ...engines.video_analyzer import VideoAnalyzer
         from ...contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
         from ...contracts.verification import VerificationResult, VerificationState
+        from ...engines.video_analyzer import VideoAnalyzer
     except ImportError as exc:
         logger.error("VideoAnalyzer or contracts not importable: %s", exc, exc_info=True)
         raise HTTPException(
@@ -118,7 +138,7 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
         investigation_id="quick_check",
         media_type=EvidenceMediaType.VIDEO,
         sha256=sha256,
-        title="Deepfake Quick Check Upload",
+        title=body.filename or "Deepfake Quick Check Upload",
         source_origin=body.source_label or "anonymous_upload",
         content_payload=raw_b64,   # VideoAnalyzer._execute expects the base64 string
         verification=VerificationResult(
@@ -127,6 +147,11 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
             confidence=1.0,
             details="Direct deepfake check upload",
         ),
+        metadata={
+            "filename": body.filename or "",
+            "transcript": body.transcript or "",
+            "custom_transcript": body.transcript or "",
+        },
     )
 
     # ── Run MesoNet engine ─────────────────────────────────────────────────────
@@ -157,15 +182,19 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
 
     # Map score to human-readable risk tier
     if agg >= 0.80:
-        risk_tier = "CRITICAL"
+        base_risk_tier = "CRITICAL"
     elif agg >= 0.60:
-        risk_tier = "HIGH"
+        base_risk_tier = "HIGH"
     elif agg >= 0.40:
-        risk_tier = "MEDIUM"
+        base_risk_tier = "MEDIUM"
     elif agg >= 0.20:
-        risk_tier = "LOW"
+        base_risk_tier = "LOW"
     else:
-        risk_tier = "MINIMAL"
+        base_risk_tier = "MINIMAL"
+
+    risk_tier = findings.get("risk_tier") or base_risk_tier
+    composite_risk_tier = findings.get("composite_risk_tier") or risk_tier
+    composite_score = findings.get("composite_score")
 
     return DeepfakeCheckResponse(
         sha256=sha256,
@@ -176,8 +205,21 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
         temporal_flicker_score=round(flicker, 4),
         facial_manipulation_signals_detected=has_signals,
         statement=statement,
+        summary_statement=findings.get("summary_statement"),
         risk_tier=risk_tier,
+        composite_risk_tier=composite_risk_tier,
+        composite_score=composite_score,
         model_version=analyzer.metadata.version,
         weights_digest=analyzer.metadata.weights_or_config_digest,
         uncertainty=round(record.uncertainty, 4),
+        transcript=findings.get("transcript"),
+        advisory_signals_detected=findings.get("advisory_signals_detected", False),
+        advisory_risk_tier=findings.get("advisory_risk_tier", "NONE"),
+        advisory_violations=findings.get("advisory_violations", []),
+        flagged_advisory_phrases=findings.get("flagged_advisory_phrases", []),
+        visual_integrity=findings.get("visual_integrity"),
+        transcript_segments=findings.get("transcript_segments", []),
+        translated_transcript=findings.get("translated_transcript"),
+        detected_language=findings.get("detected_language", "en"),
     )
+

@@ -131,7 +131,7 @@ class URLAnalyzer(BaseAnalyzer):
         subdomain_count = max(0, len(subdomains) - 2) if len(subdomains) > 2 else 0
         hyphen_count = host.count("-")
         digit_count = sum(c.isdigit() for c in host)
-        special_char_count = sum(not c.isalnum() and c not in ".-" for c in host)
+        _special_char_count = sum(not c.isalnum() and c not in ".-" for c in host)
 
         # Shannon Entropy of host
         entropy = self._shannon_entropy(host)
@@ -229,8 +229,8 @@ class URLAnalyzer(BaseAnalyzer):
         """
         # Try XGBoost library if available
         try:
-            import numpy as np
-            import xgboost as xgb
+            import numpy as np  # noqa: F401
+            import xgboost as xgb  # noqa: F401
             # If native model file is present, xgb.Booster(model_file=...)
         except ImportError:
             pass
@@ -317,7 +317,7 @@ class URLAnalyzer(BaseAnalyzer):
         if len(s2) == 0:
             return len(s1)
 
-        prev = range(len(s2) + 1)
+        prev = list(range(len(s2) + 1))
         for i, c1 in enumerate(s1):
             curr = [i + 1]
             for j, c2 in enumerate(s2):

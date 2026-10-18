@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ..contracts.analyzers import AnalyzerExecutionRecord, AnalyzerMetadata
+from ..contracts.analyzers import AnalyzerMetadata
 from ..contracts.enums import EvidenceCategory, EvidenceSeverity, SourceType
 from ..contracts.evidence import CanonicalEvidenceItem
 from ..contracts.phase2 import EvidenceItem
@@ -54,7 +54,7 @@ class PaddleOCREngine(BaseAnalyzer):
     async def _execute(self, evidence: CanonicalEvidenceItem) -> tuple[dict[str, Any], float]:
         """Runs OCR extraction on the provided image evidence."""
         start_t = time.perf_counter()
-        
+
         # Check payload
         raw_bytes = getattr(evidence, "content_bytes", None)
         text_payload = getattr(evidence, "content_payload", None)
@@ -64,7 +64,7 @@ class PaddleOCREngine(BaseAnalyzer):
             if self._ocr is None:
                 from paddleocr import PaddleOCR
                 self._ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
-            
+
             # If real image bytes or path provided
             ocr_output = self._ocr.ocr(raw_bytes or text_payload, cls=True)
             lines = []
@@ -74,7 +74,7 @@ class PaddleOCREngine(BaseAnalyzer):
                     box, (txt, conf) = line
                     lines.append({"text": txt, "confidence": round(conf, 4), "polygon": box})
                     extracted_text_parts.append(txt)
-            
+
             full_text = " ".join(extracted_text_parts)
             duration_ms = (time.perf_counter() - start_t) * 1000.0
             return {
@@ -104,7 +104,7 @@ class PaddleOCREngine(BaseAnalyzer):
         """Normalizes raw OCR extraction into a canonical Phase 2 Evidence item."""
         full_text = ocr_result.get("full_text", "")
         uid = hashlib.sha256(f"{investigation_id}:{source_input_id}:{full_text}".encode()).hexdigest()[:16]
-        
+
         # Determine category & severity based on recognized keywords
         has_suspicious_claim = any(
             kw in full_text.lower()

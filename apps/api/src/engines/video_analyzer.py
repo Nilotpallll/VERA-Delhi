@@ -731,9 +731,10 @@ class VideoAnalyzer(BaseAnalyzer):
             r"(?<!without\s)(?<!no\s)(?<!not\s)\bguaranteed\s+(?:returns?|profit|income|payout)\b",
             r"(?<!without\s)(?<!no\s)(?<!not\s)\bassured\s+(?:returns?|profit|gain)\b",
             r"\b(?:zero\s+risk|risk[- ]free)\b",
-
             r"\b(?:100%\s+accuracy|sureshot)\b",
             r"\b(?:double\s+your\s+money|50,000\s+rupees\s+daily\s+payout)\b",
+            r"(?<!without\s)(?<!no\s)(?<!not\s)\b(?:get\s+)?(?:double|triple)\s*(?:the|your|our|my)?\s*(?:money|investment|paisa|capital|funds)\b",
+            r"\b(?:get|make|receive|give)\s+(?:double|triple)\b",
             r"\b(?:paisa\s+double|garanti|pakka\s+profit)\b",
             r"गारंटीड?\s*(?:रिटर्न|मुनाफा|फायदा|पayout)?",
             r"निश्चित\s*(?:रिटर्न|लाभ|मुनाफा)",
@@ -772,6 +773,8 @@ class VideoAnalyzer(BaseAnalyzer):
 
         # 3. Direct fund solicitation / UPI deposit requests (non-greedy)
         patterns_fund = [
+            r"\b(?:please\s+)?invest\s+\d+\s*(?:lakhs?|lacs?|crores?|thousand|k|rupees|rs\.?|inr)?\b",
+            r"\b(?:invest|deposit)\s+[\d,]+\s*(?:lakhs?|lacs?|crores?|thousand|k|rupees|rs\.?|inr)?\b",
             r"\b(?:send|transfer)\s+(?:[\d,]+\s*(?:rupees|rs\.?|inr)?\s+)?to\s+my\s+upi\b",
             r"\bdeposit\s+[\d,]+\s*(?:rupees|rs\.?|inr)?\b",
             r"\bsend\s+registration\s+fees\s+to\s+my\s+upi\b",
@@ -793,6 +796,10 @@ class VideoAnalyzer(BaseAnalyzer):
 
         # 4. False SEBI claims / identity impersonation
         patterns_sebi = [
+            r"\b(?:sebi|sabi)\s+(?:certified|registered|approved)(?:\s+investment)?\s+(?:advisor|adviser)\b",
+            r"\b(?:registered|certified)\s+investment\s+(?:advisor|adviser)\b",
+            r"\b(?:sebi|sabi)\s+registered\b",
+            r"\b(?:sebi|sabi)\s+(?:investment\s+)?(?:advisor|adviser)\b",
             r"\bsebi\s+certified\s+senior\s+advisor\b",
             r"\bsebi\s+(?:certified|registered|approved)\s+advisor\b",
             r"\bnirmala\s+sitharaman\b",

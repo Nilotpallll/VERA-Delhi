@@ -1,0 +1,911 @@
+{
+  "dataset_name": "VERA Production Baseline URL/UPI/Entity Evaluation Corpus (100 Items)",
+  "total_samples": 100,
+  "breakdown": {
+    "urls": 50,
+    "upis": 30,
+    "companies_intermediaries": 20
+  },
+  "samples": [
+    {
+      "id": "eval_url_phish_001",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure1.top/verify",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Punycode/Typosquat Broker Login",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_002",
+      "modality": "url",
+      "content": "http://192.168.1.105:8080/sebi-allotment/login.html",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #IP Address Host Suspicious Path",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_003",
+      "modality": "url",
+      "content": "https://groww-vip-investments.xyz/app-download",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake Subdomain TLD Phishing",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_004",
+      "modality": "url",
+      "content": "https://angelone-pro-trader.club/auth/login",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Club TLD Impersonation",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_005",
+      "modality": "url",
+      "content": "https://sebi-verification-portal.click/unfreeze",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Click TLD Regulatory Phish",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_006",
+      "modality": "url",
+      "content": "http://tata-technologies-preipo-allotment.online",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #HTTP Insecure Pre-IPO Allocation",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_007",
+      "modality": "url",
+      "content": "https://nseindia-insider-portal.site/register",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake Exchange Registration",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_008",
+      "modality": "url",
+      "content": "https://icici-direct-instant-loan.biz/apply",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake Direct Lending Portal",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_009",
+      "modality": "url",
+      "content": "https://h-d-f-c-securities-vip.top/portal",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Hyphenated Typosquatting",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_010",
+      "modality": "url",
+      "content": "https://kotak-cherry-bonus.vip/claim",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #VIP TLD Fake Promo Claim",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_011",
+      "modality": "url",
+      "content": "http://bit.ly/sebi-investor-bonus-2024",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Shortened URL Obfuscation",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_012",
+      "modality": "url",
+      "content": "https://tinyurl.com/zerodha-vip-signals",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Shortened URL Obfuscation",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_013",
+      "modality": "url",
+      "content": "https://motilaloswal-circuit-tips.cc/join",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #CC TLD Operator Tips Gate",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_014",
+      "modality": "url",
+      "content": "https://upstox-free-demat-crypto.tk/bonus",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #TK High Risk TLD",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_015",
+      "modality": "url",
+      "content": "https://5paisa-vip-institutional.ml/access",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #ML High Risk TLD",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_016",
+      "modality": "url",
+      "content": "https://binance-india-p2p-arbitrage.top/deposit",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Crypto Arbitrage Phish",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_017",
+      "modality": "url",
+      "content": "https://wazirx-recovery-portal.xyz/claim",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake Recovery Portal",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_018",
+      "modality": "url",
+      "content": "http://rbi-currency-exchange-nodal.info/release",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake Central Bank Release",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_019",
+      "modality": "url",
+      "content": "https://sharekhan-gold-scheme.club/pay",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake Gold Investment",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_020",
+      "modality": "url",
+      "content": "https://paytm-money-double-bonanza.click/win",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake FinTech Bonanza",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_021",
+      "modality": "url",
+      "content": "https://dhan-algo-trading-bot.site/download",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Fake Algo Download",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_022",
+      "modality": "url",
+      "content": "https://aliceblue-free-call-tips.top/group",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Phishing Landing Group",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_023",
+      "modality": "url",
+      "content": "https://religare-broking-vip.buzz/login",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Buzz TLD Phish",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_024",
+      "modality": "url",
+      "content": "http://103.224.182.242/zerodha/auth",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Raw IP Login Gate",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_phish_025",
+      "modality": "url",
+      "content": "https://fyers-pro-terminal.rest/connect",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "CERT-In Incident Database #Rest TLD Broker Clone",
+      "category": "fraudulent_url"
+    },
+    {
+      "id": "eval_url_legit_001",
+      "modality": "url",
+      "content": "https://www.sebi.gov.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Official SEBI Portal",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_002",
+      "modality": "url",
+      "content": "https://www.nseindia.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #National Stock Exchange",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_003",
+      "modality": "url",
+      "content": "https://www.bseindia.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Bombay Stock Exchange",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_004",
+      "modality": "url",
+      "content": "https://zerodha.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Zerodha Broking Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_005",
+      "modality": "url",
+      "content": "https://groww.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Groww Invest Tech",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_006",
+      "modality": "url",
+      "content": "https://www.amfiindia.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Association of Mutual Funds in India",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_007",
+      "modality": "url",
+      "content": "https://www.rbi.org.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Reserve Bank of India",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_008",
+      "modality": "url",
+      "content": "https://www.incometax.gov.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Income Tax Department",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_009",
+      "modality": "url",
+      "content": "https://www.mca.gov.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Ministry of Corporate Affairs",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_010",
+      "modality": "url",
+      "content": "https://www.angelone.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Angel One Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_011",
+      "modality": "url",
+      "content": "https://www.icicidirect.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #ICICI Securities Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_012",
+      "modality": "url",
+      "content": "https://www.hdfcsec.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #HDFC Securities Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_013",
+      "modality": "url",
+      "content": "https://www.kotaksecurities.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Kotak Securities Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_014",
+      "modality": "url",
+      "content": "https://www.motilaloswal.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Motilal Oswal Financial Services",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_015",
+      "modality": "url",
+      "content": "https://upstox.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #RKSV Securities (Upstox)",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_016",
+      "modality": "url",
+      "content": "https://www.5paisa.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #5paisa Capital Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_017",
+      "modality": "url",
+      "content": "https://dhan.co",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Raise Financial Services (Dhan)",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_018",
+      "modality": "url",
+      "content": "https://www.cdslindia.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Central Depository Services Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_019",
+      "modality": "url",
+      "content": "https://www.nsdl.co.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #National Securities Depository Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_020",
+      "modality": "url",
+      "content": "https://www.crisil.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #CRISIL Ratings",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_021",
+      "modality": "url",
+      "content": "https://www.icra.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #ICRA Credit Rating Agency",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_022",
+      "modality": "url",
+      "content": "https://www.careedge.in",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #CARE Ratings Ltd",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_023",
+      "modality": "url",
+      "content": "https://www.sbicaps.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #SBI Capital Markets",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_024",
+      "modality": "url",
+      "content": "https://www.utiicai.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #UTI Mutual Fund",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_url_legit_025",
+      "modality": "url",
+      "content": "https://www.nipponindiaim.com",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "Official Regulatory/Entity Registry #Nippon India Mutual Fund",
+      "category": "legitimate_url"
+    },
+    {
+      "id": "eval_upi_fraud_001",
+      "modality": "upi",
+      "content": "sebi-investor-verification-1@paytm",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Impersonating SEBI verification",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_002",
+      "modality": "upi",
+      "content": "nse-ipo-allocation-desk@ybl",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake NSE IPO desk",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_003",
+      "modality": "upi",
+      "content": "bse-allotment-refund@okhdfc",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake BSE refund desk",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_004",
+      "modality": "upi",
+      "content": "zerodha-pro-trading-vip@icici",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake Zerodha VIP handle",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_005",
+      "modality": "upi",
+      "content": "tata.tech.ipo.payment@ibl",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake Pre-IPO UPI payment",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_006",
+      "modality": "upi",
+      "content": "groww.vip.signals.daily@axl",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Unregistered advisory UPI collection",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_007",
+      "modality": "upi",
+      "content": "rbi.forex.penalty.desk@sbi",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake RBI penalty fee handle",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_008",
+      "modality": "upi",
+      "content": "angelone.institutional.margin@barodampay",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake broker institutional margin",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_009",
+      "modality": "upi",
+      "content": "sebi.recovery.nodal.officer@freecharge",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake SEBI recovery officer",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_010",
+      "modality": "upi",
+      "content": "motilal.insider.tips@ybl",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Illegal insider tips handle",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_011",
+      "modality": "upi",
+      "content": "crypto.recovery.specialist@airtel",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Fake recovery service",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_012",
+      "modality": "upi",
+      "content": "vip.circuit.trader.fees@oksbi",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Operator group illegal subscription",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_013",
+      "modality": "upi",
+      "content": "demat.unfreeze.sebi@postbank",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Phishing Demat unfreeze fee",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_014",
+      "modality": "upi",
+      "content": "dabba.trading.cashless@icici",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Illegal dabba trading collection",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_fraud_015",
+      "modality": "upi",
+      "content": "preipo.shares.direct@okaxis",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "NPCI Impersonation Bulletin #Unlicensed share sale collection",
+      "category": "fraudulent_upi"
+    },
+    {
+      "id": "eval_upi_legit_001",
+      "modality": "upi",
+      "content": "zerodha.funds@hdfcbank",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Inward Escrow",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_002",
+      "modality": "upi",
+      "content": "groww.pay@icici",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Merchant Inward",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_003",
+      "modality": "upi",
+      "content": "angelone.pay@axisbank",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Client Collateral Account",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_004",
+      "modality": "upi",
+      "content": "icicisecurities.funds@icici",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Client Funds Account",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_005",
+      "modality": "upi",
+      "content": "kotaksec.funds@kotak",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Escrow Handle",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_006",
+      "modality": "upi",
+      "content": "motilaloswal.pay@hdfcbank",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Merchant Handle",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_007",
+      "modality": "upi",
+      "content": "upstox.funds@hdfcbank",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Margin Escrow",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_008",
+      "modality": "upi",
+      "content": "5paisa.pay@yesbank",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Escrow Inward",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_009",
+      "modality": "upi",
+      "content": "dhan.funds@icici",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Verified Broker Client Collateral Handle",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_010",
+      "modality": "upi",
+      "content": "amfi.investors@sbi",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #AMFI Official Investor Awareness Account",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_011",
+      "modality": "upi",
+      "content": "cdsl.investor@icici",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Depository Official Fee Collection",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_012",
+      "modality": "upi",
+      "content": "nsdl.investor@hdfcbank",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Depository Official Fee Handle",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_013",
+      "modality": "upi",
+      "content": "uti.mutualfund@sbi",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #Official Mutual Fund Scheme Collection",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_014",
+      "modality": "upi",
+      "content": "hdfcmf.invest@hdfcbank",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #HDFC Asset Management Official Account",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_upi_legit_015",
+      "modality": "upi",
+      "content": "sbimf.sip@sbi",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI/NPCI Registered Intermediary Escrow #SBI Mutual Fund Official Collection",
+      "category": "legitimate_upi"
+    },
+    {
+      "id": "eval_entity_reg_001",
+      "modality": "company",
+      "content": "ZERODHA BROKING LIMITED (SEBI Reg: INZ000031633)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_002",
+      "modality": "company",
+      "content": "ICICI SECURITIES LIMITED (SEBI Reg: INZ000183631)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker & Merchant Banker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_003",
+      "modality": "company",
+      "content": "HDFC SECURITIES LIMITED (SEBI Reg: INZ000186937)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_004",
+      "modality": "company",
+      "content": "KOTAK SECURITIES LIMITED (SEBI Reg: INZ000200137)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_005",
+      "modality": "company",
+      "content": "ANGEL ONE LIMITED (SEBI Reg: INZ000161534)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_006",
+      "modality": "company",
+      "content": "MOTILAL OSWAL FINANCIAL SERVICES LIMITED (SEBI Reg: INZ000158836)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker & Portfolio Manager",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_007",
+      "modality": "company",
+      "content": "RKSV SECURITIES INDIA PRIVATE LIMITED (SEBI Reg: INZ000185137)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_008",
+      "modality": "company",
+      "content": "5PAISA CAPITAL LIMITED (SEBI Reg: INZ000010231)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_009",
+      "modality": "company",
+      "content": "SHAREKHAN LIMITED (SEBI Reg: INZ000171337)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_reg_010",
+      "modality": "company",
+      "content": "SBICAP SECURITIES LIMITED (SEBI Reg: INZ000200032)",
+      "is_fraud": false,
+      "expected_risk": "LOW",
+      "provenance": "SEBI Intermediary Database #Stock Broker",
+      "category": "registered_intermediary"
+    },
+    {
+      "id": "eval_entity_unreg_001",
+      "modality": "company",
+      "content": "Global Alpha Wealth Fund Syndicate (Status: UNREGISTERED)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Debarred unregistered entity",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_002",
+      "modality": "company",
+      "content": "Quantum Algo AI Wealth Management (Status: FAKE_REG_INZ999999999)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Fictitious registration",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_003",
+      "modality": "company",
+      "content": "Tata Tech Pre-IPO Allocation Trust (Status: NONE)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Unlicensed share solicitation",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_004",
+      "modality": "company",
+      "content": "SEBI Certified Recovery Taskforce Ltd (Status: IMPERSONATION)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Impersonating regulator",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_005",
+      "modality": "company",
+      "content": "VIP Circuit Wealth Advisers Pvt Ltd (Status: UNREGISTERED)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Unlicensed investment advice",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_006",
+      "modality": "company",
+      "content": "Royal Forex Arbitrage India Ltd (Status: RBI_ALERT_LIST)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Unpermitted foreign forex platform",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_007",
+      "modality": "company",
+      "content": "Olymp Trade Binary Option Ltd (Status: RBI_ALERT_LIST)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Unauthorized OTC derivatives",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_008",
+      "modality": "company",
+      "content": "Apex Crypto Yield Mining Syndicate (Status: UNREGISTERED)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Ponzi scheme structure",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_009",
+      "modality": "company",
+      "content": "SMC Global Clone Trading Hub (Status: CLONE_ENTITY)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Clone of registered broker",
+      "category": "unregistered_or_debarred"
+    },
+    {
+      "id": "eval_entity_unreg_010",
+      "modality": "company",
+      "content": "Mahadev Book Stock Market Tips Cell (Status: DEBARRED)",
+      "is_fraud": true,
+      "expected_risk": "CRITICAL",
+      "provenance": "SEBI Debarred Entities & RBI Alert List #Debarred syndication entity",
+      "category": "unregistered_or_debarred"
+    }
+  ]
+}

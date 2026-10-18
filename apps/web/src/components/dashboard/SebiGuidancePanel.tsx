@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { BookOpen, ExternalLink, AlertTriangle, ShieldCheck, FileCheck } from "lucide-react";
+import React, { useState } from "react";
+import { BookOpen, ExternalLink, ShieldCheck, ChevronDown } from "lucide-react";
 
 export interface SebiGuidanceItem {
   id: string;
@@ -44,6 +44,16 @@ const SAMPLE_GUIDANCE: SebiGuidanceItem[] = [
     matchedClaim: "'SEBI Registered Senior Analyst Rajesh Kumar'",
     officialSourceUrl: "https://www.sebi.gov.in/legal/regulations/sep-2014/securities-and-exchange-board-of-india-research-analysts-regulations-2014_28108.html",
   },
+  {
+    id: "sebi_04",
+    circularNo: "SEBI/HO/MIRSD/DOS3/CIR/P/2018/115",
+    title: "Advisory on Fake Trading Portals & Stock Recommendation Groups",
+    summary:
+      "Investors must only execute trades through verified SEBI-registered broker portals. Never transfer investment funds to personal or unauthorized institutional escrow accounts.",
+    violationType: "Phishing & Fake Broker App",
+    matchedClaim: "'Verify your trading account immediately at sebi-verification.top'",
+    officialSourceUrl: "https://www.sebi.gov.in",
+  },
 ];
 
 export function SebiGuidancePanel({
@@ -51,56 +61,94 @@ export function SebiGuidancePanel({
 }: {
   guidanceMatches?: SebiGuidanceItem[];
 }) {
+  const [expandedId, setExpandedId] = useState<string | null>("sebi_01");
+
+  const toggleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-sm font-semibold text-slate-100">SEBI Regulatory Guidance &amp; Circular Matches</h3>
-        </div>
-        <span className="text-[11px] font-mono text-slate-500">
-          pgvector RAG Citations ({guidanceMatches.length} Matches)
-        </span>
-      </div>
+    <div className="w-full">
+      {/* 2-Column Bento Grid of Rule Cards (radius 24, accordion expand) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {guidanceMatches.map((item, idx) => {
+          const isExpanded = expandedId === item.id;
+          return (
+            <div
+              key={item.id}
+              className="vera-glass rounded-[24px] p-6 text-left flex flex-col justify-between transition-all duration-200"
+            >
+              <div>
+                {/* Header Row */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[var(--nav-track)] border border-[var(--border)] font-mono-tabular text-xs font-bold flex items-center justify-center text-[var(--text-primary)]">
+                      {idx + 1}
+                    </span>
+                    <span className="font-mono-tabular text-xs text-[var(--text-muted)] font-medium truncate max-w-[200px]">
+                      {item.circularNo}
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono-tabular font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                    {item.violationType}
+                  </span>
+                </div>
 
-      <div className="space-y-3">
-        {guidanceMatches.map((item) => (
-          <div
-            key={item.id}
-            className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 space-y-2.5 text-xs"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="font-mono text-indigo-400 font-semibold text-[11px]">
-                {item.circularNo}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-rose-950/70 border border-rose-800/60 text-rose-300 font-mono text-[10px] self-start sm:self-auto">
-                {item.violationType}
-              </span>
-            </div>
+                {/* Title */}
+                <h3 className="text-base font-semibold text-[var(--text-primary)] tracking-tight leading-snug">
+                  {item.title}
+                </h3>
 
-            <h4 className="font-semibold text-slate-200 text-xs">{item.title}</h4>
+                {/* Summary / Accordion content */}
+                <p className="mt-2 text-sm text-[var(--text-muted)] leading-relaxed">
+                  {item.summary}
+                </p>
 
-            <p className="text-slate-400 text-[11px] leading-relaxed">{item.summary}</p>
+                {/* Expandable Claim Details */}
+                {isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-3">
+                    <div className="p-3 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)] text-xs text-[var(--text-primary)]">
+                      <span className="font-semibold block text-[var(--text-muted)] mb-1">
+                        Flagged Claim Pattern:
+                      </span>
+                      <span className="italic font-mono-tabular">&ldquo;{item.matchedClaim}&rdquo;</span>
+                    </div>
 
-            <div className="p-2 rounded bg-slate-900 border border-slate-800/80 text-[11px] text-slate-300">
-              <span className="text-amber-400 font-medium">Matched Suspect Claim: </span>
-              <span className="italic font-serif">{item.matchedClaim}</span>
-            </div>
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <span className="flex items-center gap-1.5 text-[var(--verdict-safe)] font-medium">
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>SEBI Enforcement Standard</span>
+                      </span>
+                      <a
+                        href={item.officialSourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-[var(--navy-1)] dark:text-[var(--accent)] hover:underline inline-flex items-center gap-1"
+                      >
+                        <span>Official Circular</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            <div className="pt-1 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500 font-mono">SEBI Official Gazetted Rule</span>
-              <a
-                href={item.officialSourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
+              {/* Bottom Expand Toggle Bar */}
+              <button
+                type="button"
+                onClick={() => toggleExpand(item.id)}
+                className="mt-4 pt-3 border-t border-[var(--border)] w-full flex items-center justify-between text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               >
-                <span>Read Official Circular</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+                <span>{isExpanded ? "Collapse Details" : "Expand Legal Citation"}</span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

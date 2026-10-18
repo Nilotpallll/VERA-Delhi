@@ -211,7 +211,7 @@ class APKAnalyzer(BaseAnalyzer):
                 else:
                     has_debug_cert = True  # un-signed or stripped
 
-        except Exception as exc:
+        except Exception:
             # Fallback extraction from raw bytes
             embedded_urls = [u.decode("latin1", errors="ignore") for u in re.findall(rb"https?://[A-Za-z0-9.\-_/]+", apk_bytes[:500000])]
             permissions = ["android.permission.RECEIVE_SMS", "android.permission.SYSTEM_ALERT_WINDOW"]
@@ -299,7 +299,7 @@ class APKAnalyzer(BaseAnalyzer):
         """XGBoost inference over Drebin feature representation."""
         # Try XGBoost library if available
         try:
-            import xgboost as xgb
+            import xgboost as xgb  # noqa: F401
         except ImportError:
             pass
 

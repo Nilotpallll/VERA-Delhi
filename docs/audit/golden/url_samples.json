@@ -1,0 +1,12 @@
+{
+  "scam": {
+    "status": "SUCCESS",
+    "is_suspicious": true,
+    "model_version": "url.xgboost.v1.0.0"
+  },
+  "clean": {
+    "status": "SUCCESS",
+    "is_suspicious": false,
+    "model_version": "url.xgboost.v1.0.0"
+  }
+}

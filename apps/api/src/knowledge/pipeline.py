@@ -100,6 +100,31 @@ OFFICIAL_REGULATORY_SEEDS = [
             "are authorized to issue stock recommendations with mandated risk disclosure."
         ),
     },
+    {
+        "source_url": "https://www.sebi.gov.in/legal/circulars/asba-mandatory-ipo-block.html",
+        "title": "SEBI Master Circular: Mandatory ASBA and UPI Block Mechanism for IPO Applications",
+        "publisher": "SEBI",
+        "category": "circular",
+        "publication_date": "2023-09-01T00:00:00Z",
+        "content": (
+            "All retail investors applying for public issues (IPOs) must use the ASBA (Applications Supported by Blocked Amount) facility "
+            "or UPI block mandate where funds remain safely blocked in their own bank account until allotment. Transferring funds directly "
+            "to any individual, intermediary, or broker UPI handle or third-party bank account for pre-IPO or institutional quota allocation "
+            "is fraudulent and strictly prohibited."
+        ),
+    },
+    {
+        "source_url": "https://www.sebi.gov.in/media/press-releases/deepfake-advisory-caution.html",
+        "title": "SEBI Public Cautionary Advisory: Misleading Deepfake Videos Endorsing Stocks and Schemes",
+        "publisher": "SEBI",
+        "category": "advisory",
+        "publication_date": "2024-04-10T00:00:00Z",
+        "content": (
+            "SEBI warns public against manipulated videos and synthetic voice deepfakes misusing identities of prominent personalities, "
+            "ministers, and regulatory leadership to recommend fraudulent trading schemes, automated algorithmic trading software, or VIP channels. "
+            "SEBI officials do not provide investment advice, endorse specific companies, or solicit funds for trading."
+        ),
+    },
 ]
 
 

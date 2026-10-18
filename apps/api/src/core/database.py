@@ -33,6 +33,7 @@ def _get_engine():
         if "asyncpg" in settings.DATABASE_URL:
             # Supabase PgBouncer pooler requires prepared statements cache to be disabled
             connect_args["statement_cache_size"] = 0
+            connect_args["timeout"] = 2.0  # Fast connection timeout for offline/unreachable DB
 
         _engine = create_async_engine(
             settings.DATABASE_URL,

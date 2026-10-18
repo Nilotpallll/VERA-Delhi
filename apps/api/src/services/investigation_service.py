@@ -27,31 +27,21 @@ from ..contracts.enums import (
     SourceType,
 )
 from ..contracts.phase2 import (
-    AddInputRequest,
     AnalyzeRequest,
-    EvidenceItem,
-    InvestigationDetailResponse,
-    InvestigationInput,
     InvestigationInputCreate,
-    InvestigationReport,
 )
 from ..core.config import settings
 from ..core.observability import logger
 from ..engines.registry import analyzer_registry
 from ..models.phase2 import (
-    AuditLogModel,
     AnalyzerRunModel,
-    ClaimModel,
+    AuditLogModel,
     EvidenceModel,
     InputModel,
     InvestigationModel,
-    ModelRunModel,
     ReportModel,
     RiskSignalModel,
-    UserModel,
-    VerificationResultModel,
 )
-from ..scoring.engine import DeterministicScoringEngine
 
 
 def _new_id(prefix: str = "id") -> str:
@@ -752,7 +742,7 @@ async def generate_report(
 
     # Collect IDs of all stored sub-records
     ev_ids = [e.id for e in inv.evidence]
-    entity_ids = []  # entities would be populated here in Phase 3
+    entity_ids: list[str] = []  # entities would be populated here in Phase 3
     claim_ids = [c.id for c in inv.claims]
     sig_ids = [s.id for s in inv.risk_signals]
     model_run_ids = [m.id for m in inv.model_runs]

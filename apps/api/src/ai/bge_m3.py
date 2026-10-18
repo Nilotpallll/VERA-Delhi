@@ -7,7 +7,6 @@ Architecture Rule 15: Open-weights, zero paid dependencies.
 import hashlib
 import math
 import re
-from typing import Any
 
 from .base import EmbeddingProvider
 
@@ -47,8 +46,10 @@ class BGEM3EmbeddingProvider(EmbeddingProvider):
             if self._model is None:
                 from sentence_transformers import SentenceTransformer
                 self._model = SentenceTransformer(self._model_name)
-            embeddings = self._model.encode(texts, normalize_embeddings=True)
-            return [vec.tolist() for vec in embeddings]
+            if self._model is not None:
+                embeddings = self._model.encode(texts, normalize_embeddings=True)
+                return [vec.tolist() for vec in embeddings]
+            raise RuntimeError("SentenceTransformer model is unavailable")
         except Exception:
             # Deterministic, normalized fallback embedding generator based on text sha256 + token hashes
             return [self._deterministic_fallback_embed(t) for t in texts]

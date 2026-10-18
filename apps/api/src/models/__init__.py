@@ -6,9 +6,10 @@ Architecture Rule 13: Every investigation must be reproducible from stored versi
 """
 
 from .base import Base
+from .knowledge import KnowledgeChunkModel, KnowledgeDocumentModel
 from .phase2 import (
-    AuditLogModel,
     AnalyzerRunModel,
+    AuditLogModel,
     ClaimModel,
     EntityModel,
     EvidenceModel,
@@ -21,7 +22,6 @@ from .phase2 import (
     UserModel,
     VerificationResultModel,
 )
-from .knowledge import KnowledgeChunkModel, KnowledgeDocumentModel
 
 __all__ = [
     "Base",

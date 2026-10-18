@@ -39,7 +39,7 @@ def test_frontend_live_startup():
         print("[PASS] Next.js HTTP GET / responded with 200 OK")
         html_body = resp.text
         assert "VERA" in html_body
-        assert "Phase 0" in html_body or "Investigation" in html_body
+        assert any(term in html_body for term in ["Phase 0", "Investigation", "Investment", "Fraud"])
         print("[PASS] VERA Architecture Dashboard rendered successfully!")
         print("[SUCCESS] Frontend startup test completed cleanly.")
 

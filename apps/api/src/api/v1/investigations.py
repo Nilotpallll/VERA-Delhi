@@ -18,27 +18,21 @@ Architecture Rules:
   Rule 13 — Every investigation is reproducible.
 """
 
+import asyncio
 from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...contracts.enums import EvidenceCategory, EvidenceSeverity, InputType, SourceType
 from ...contracts.phase2 import (
     AddInputRequest,
     AnalyzeRequest,
-    EvidenceItem,
-    EvidenceListResponse,
-    InvestigationDetailResponse,
-    InvestigationInput,
-    InvestigationInputCreate,
-    InvestigationReport,
 )
 from ...core.config import settings
 from ...core.idempotency import get_idempotency_response, store_idempotency_response
 from ...core.observability import logger
+from ...investigator.graph import VERAInvestigator
 from ...models.phase2 import (
     AnalyzerRunModel,
     ClaimModel,
@@ -52,14 +46,12 @@ from ...models.phase2 import (
 )
 from ...services.investigation_service import (
     add_inputs,
-    append_evidence,
     create_investigation,
     generate_report,
     get_investigation,
     run_analysis_pipeline,
 )
 from ..deps import get_db_session, rate_limit
-from ...investigator.graph import VERAInvestigator
 
 router = APIRouter(prefix="/investigations", tags=["Investigations v2"])
 
@@ -95,22 +87,26 @@ async def create_investigation_endpoint(
         if cached:
             return cached
 
-    title = req.get("title", "")
-    if not title or len(title) < 3:
+    raw_title = req.get("title")
+    if not isinstance(raw_title, str) or len(raw_title.strip()) < 3:
         raise HTTPException(status_code=400, detail="title must be at least 3 characters")
+    title = raw_title.strip()
 
     if db is not None:
         try:
-            inv = await create_investigation(
-                db,
-                title=title,
-                target_entity_name=req.get("target_entity_name"),
-                primary_url=req.get("primary_url"),
-                summary_note=req.get("summary_note"),
-                submitted_by=req.get("submitted_by"),
-                idempotency_key=idempotency_key,
+            inv = await asyncio.wait_for(
+                create_investigation(
+                    db,
+                    title=title,
+                    target_entity_name=req.get("target_entity_name"),
+                    primary_url=req.get("primary_url"),
+                    summary_note=req.get("summary_note"),
+                    submitted_by=req.get("submitted_by"),
+                    idempotency_key=idempotency_key,
+                ),
+                timeout=2.0,
             )
-            await db.flush()
+            await asyncio.wait_for(db.flush(), timeout=2.0)
             resp = _inv_to_dict(inv)
         except Exception as exc:
             logger.error("DB create investigation failed: %s", exc, exc_info=True)
@@ -230,7 +226,7 @@ async def add_inputs_endpoint(
 )
 async def analyze_investigation_endpoint(
     investigation_id: str,
-    req: AnalyzeRequest = AnalyzeRequest(),
+    req: AnalyzeRequest = AnalyzeRequest(analyzer_subset=None),
     db: AsyncSession | None = Depends(get_db_session),
 ) -> dict[str, Any]:
     """Trigger analysis pipeline."""

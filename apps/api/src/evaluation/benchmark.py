@@ -67,7 +67,7 @@ def run_benchmark(dataset_path: str = "data/eval/labeled_eval_set_300.json") -> 
         # Fall back to root relative
         path = Path(__file__).resolve().parents[4] / dataset_path
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     samples = data.get("samples", [])

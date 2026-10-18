@@ -51,26 +51,38 @@ class MessageAnalyzer(BaseAnalyzer):
         )
 
     # ── Heuristic Dictionaries ────────────────────────────────────────────────
+    # ── Heuristic Dictionaries ────────────────────────────────────────────────
     _URGENCY_PATTERNS = [
-        r"\b(?:urgent|urgently|hurry|immediate(?:ly)?|act fast|don'?t wait)\b",
+        r"\b(?:urgent|urgently|hurry|immediate(?:ly)?|act fast|don'?t wait|asap|right now|turant|abhee|jaldi)\b",
         r"\b(?:last chance|limited (?:time|slots|seats)|only \d+ (?:slots?|seats?|left))\b",
         r"\b(?:offer ends? (?:today|soon|tonight)|closing soon|within (?:1|\d+) (?:hour|hours|mins?))\b",
-        r"\b(?:expires? (?:today|soon)|don'?t miss (?:out)?|golden opportunity)\b",
+        r"\b(?:expires? (?:today|soon)|don'?t miss (?:out)?|golden opportunity|sunehra mauka)\b",
     ]
 
     _GUARANTEED_RETURN_PATTERNS = [
-        r"\b(?:100%|guaranteed|assured|risk[- ]free|zero risk|no risk)\s*(?:returns?|profit|gain)?\b",
+        r"\b(?:100%|guaranteed|assured|risk[- ]free|zero risk|no risk|loss[- ]proof|sure[- ]shot|sure profit)\s*(?:returns?|profit|gain)?\b",
         r"\b(?:fixed|daily|weekly|monthly)\s*(?:return|profit|income|payout)\b",
-        r"\b(?:double|triple)\s*(?:your\s*)?(?:money|investment|funds|capital)\b",
-        r"\b(?:capital protection|loss[- ]proof|sure[- ]shot|sure profit)\b",
+        r"\b(?:double|triple|2x|3x)\s*(?:the|your|our|my)?\s*(?:money|investment|funds|capital|paisa|amount)\b",
+        r"\b(?:get|make|receive|give)\s+(?:double|triple)\b",
+        r"\b(?:capital protection|capital protect)\b",
         r"\b\d+%\s*(?:daily|weekly|per day|per week|roi)\b",
+        r"\b\d+(?:\.\d+)?\s*(?:%|percent)\s*(?:returns?|profit|gain|payout|roi|growth)\b",
+        # Multilingual & Vernacular (Hindi, Hinglish, Tamil, Telugu, Marathi, Bengali)
+        r"(?:गारंटीड|गारंटी|खात्रीशीर|உத்தரவாதமான|గ్యారెంటీ|నిశ్చిత|নিশ্চিত|पक्का|bina loss|zero loss)\s*(?:लाभ|मुनाफा|रिटर्न|नफा|லாபம்|లాభం|লাভ|profit|returns?|income)?",
+        r"(?:पैसे|रुपये|पैसा|money|funds)\s*(?:डबल|ट्रिपल|double|triple|2x|3x)",
+        r"(?:बिना\s*किसी\s*जोखिम|बिना\s*नुकसान|खात्रीशीर\s*नफा|பங்குச்சந்தை\s*லாபம்)",
+        r"(?:fixed\s*profit|daily\s*profit|paisa\s*double|guaranteed\s*profit)",
     ]
 
     _IMPERSONATION_PATTERNS = [
-        r"\b(?:sebi|rbi|nse|bse|mcx)\s+(?:approved|certified|registered|licensed|official|verified|authorized)\b",
-        r"\b(?:official|authorized|verified|certified)\s+(?:sebi|rbi|nse|bse|mcx)\b",
+        r"\b(?:sebi|sabi|rbi|nse|bse|mcx)\s+(?:approved|certified|registered|licensed|official|verified|authorized)(?:\s+(?:investment\s+)?(?:advisor|adviser|analyst|broker))?\b",
+        r"\b(?:official|authorized|verified|certified)\s+(?:sebi|sabi|rbi|nse|bse|mcx)\b",
         r"\b(?:official|authorized|verified)\s+(?:zerodha|groww|angel\s*one|upstox|icici\s*direct|hdfc\s*securities)\b",
         r"\b(?:tata\s*investments?|reliance\s*wealth|adani\s*finance|birla\s*capital)\s+(?:official|vip)\b",
+        r"\b(?:registered|certified|licensed)\s+(?:investment\s+)?(?:advisor|adviser|analyst|broker)\b",
+        r"\b(?:sebi|sabi)\s+(?:investment\s+)?(?:advisor|adviser)\b",
+        # Vernacular regulatory claims
+        r"(?:सेबी|sebi|rbi)\s*(?:स्वीकृत|मान्यताप्राप्त|द्वारा\s*स्वीकृत|अंगீகாரம்|ఆమోదించిన|অনুমোদিত|certified|approved)",
     ]
 
     _WITHDRAWAL_FEE_PATTERNS = [
@@ -80,15 +92,62 @@ class MessageAnalyzer(BaseAnalyzer):
         r"\baccount\s*(?:frozen|locked|blocked)\s*(?:pay|deposit)\b",
         r"\bunfreeze\s*(?:account|funds|wallet)\b",
         r"\badvance\s*fee\b",
+        r"\b(?:demat|trading|bank)?\s*account\b.*?\b(?:frozen|locked|blocked|freeze|block)\b",
+        r"\bunfreeze\b.*?\b(?:charges?|fee|penalty|amount|pay|deposit)\b",
+        # Vernacular Demat freeze / penalty extortion
+        r"(?:खाता|अकाउंट|demat|account)\s*(?:ब्लॉक|फ्रीज|बंद|मुடக்கப்பட்டுள்ளது|స్తంభింపజేయబడింది|স্থগিত|freeze|block)",
+        r"(?:अनब्लॉक|चालू|unfreeze|सक्रिय)\s*(?:करने\s*के\s*लिए|fee|charges?|penalty|जुर्माना|शुल्क|அபராதம்|రుసుము|জরিমানা)",
     ]
 
     _INVESTMENT_SOLICITATION_PATTERNS = [
         r"\b(?:join|subscribe to)\s*(?:our\s*)?(?:vip|premium|exclusive|insider)\s*(?:group|channel|signals?)\b",
+        r"\b(?:please\s+)?(?:invest|deposit|send|transfer|pay)\s+(?:me\s+)?(?:rs\.?|inr|₹|\$)?\s*\d+\s*(?:lakhs?|lacs?|crores?|k|thousand|rupees)?\b",
         r"\b(?:minimum|min)?\s*investment\s*(?:of\s*)?(?:rs\.?|inr|₹|\$)?\s*\d+\b",
         r"\b(?:deposit|send|transfer)\s*(?:rs\.?|inr|₹|\$|\d+|money|funds|crypto|usdt).*?(?:upi|account|address|wallet|bank)\b",
+        r"\b(?:deposit|send|transfer|pay)\s+(?:me\s+)?(?:rs\.?|inr|₹|\$)?\s*\d+\s*[kK]?\b",
         r"\b(?:send|share)\s*(?:payment\s*)?screenshot\b",
-        r"\b(?:trading\s*calls?|jackpot\s*calls?|sureshot\s*tips?|insider\s*tips?)\b",
+        r"\b(?:trading\s*calls?|jackpot\s*calls?|sureshot\s*tips?|insider\s*tips?|circuit\s*tips?)\b",
+        # Vernacular VIP groups / solicitation
+        r"(?:वीआईपी|vip|operator|insider)\s*(?:व्हाट्सएप|टेलीग्राम|ग्रुप|चैनल|whatsapp|telegram|group|channel|tips?|calls?)",
+        r"(?:घर\s*बैठे|ghar\s*baithe)\s*(?:कमाएं|kamayein|earn)",
+        r"(?:शेयर\s*टिप्स|stock\s*tips|upper\s*circuit|operator\s*calls?)",
     ]
+
+    @classmethod
+    def _deobfuscate_text(cls, text: str) -> str:
+        """Deobfuscates adversarial evasions: zero-width spaces, leetspeak, homoglyphs, and emojis."""
+        if not text:
+            return ""
+        # 1. Strip zero-width characters and soft hyphens
+        cleaned = re.sub(r"[\u200b\u200c\u200d\ufeff\u00ad\u2060\u200e\u200f]", "", text)
+
+        # 2. Transliterate Cyrillic homoglyphs
+        homoglyphs = {
+            "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "ѕ": "s", "і": "i", "ј": "j",
+            "у": "y", "х": "x", "А": "A", "В": "B", "Е": "E", "О": "O", "Р": "P", "С": "C",
+            "Т": "T", "Н": "H", "М": "M",
+        }
+        for cyr, lat in homoglyphs.items():
+            cleaned = cleaned.replace(cyr, lat)
+
+        # 3. De-space spaced letters only for sequences of 3+ single characters: 'g u a r a n t e e d' -> 'guaranteed'
+        cleaned = re.sub(r"\b[a-zA-Z](?: [a-zA-Z]){2,}\b", lambda m: m.group(0).replace(" ", ""), cleaned)
+
+        # 4. Remove disruptive emoji characters
+        cleaned = re.sub(r"[\U00010000-\U0010ffff\u2600-\u27bf\u2300-\u23ff]", "", cleaned)
+
+        # 5. Leetspeak translation on words containing alpha chars
+        leet_map = {
+            "@": "a", "0": "o", "1": "i", "3": "e", "7": "t", "5": "s", "$": "s", "!": "i",
+        }
+        tokens = cleaned.split()
+        translated_tokens = []
+        for tok in tokens:
+            if any(c.isalpha() for c in tok) and any(c in leet_map for c in tok):
+                for lk, lv in leet_map.items():
+                    tok = tok.replace(lk, lv)
+            translated_tokens.append(tok)
+        return " ".join(translated_tokens)
 
     async def _execute(
         self,
@@ -114,18 +173,27 @@ class MessageAnalyzer(BaseAnalyzer):
                 "confidence": 0.0,
             }, 0.5  # high uncertainty for empty payload
 
-        # 1. Entity Extraction
+        # Deobfuscate adversarial text
+        deobf_payload = self._deobfuscate_text(payload)
+
+        # 1. Entity Extraction (from both raw and deobfuscated payload)
         entities = self.extract_entities(payload)
 
-        # 2. Heuristic Pattern Detection
-        urgency = self._match_patterns(payload, self._URGENCY_PATTERNS)
-        guaranteed_returns = self._match_patterns(payload, self._GUARANTEED_RETURN_PATTERNS)
-        impersonation = self._match_patterns(payload, self._IMPERSONATION_PATTERNS)
-        withdrawal_fees = self._match_patterns(payload, self._WITHDRAWAL_FEE_PATTERNS)
-        solicitation = self._match_patterns(payload, self._INVESTMENT_SOLICITATION_PATTERNS)
+        # 2. Heuristic Pattern Detection (matching both original and normalized texts)
+        urgency = list(set(self._match_patterns(payload, self._URGENCY_PATTERNS) + self._match_patterns(deobf_payload, self._URGENCY_PATTERNS)))
+        guaranteed_returns = list(set(self._match_patterns(payload, self._GUARANTEED_RETURN_PATTERNS) + self._match_patterns(deobf_payload, self._GUARANTEED_RETURN_PATTERNS)))
+        impersonation = list(set(self._match_patterns(payload, self._IMPERSONATION_PATTERNS) + self._match_patterns(deobf_payload, self._IMPERSONATION_PATTERNS)))
+        withdrawal_fees = list(set(self._match_patterns(payload, self._WITHDRAWAL_FEE_PATTERNS) + self._match_patterns(deobf_payload, self._WITHDRAWAL_FEE_PATTERNS)))
+        solicitation = list(set(self._match_patterns(payload, self._INVESTMENT_SOLICITATION_PATTERNS) + self._match_patterns(deobf_payload, self._INVESTMENT_SOLICITATION_PATTERNS)))
 
-        # 3. Claims Extraction
+        # 3. Claims Extraction (from both)
         claims = self.extract_claims(payload)
+        if deobf_payload != payload:
+            deobf_claims = self.extract_claims(deobf_payload)
+            existing_types = {c["type"] for c in claims}
+            for dc in deobf_claims:
+                if dc["type"] not in existing_types:
+                    claims.append(dc)
 
         total_indicators = (
             len(urgency)
@@ -194,8 +262,8 @@ class MessageAnalyzer(BaseAnalyzer):
         """Extract financial promises, percentage guarantees, and licensing claims."""
         claims: list[dict[str, Any]] = []
 
-        # Percentage return claims
-        roi_matches = re.finditer(r"(\d+(?:\.\d+)?%)\s*(?:daily|weekly|monthly|roi|returns?|profit)", text, re.IGNORECASE)
+        # Percentage return claims (handles 30% and 30 percent)
+        roi_matches = re.finditer(r"(\d+(?:\.\d+)?(?:\s*%|\s*percent))\s*(?:daily|weekly|monthly|roi|returns?|profit|gain)?", text, re.IGNORECASE)
         for m in roi_matches:
             claims.append({
                 "type": "RETURN_PERCENTAGE",
@@ -214,8 +282,28 @@ class MessageAnalyzer(BaseAnalyzer):
                 "confidence": 0.90,
             })
 
+        # Direct fund solicitation claims (e.g. send me 10k, invest 2 lakh)
+        fund_matches = re.finditer(r"(?:invest|send|transfer|pay|deposit)\s+(?:me\s+)?(?:rs\.?|inr|₹|\$)?\s*(\d+\s*(?:lakhs?|lacs?|crores?|k|thousand)?|\d+(?:,\d+)*)", text, re.IGNORECASE)
+        for m in fund_matches:
+            claims.append({
+                "type": "DIRECT_FUND_SOLICITATION",
+                "claim_text": m.group(0),
+                "value": m.group(1),
+                "confidence": 0.95,
+            })
+
+        # Multiplier / Double the money claims
+        mult_matches = re.finditer(r"\b(?:get|make|receive|earn)?\s*(?:double|triple|2x|3x)\s*(?:the|your|our|my)?\s*(?:money|investment|funds|capital|paisa|amount)\b|\b(?:get|make|receive)\s+(?:double|triple)\b", text, re.IGNORECASE)
+        for m in mult_matches:
+            claims.append({
+                "type": "RETURN_PERCENTAGE",
+                "claim_text": m.group(0),
+                "value": "200%" if "double" in m.group(0).lower() or "2x" in m.group(0).lower() else "300%",
+                "confidence": 0.95,
+            })
+
         # Registration claims
-        reg_matches = re.finditer(r"\b(?:sebi|rbi)\s*(?:registered|approved|certified|licensed)\b(?:\s*(?:no\.?|id|code)?\s*([A-Za-z0-9\-/]+))?", text, re.IGNORECASE)
+        reg_matches = re.finditer(r"\b(?:sebi|sabi|rbi)\s*(?:registered|approved|certified|licensed)\b(?:\s*(?:investment\s+)?(?:advisor|adviser))?(?:\s*(?:no\.?|id|code)?\s*([A-Za-z0-9\-/]+))?|\b(?:registered|certified)\s+investment\s+(?:advisor|adviser)\b", text, re.IGNORECASE)
         for m in reg_matches:
             claims.append({
                 "type": "REGULATORY_REGISTRATION",

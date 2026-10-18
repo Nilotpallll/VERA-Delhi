@@ -282,7 +282,7 @@ class AnalyzeRequest(BaseModel):
     """Triggers the analysis pipeline for an investigation."""
     force_rerun: bool = False
     analyzer_subset: list[str] | None = Field(
-        None, description="Restrict to specific analyzers; null = all registered"
+        default=None, description="Restrict to specific analyzers; null = all registered"
     )
 
 

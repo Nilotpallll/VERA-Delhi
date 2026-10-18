@@ -9,11 +9,8 @@ from typing import Any
 
 from sqlalchemy import (
     JSON,
-    Boolean,
     DateTime,
-    Double,
     ForeignKey,
-    Index,
     Integer,
     String,
     Text,

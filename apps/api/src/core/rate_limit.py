@@ -10,14 +10,15 @@ Supports:
 
 import collections
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Any, Callable, Literal
+from typing import Any, Literal
+
 from fastapi import HTTPException, Request, status
 
 from .config import settings
 from .observability import logger
 from .redis_client import get_redis_client
-
 
 RateLimitScope = Literal["ip", "user", "expensive", "custom"]
 

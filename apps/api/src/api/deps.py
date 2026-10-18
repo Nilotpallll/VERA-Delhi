@@ -10,7 +10,7 @@ from ..core.database import get_db_session as _get_db_session
 from ..core.rate_limit import RateLimiter, get_rate_limiter
 
 
-async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_db_session() -> AsyncGenerator[AsyncSession | None, None]:
     """Provides async SQLAlchemy session with automatic commit/rollback."""
     async for session in _get_db_session():
         yield session

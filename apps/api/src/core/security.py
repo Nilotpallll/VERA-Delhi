@@ -94,7 +94,7 @@ def sanitize_storage_path(raw_path: str) -> str:
     normalized = normalized.lstrip("/")
 
     # Collapse relative traversal segments
-    parts = []
+    parts: list[str] = []
     for part in normalized.split("/"):
         if part in ("", "."):
             continue

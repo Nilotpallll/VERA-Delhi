@@ -89,50 +89,56 @@ export function InvestigationTimeline({
   events?: TimelineEvent[];
 }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+    <div className="rounded-2xl border border-[#E7E3D8] bg-white p-6 space-y-5 shadow-sm animate-fade-in">
+      <div className="flex items-center justify-between border-b border-stone-200 pb-3">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-sm font-semibold text-slate-100">Investigation Execution Timeline</h3>
+          <div className="p-2 rounded-xl bg-orange-100 text-orange-600 border border-orange-200">
+            <Clock className="w-4 h-4" />
+          </div>
+          <h3 className="text-sm font-bold text-stone-900">Investigation Execution Timeline</h3>
         </div>
-        <span className="text-[11px] font-mono text-slate-500">{events.length} Orchestrated Events</span>
+        <span className="text-xs font-mono text-stone-500 font-medium">{events.length} Orchestrated Events</span>
       </div>
 
-      <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800">
-        {events.map((evt) => {
+      <div className="relative pl-6 space-y-4 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-orange-400 before:via-stone-300 before:to-stone-200">
+        {events.map((evt, evtIdx) => {
           const isWarning = evt.status === "WARNING";
           const isFailed = evt.status === "FAILED";
           return (
-            <div key={evt.id} className="relative group">
+            <div
+              key={evt.id}
+              className="relative group animate-fade-in"
+              style={{ animationDelay: `${evtIdx * 0.08}s` }}
+            >
               {/* Dot */}
               <div
-                className={`absolute -left-6 top-1 w-3.5 h-3.5 rounded-full border-2 ${
+                className={`absolute -left-6 top-1.5 w-3.5 h-3.5 rounded-full border-2 transition-all duration-300 ${
                   isFailed
-                    ? "bg-rose-500 border-rose-950"
+                    ? "bg-rose-500 border-white shadow-md shadow-rose-500/20"
                     : isWarning
-                    ? "bg-amber-500 border-amber-950"
-                    : "bg-indigo-500 border-indigo-950"
+                    ? "bg-amber-500 border-white shadow-md shadow-amber-500/20"
+                    : "bg-orange-500 border-white shadow-md shadow-orange-500/20"
                 }`}
               />
 
-              <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5 text-xs">
+              <div className="p-4 rounded-xl bg-[#FAF7F2] border border-[#E7E3D8] hover:border-orange-300 space-y-1.5 text-xs transition-all duration-200 card-hover shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-200">{evt.title}</span>
+                    <span className="font-bold text-stone-900">{evt.title}</span>
                     {evt.toolName && (
-                      <span className="px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 font-mono text-[10px] border border-indigo-800">
+                      <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-800 font-mono text-[10px] font-bold border border-orange-200">
                         {evt.toolName}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono">
+                  <div className="flex items-center gap-2 text-[11px] text-stone-500 font-mono">
                     <span>{evt.actor}</span>
                     <span>•</span>
                     <span>{evt.timestamp}</span>
                   </div>
                 </div>
 
-                <p className="text-slate-400 text-[11px] leading-relaxed">{evt.description}</p>
+                <p className="text-stone-600 text-xs leading-relaxed">{evt.description}</p>
               </div>
             </div>
           );

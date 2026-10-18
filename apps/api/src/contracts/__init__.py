@@ -6,15 +6,6 @@ Architecture Rule 2: API contracts are versioned.
 
 # Phase 1 contracts
 from .analyzers import AnalyzerExecutionRecord, AnalyzerMetadata
-from .evidence import CanonicalEvidenceItem, EvidenceMediaType, StorageReference
-from .investigation import (
-    HealthCheckResponse,
-    InvestigationCreateRequest,
-    InvestigationManifest,
-    InvestigationResponse,
-)
-from .scoring import DeterministicRiskAssessment, RiskSeverityTier, ScoreFactorContribution
-from .verification import AnalyzerExecutionStatus, VerificationResult, VerificationState
 
 # Phase 2 enums
 from .enums import (
@@ -27,6 +18,13 @@ from .enums import (
     RelationshipType,
     ReportStatus,
     SourceType,
+)
+from .evidence import CanonicalEvidenceItem, EvidenceMediaType, StorageReference
+from .investigation import (
+    HealthCheckResponse,
+    InvestigationCreateRequest,
+    InvestigationManifest,
+    InvestigationResponse,
 )
 
 # Phase 2 schemas
@@ -49,6 +47,8 @@ from .phase2 import (
     UserRecord,
     VerificationResultRecord,
 )
+from .scoring import DeterministicRiskAssessment, RiskSeverityTier, ScoreFactorContribution
+from .verification import AnalyzerExecutionStatus, VerificationResult, VerificationState
 
 __all__ = [
     # Phase 1

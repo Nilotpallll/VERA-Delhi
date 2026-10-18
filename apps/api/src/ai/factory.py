@@ -13,7 +13,7 @@ from .ollama import OllamaProvider
 
 def get_llm_provider(provider_name: str | None = None) -> LLMProvider:
     """Instantiate provider by configured name.
-    
+
     Supported: 'gemini', 'ollama', 'groq'.
     """
     selected = (provider_name or settings.LLM_PROVIDER or "chain").lower().strip()

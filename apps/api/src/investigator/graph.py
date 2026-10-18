@@ -169,11 +169,23 @@ class VERAInvestigator:
                 })
 
             # Extract Guaranteed Return claims
-            if any(w in val.lower() for w in ["guaranteed", "assured return", "100% profit", "zero risk", "2x return", "3x profit"]):
+            if (
+                any(w in val.lower() for w in ["guaranteed", "assured return", "100% profit", "zero risk", "2x return", "3x profit"])
+                or re.search(r"\b\d+(?:\.\d+)?\s*(?:%|percent)\s*(?:returns?|profit|gain|payout)\b", val, re.I)
+            ):
                 claims.append({
                     "id": f"claim_{uuid.uuid4().hex[:8]}",
                     "claim_text": "Promised guaranteed investment return",
                     "claim_type": "guaranteed_return",
+                    "source_input_id": inp_id,
+                })
+
+            # Extract Direct Fund Solicitation claims
+            if re.search(r"\b(?:send|transfer|pay|deposit)\s+(?:me\s+)?(?:rs\.?|inr|₹|\$)?\s*\d+\s*[kK]?\b", val, re.I):
+                claims.append({
+                    "id": f"claim_{uuid.uuid4().hex[:8]}",
+                    "claim_text": "Direct fund solicitation to personal account",
+                    "claim_type": "fund_solicitation",
                     "source_input_id": inp_id,
                 })
 
@@ -280,7 +292,8 @@ class VERAInvestigator:
         evidence = list(state.get("evidence_items", []))
         verification_records = list(state.get("verification_records", []))
         action_history = list(state.get("action_history", []))
-        citations = list(state.get("source_citations", [])) if "source_citations" in state else []
+        raw_citations = state.get("source_citations", [])
+        citations: list[dict[str, Any]] = list(raw_citations) if isinstance(raw_citations, list) else []
         has_unavail = state.get("has_unavailable_analyzer", False)
         reasons = list(state.get("reasoning_log", []))
         inv_id = state.get("investigation_id", "inv")
@@ -507,6 +520,8 @@ class VERAInvestigator:
             summary="",
         )
 
+        raw_citations = state.get("source_citations", [])
+        final_citations: list[dict[str, Any]] = list(raw_citations) if isinstance(raw_citations, list) else []
         report = ForensicReportGenerator.generate(
             investigation_id=state.get("investigation_id", "inv"),
             risk_assessment=assessment,
@@ -514,7 +529,7 @@ class VERAInvestigator:
             claims=state.get("extracted_claims", []),
             evidence=state.get("evidence_items", []),
             verification_records=state.get("verification_records", []),
-            citations=state.get("source_citations", []),
+            citations=final_citations,
             scam_lifecycle_stage=state.get("scam_lifecycle_stage", "unknown"),
             missing_evidence=state.get("missing_evidence", []),
         )

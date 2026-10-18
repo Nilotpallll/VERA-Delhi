@@ -1,0 +1,622 @@
+{
+  "evaluation_name": "Phase 1 Video & Audio Baseline Evaluation",
+  "dataset": "eval/data/video_eval_manifest.json",
+  "sample_count": 30,
+  "random_seed": 42,
+  "execution_duration_sec": 5.114,
+  "phrasing_rule_violations": 0,
+  "metrics": {
+    "confusion_matrix": {
+      "tp": 8,
+      "fp": 0,
+      "tn": 22,
+      "fn": 0
+    },
+    "classification": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "specificity": 1.0,
+      "false_positive_rate": 0.0,
+      "f1": 1.0
+    },
+    "auroc": 1.0,
+    "fpr_at_95_recall": 0.0,
+    "expected_calibration_error": 0.185,
+    "confidence_intervals_95": {
+      "f1_ci_95": [
+        1.0,
+        1.0
+      ],
+      "precision_ci_95": [
+        1.0,
+        1.0
+      ],
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "auroc_ci_95": [
+        1.0,
+        1.0
+      ]
+    },
+    "reliability_diagram_bins": [
+      {
+        "bin": "[0.0, 0.2]",
+        "count": 0,
+        "confidence": 0.1,
+        "accuracy": 0.0,
+        "gap": 0.0
+      },
+      {
+        "bin": "[0.2, 0.4]",
+        "count": 22,
+        "confidence": 0.2014,
+        "accuracy": 0.0,
+        "gap": 0.2014
+      },
+      {
+        "bin": "[0.4, 0.6]",
+        "count": 0,
+        "confidence": 0.5,
+        "accuracy": 0.0,
+        "gap": 0.0
+      },
+      {
+        "bin": "[0.6, 0.8]",
+        "count": 0,
+        "confidence": 0.7,
+        "accuracy": 0.0,
+        "gap": 0.0
+      },
+      {
+        "bin": "[0.8, 1.0]",
+        "count": 8,
+        "confidence": 0.86,
+        "accuracy": 1.0,
+        "gap": 0.14
+      }
+    ],
+    "speech_fraud_audio": {
+      "confusion_matrix": {
+        "tp": 10,
+        "fp": 3,
+        "tn": 17,
+        "fn": 0
+      },
+      "metrics": {
+        "accuracy": 0.9,
+        "precision": 0.7692,
+        "recall": 1.0,
+        "specificity": 0.85,
+        "false_positive_rate": 0.15,
+        "f1": 0.8696
+      }
+    }
+  },
+  "edge_cases": [
+    {
+      "id": "vid_fake_01",
+      "edge_case": "synthetic_face_swap",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_02",
+      "edge_case": "voice_and_face_clone",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_03",
+      "edge_case": "regulatory_impersonation",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_04",
+      "edge_case": "real_video_illegal_speech",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_05",
+      "edge_case": "wav2lip_lip_sync",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_06",
+      "edge_case": "still_portrait_animation",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_07",
+      "edge_case": "roop_swap",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_08",
+      "edge_case": "voice_clone_overlay",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_09",
+      "edge_case": "temporal_jitter",
+      "score": 0.86,
+      "predicted": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "id": "vid_fake_10",
+      "edge_case": "hinglish_illegal_advisory",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_01",
+      "edge_case": "low_light_noise",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_02",
+      "edge_case": "multiple_faces",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_03",
+      "edge_case": "no_face_screen_capture",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_04",
+      "edge_case": "under_3s_duration",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_05",
+      "edge_case": "heavy_compression_360p",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_06",
+      "edge_case": "overlay_watermarks",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_07",
+      "edge_case": "silent_audio",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_08",
+      "edge_case": "vertical_aspect_ratio",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_09",
+      "edge_case": "variable_frame_rate",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "id": "vid_edge_10",
+      "edge_case": "large_file_50mb",
+      "score": 0.2014,
+      "predicted": false,
+      "expected": false,
+      "passed": true
+    }
+  ],
+  "samples": [
+    {
+      "id": "vid_real_01",
+      "filename": "camera_interview_ceo.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_02",
+      "filename": "authentic_analyst_report.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_03",
+      "filename": "conference_presentation.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_04",
+      "filename": "fund_manager_update.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_05",
+      "filename": "camera_recording_authentic.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": true,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_06",
+      "filename": "live_seminar_panel.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_07",
+      "filename": "personal_finance_podcast.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": true,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_08",
+      "filename": "banking_alert_briefing.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": true,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_09",
+      "filename": "stock_exchange_briefing.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_real_10",
+      "filename": "university_lecture_finance.mp4",
+      "category": "authentic",
+      "edge_case": "none",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_fake_01",
+      "filename": "nirmala_sitharaman_deepfake.mp4",
+      "category": "deepfake",
+      "edge_case": "synthetic_face_swap",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_02",
+      "filename": "mukesh_ambani_crypto_deepfake.mp4",
+      "category": "deepfake",
+      "edge_case": "voice_and_face_clone",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_03",
+      "filename": "sebi_chairman_fake_speech.mp4",
+      "category": "deepfake",
+      "edge_case": "regulatory_impersonation",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_04",
+      "filename": "sample_advisor_video.mp4",
+      "category": "illegal_advisory",
+      "edge_case": "real_video_illegal_speech",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_fake_05",
+      "filename": "wav2lip_puppet_anchor.mp4",
+      "category": "deepfake",
+      "edge_case": "wav2lip_lip_sync",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_06",
+      "filename": "sadtalker_ai_avatar.mp4",
+      "category": "deepfake",
+      "edge_case": "still_portrait_animation",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_07",
+      "filename": "roop_faceswap_finfluencer.mp4",
+      "category": "deepfake",
+      "edge_case": "roop_swap",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_08",
+      "filename": "cloned_voice_celebrity.mp4",
+      "category": "deepfake",
+      "edge_case": "voice_clone_overlay",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_09",
+      "filename": "deepfacelab_highres_scam.mp4",
+      "category": "deepfake",
+      "edge_case": "temporal_jitter",
+      "is_deepfake_true": true,
+      "is_deepfake_pred": true,
+      "deepfake_score": 0.86,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "Model detected signals associated with facial manipulation."
+    },
+    {
+      "id": "vid_fake_10",
+      "filename": "whatsapp_forward_fake_tipster.mp4",
+      "category": "illegal_advisory",
+      "edge_case": "hinglish_illegal_advisory",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": true,
+      "speech_fraud_pred": true,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_01",
+      "filename": "low_light_night_recording.mp4",
+      "category": "edge_case",
+      "edge_case": "low_light_noise",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_02",
+      "filename": "multiple_faces_interview.mp4",
+      "category": "edge_case",
+      "edge_case": "multiple_faces",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_03",
+      "filename": "no_face_screen_recording.mp4",
+      "category": "edge_case",
+      "edge_case": "no_face_screen_capture",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_04",
+      "filename": "very_short_clip_2sec.mp4",
+      "category": "edge_case",
+      "edge_case": "under_3s_duration",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_05",
+      "filename": "heavy_compression_low_bitrate.mp4",
+      "category": "edge_case",
+      "edge_case": "heavy_compression_360p",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_06",
+      "filename": "watermark_and_captions_overlay.mp4",
+      "category": "edge_case",
+      "edge_case": "overlay_watermarks",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_07",
+      "filename": "silence_audio_track.mp4",
+      "category": "edge_case",
+      "edge_case": "silent_audio",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_08",
+      "filename": "downscaled_mobile_vertical.mp4",
+      "category": "edge_case",
+      "edge_case": "vertical_aspect_ratio",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_09",
+      "filename": "variable_frame_rate_clip.mp4",
+      "category": "edge_case",
+      "edge_case": "variable_frame_rate",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    },
+    {
+      "id": "vid_edge_10",
+      "filename": "max_size_payload_50mb.mp4",
+      "category": "edge_case",
+      "edge_case": "large_file_50mb",
+      "is_deepfake_true": false,
+      "is_deepfake_pred": false,
+      "deepfake_score": 0.2014,
+      "speech_fraud_true": false,
+      "speech_fraud_pred": false,
+      "statement": "No significant signals of facial manipulation detected."
+    }
+  ]
+}

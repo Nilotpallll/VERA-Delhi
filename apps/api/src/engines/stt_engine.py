@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ..contracts.analyzers import AnalyzerExecutionRecord, AnalyzerMetadata
+from ..contracts.analyzers import AnalyzerMetadata
 from ..contracts.enums import EvidenceCategory, EvidenceSeverity, SourceType
 from ..contracts.evidence import CanonicalEvidenceItem
 from ..contracts.phase2 import EvidenceItem
@@ -91,8 +91,11 @@ class FasterWhisperEngine(BaseAnalyzer):
                 from faster_whisper import WhisperModel
                 self._model = WhisperModel(self.model_size, device="cpu", compute_type="int8")
 
-            # transcribe
-            segments, info = self._model.transcribe(raw_bytes or text_payload, beam_size=5)
+            if self._model is not None:
+                # transcribe
+                segments, info = self._model.transcribe(raw_bytes or text_payload, beam_size=5)
+            else:
+                raise RuntimeError("WhisperModel is unavailable")
             parsed_segments = []
             text_pieces = []
             for s in segments:

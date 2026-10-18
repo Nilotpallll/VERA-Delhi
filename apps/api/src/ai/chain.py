@@ -8,18 +8,17 @@ Each generation is labeled with the provider tier used and reduced confidence if
 import asyncio
 import logging
 import time
-from typing import Any
 
 from ..core.config import settings
-from .base import LLMGenerationResult, LLMProvider
-from .gemini import GeminiProvider
-from .groq import GroqProvider
-from .ollama import OllamaProvider
 from ..core.evidence_cache import (
     compute_evidence_hash,
     get_cached_evidence_analysis,
     store_cached_evidence_analysis,
 )
+from .base import LLMGenerationResult, LLMProvider
+from .gemini import GeminiProvider
+from .groq import GroqProvider
+from .ollama import OllamaProvider
 
 logger = logging.getLogger("vera.ai.chain")
 

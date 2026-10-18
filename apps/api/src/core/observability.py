@@ -7,6 +7,7 @@ import json
 import logging
 import sys
 from datetime import UTC, datetime
+from typing import Any
 
 
 class StructuredFormatter(logging.Formatter):
@@ -98,7 +99,7 @@ def _before_send_sentry(event: dict, hint: dict) -> dict | None:
         "evidence_text", "user_message", "raw_evidence", "pii",
     }
 
-    def _scrub(obj: object) -> object:
+    def _scrub(obj: Any) -> Any:
         if isinstance(obj, dict):
             return {
                 k: "[REDACTED]" if k.lower() in sensitive_keys else _scrub(v)

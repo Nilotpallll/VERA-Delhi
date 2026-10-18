@@ -7,7 +7,6 @@ Architecture Rule 12: Every model/analyzer exposes version metadata.
 
 from __future__ import annotations
 
-import base64
 import hashlib
 import logging
 import re

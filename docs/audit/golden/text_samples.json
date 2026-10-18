@@ -1,0 +1,57 @@
+{
+  "scam": {
+    "status": "SUCCESS",
+    "findings": {
+      "entities": {},
+      "claims": [
+        {
+          "type": "RETURN_PERCENTAGE",
+          "claim_text": "40% monthly",
+          "value": "40%",
+          "confidence": 0.95
+        },
+        {
+          "type": "REGULATORY_REGISTRATION",
+          "claim_text": "SEBI certified advisor",
+          "registration_code": "advisor",
+          "confidence": 0.95
+        }
+      ],
+      "urgency_signals": [],
+      "guaranteed_return_signals": [
+        "guaranteed"
+      ],
+      "impersonation_signals": [
+        "SEBI certified advisor",
+        "certified advisor",
+        "SEBI certified"
+      ],
+      "withdrawal_fee_signals": [],
+      "solicitation_signals": [
+        "VIP Telegram"
+      ],
+      "total_indicators_detected": 5,
+      "is_suspicious": true
+    },
+    "uncertainty": 0.2,
+    "guideline_violation": true,
+    "guideline_status": "VIOLATION_CONFIRMED"
+  },
+  "clean": {
+    "status": "SUCCESS",
+    "findings": {
+      "entities": {},
+      "claims": [],
+      "urgency_signals": [],
+      "guaranteed_return_signals": [],
+      "impersonation_signals": [],
+      "withdrawal_fee_signals": [],
+      "solicitation_signals": [],
+      "total_indicators_detected": 0,
+      "is_suspicious": false
+    },
+    "uncertainty": 0.4,
+    "guideline_violation": false,
+    "guideline_status": "COMPLIANT"
+  }
+}

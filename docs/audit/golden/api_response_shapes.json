@@ -1,0 +1,72 @@
+{
+  "backend_health": {
+    "status_code": 200,
+    "keys": [
+      "api_version",
+      "components",
+      "status",
+      "timestamp",
+      "version"
+    ],
+    "body": {
+      "status": "degraded",
+      "version": "1.0.0",
+      "api_version": "v1",
+      "timestamp": "2026-10-17T21:37:24.325650Z",
+      "components": {
+        "database": "unavailable",
+        "redis": "unavailable",
+        "storage": "unconfigured",
+        "aiProviders": {
+          "gemini": "unavailable",
+          "ollama": "available",
+          "groq": "unavailable"
+        }
+      }
+    }
+  },
+  "backend_v1_health": {
+    "status_code": 200,
+    "keys": [
+      "api_version",
+      "components",
+      "status",
+      "timestamp",
+      "version"
+    ],
+    "body": {
+      "status": "degraded",
+      "version": "1.0.0",
+      "api_version": "v1",
+      "timestamp": "2026-10-17T21:37:26.341214Z",
+      "components": {
+        "database": "unavailable",
+        "redis": "unavailable",
+        "storage": "unconfigured",
+        "aiProviders": {
+          "gemini": "unavailable",
+          "ollama": "available",
+          "groq": "unavailable"
+        }
+      }
+    }
+  },
+  "nextjs_deepfake_check": {
+    "status_code": 200,
+    "keys": [
+      "faces_detected",
+      "facial_manipulation_signals_detected",
+      "frame_scores",
+      "frames_analyzed",
+      "model_version",
+      "risk_tier",
+      "sha256",
+      "statement",
+      "temporal_aggregate_score",
+      "temporal_flicker_score",
+      "uncertainty",
+      "weights_digest"
+    ],
+    "data_keys": []
+  }
+}

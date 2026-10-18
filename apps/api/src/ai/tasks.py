@@ -34,7 +34,6 @@ from pydantic import BaseModel, Field
 from ..contracts.enums import EntityType
 from .base import LLMProvider
 
-
 # ── Schemas for Structured Task Outputs ───────────────────────────────────────
 
 class ExtractedEntityItem(BaseModel):
@@ -135,7 +134,7 @@ class LLMTaskExecutor:
             "Do NOT include markdown or explanatory text."
         )
         prompt = f"Extract all relevant entities from the following text:\n\n{text}"
-        
+
         try:
             result = await self.provider.generate(prompt=prompt, system_prompt=system_prompt)
             data = _extract_json_payload(result.output_text)

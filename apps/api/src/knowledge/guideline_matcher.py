@@ -13,11 +13,10 @@ Phase Gate Invariants:
 """
 
 import re
-from typing import Any
 
 from pydantic import BaseModel, Field
 
-from .store import OfficialCitation, RegulatoryVectorStore, RetrievalResult
+from .store import OfficialCitation, RegulatoryVectorStore
 
 
 class GuidelineMatchResult(BaseModel):
@@ -66,7 +65,7 @@ class SEBIGuidelineDetector:
         """
         # Step 1: Knowledge retrieval
         retrieval = await self.vector_store.search(claim_text, top_k=2, similarity_threshold=0.25)
-        
+
         if retrieval.status != "SUCCESS" or not retrieval.citations:
             return GuidelineMatchResult(
                 is_violation=False,
@@ -77,7 +76,6 @@ class SEBIGuidelineDetector:
                 confidence=0.0,
             )
 
-        citation = retrieval.citations[0]
         text_lower = claim_text.lower()
 
         # Step 2: Guideline matching logic

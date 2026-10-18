@@ -1,0 +1,106 @@
+{
+  "message_analyzer": {
+    "name": "MessageAnalyzer",
+    "status": "WORKING",
+    "latency_ms": 33.0,
+    "peak_memory_kb": 199.81,
+    "output_summary": "metadata=AnalyzerMetadata(name='engine.message.heuristics', version='1.0.0', weights_or_config_digest='sha256:msg_rules_v1_88b14a2c', provider='VERA Forensic Core') status=<AnalyzerExecutionStatus.SUCCESS: 'SUCCESS'> started_at=datetime.datetime(2026",
+    "error": null
+  },
+  "url_analyzer": {
+    "name": "URLAnalyzer",
+    "status": "WORKING",
+    "latency_ms": 185.34,
+    "peak_memory_kb": 5484.44,
+    "output_summary": "metadata=AnalyzerMetadata(name='engine.url.forensics_and_ml', version='1.0.0', weights_or_config_digest='sha256:xgb_url_v1_f41a8b92', provider='VERA Web Forensics Core') status=<AnalyzerExecutionStatus.SUCCESS: 'SUCCESS'> started_at=datetime.datetime",
+    "error": null
+  },
+  "video_analyzer": {
+    "name": "VideoAnalyzer (MesoNet-4)",
+    "status": "WORKING",
+    "latency_ms": 149.2,
+    "peak_memory_kb": 1152.56,
+    "output_summary": "metadata=AnalyzerMetadata(name='engine.video.deepfake.mesonet', version='1.0.0', weights_or_config_digest='sha256:mesonet4_weights_v1_d83e291f', provider='VERA Video Forensics Core') status=<AnalyzerExecutionStatus.SUCCESS: 'SUCCESS'> started_at=date",
+    "error": null
+  },
+  "audio_analyzer": {
+    "name": "AudioAnalyzer",
+    "status": "WORKING",
+    "latency_ms": 2.88,
+    "peak_memory_kb": 14.13,
+    "output_summary": "metadata=AnalyzerMetadata(name='engine.audio.forensics', version='1.0.0', weights_or_config_digest='sha256:audio_rules_v1_e92b17ac', provider='VERA Audio Forensics Core') status=<AnalyzerExecutionStatus.SUCCESS: 'SUCCESS'> started_at=datetime.datetim",
+    "error": null
+  },
+  "sebi_guideline_matcher": {
+    "name": "SEBIGuidelineDetector",
+    "status": "WORKING",
+    "latency_ms": 31.08,
+    "peak_memory_kb": 304.0,
+    "output_summary": "is_violation=True status='VIOLATION_CONFIRMED' claim_text='We guarantee 40% monthly returns on options trading with zero risk.' official_rule_summary='Official SEBI material strictly prohibits registered intermediaries from assuring or guaranteeing r",
+    "error": null
+  },
+  "sebi_registry_tool": {
+    "name": "SEBI Entity Registry",
+    "status": "WORKING",
+    "latency_ms": 0.17,
+    "peak_memory_kb": 4.8,
+    "output_summary": "{'registered': {'state': 'VERIFIED', 'details': 'Positively verified in SEBI database: Zerodha Broking Limited (Stock Broker).'}, 'unregistered': {'state': 'NOT_VERIFIED', 'details': \"Entity 'Fake Scam Trading Advisors' not found in official SEBI int",
+    "error": null
+  },
+  "payment_verifier": {
+    "name": "Payment/UPI Verifier",
+    "status": "WORKING",
+    "latency_ms": 0.08,
+    "peak_memory_kb": 3.55,
+    "output_summary": "{'scam_upi': {'target': 'scam.invest@upi', 'is_mismatch': True, 'reasons': [\"UPI ID 'scam.invest@upi' is in the high-risk fraudulent recipient register.\"]}, 'clean_upi': {'target': 'legitimate.broker@hdfcbank', 'is_mismatch': False, 'reasons': []}}",
+    "error": null
+  },
+  "deterministic_scoring": {
+    "name": "DeterministicScoringEngine",
+    "status": "WORKING",
+    "latency_ms": 0.39,
+    "peak_memory_kb": 4.91,
+    "output_summary": "final_score=95.0 tier=<RiskSeverityTier.CRITICAL: 'CRITICAL'> factors=[ScoreFactorContribution(factor_id='reg_fail_ev_sc_1', name='Unregistered / Failed Verification: Unregistered Advisor', category='registry_check', weight=0.35, raw_score=95.0, weig",
+    "error": null
+  },
+  "investigator_risk_engine": {
+    "name": "Investigator RiskEngine (rules.v2.0)",
+    "status": "WORKING",
+    "latency_ms": 0.19,
+    "peak_memory_kb": 3.03,
+    "output_summary": "RiskAssessmentResult(risk_score=60.0, risk_level=<RiskLevel.HIGH: 'HIGH'>, investigation_completeness=<InvestigationCompleteness.COMPLETED: 'COMPLETED'>, model_confidence=0.9500000000000001, verification_status='MIXED', active_signals=[ComputedSignal",
+    "error": null
+  },
+  "langgraph_investigator": {
+    "name": "LangGraph VERA Investigator",
+    "status": "WORKING",
+    "latency_ms": 102.62,
+    "peak_memory_kb": 593.16,
+    "output_summary": "{'investigation_id': 'inv_probe_001', 'inputs': [{'type': 'text', 'value': 'Earn guaranteed 50% monthly returns on our VIP Telegram channel!'}], 'extracted_entities': [], 'extracted_claims': [{'id': 'claim_baee3160', 'claim_text': 'Promised guarantee",
+    "error": null
+  },
+  "apk_analyzer": {
+    "name": "APKAnalyzer",
+    "status": "WORKING",
+    "latency_ms": 2.67,
+    "peak_memory_kb": 62.33,
+    "output_summary": "metadata=AnalyzerMetadata(name='engine.apk.static_and_drebin', version='1.0.0', weights_or_config_digest='sha256:xgb_apk_v1_c28f910e', provider='VERA Mobile Forensics Core') status=<AnalyzerExecutionStatus.SUCCESS: 'SUCCESS'> started_at=datetime.date",
+    "error": null
+  },
+  "image_analyzer": {
+    "name": "ImageAnalyzer",
+    "status": "WORKING",
+    "latency_ms": 60.03,
+    "peak_memory_kb": 1967.33,
+    "output_summary": "metadata=AnalyzerMetadata(name='engine.image.forensics', version='1.0.0', weights_or_config_digest='sha256:img_rules_v1_3c9a17ef', provider='VERA Computer Vision Core') status=<AnalyzerExecutionStatus.SUCCESS: 'SUCCESS'> started_at=datetime.datetime(",
+    "error": null
+  },
+  "nextjs_deepfake_route": {
+    "name": "Next.js Deepfake API Route",
+    "status": "WORKING",
+    "latency_ms": 240.53,
+    "peak_memory_kb": 1639.99,
+    "output_summary": "{'status_code': 200, 'data': {'sha256': 'c7ba2692c8247546ef4a2cdf01b12054ad32ceff3af8fdd2a45bcac9e12809a5', 'frames_analyzed': 10, 'faces_detected': 6, 'frame_scores': [0.09, 0.12, 0.1, 0.09, 0.15, 0.09, 0.12, 0.11, 0.12, 0.1], 'temporal_aggregate_sc",
+    "error": null
+  }
+}

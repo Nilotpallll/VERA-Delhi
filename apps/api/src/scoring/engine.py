@@ -14,6 +14,7 @@ from ..contracts.scoring import (
     ScoreFactorContribution,
 )
 from ..contracts.verification import AnalyzerExecutionStatus, VerificationState
+from ..core.feature_flags import FeatureFlags
 
 
 class DeterministicScoringEngine:
@@ -99,6 +100,14 @@ class DeterministicScoringEngine:
             base_score = sum(f.weighted_score for f in factors) / total_weight
         else:
             base_score = 50.0 if not evidence_items else 20.0
+
+        if FeatureFlags.ENABLE_MONOTONIC_RISK_FUSION:
+            # Monotonic fusion: severe failed verification or high-severity indicators
+            # guarantee score does not drop below high severity baseline due to benign dilution
+            severe_raw = [f.raw_score for f in factors if f.raw_score >= 80.0]
+            if severe_raw:
+                max_severe = max(severe_raw)
+                base_score = max(base_score, max_severe * 0.95)
 
         raw_final = base_score + (uncertainty_penalty * 0.25)
         final_score = round(max(0.0, min(100.0, raw_final)), 1)

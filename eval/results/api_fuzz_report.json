@@ -1,0 +1,394 @@
+[
+  {
+    "method": "GET",
+    "path": "/health",
+    "variation": "valid",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"status\":\"degraded\",\"version\":\"1.0.0\",\"api_version\":\"v1\",\"timestamp\":\"2026-10-17T21:29:28.200621Z\",\"components\":{\"datab"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "variation": "oversized_query",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"status\":\"degraded\",\"version\":\"1.0.0\",\"api_version\":\"v1\",\"timestamp\":\"2026-10-17T21:29:30.214225Z\",\"components\":{\"datab"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/health",
+    "variation": "valid",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"status\":\"degraded\",\"version\":\"1.0.0\",\"api_version\":\"v1\",\"timestamp\":\"2026-10-17T21:29:32.228374Z\",\"components\":{\"datab"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/health",
+    "variation": "oversized_query",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"status\":\"degraded\",\"version\":\"1.0.0\",\"api_version\":\"v1\",\"timestamp\":\"2026-10-17T21:29:34.245266Z\",\"components\":{\"datab"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations",
+    "variation": "valid",
+    "status_code": 201,
+    "is_server_error": false,
+    "body_snippet": "{\"id\":\"inv_5d326a0711d341c3\",\"status\":\"QUEUED\",\"title\":\"Fuzz Test Investigation\",\"target_entity_name\":\"FuzzCo\",\"primary_"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations",
+    "variation": "empty",
+    "status_code": 400,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"title must be at least 3 characters\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations",
+    "variation": "invalid_types",
+    "status_code": 500,
+    "is_server_error": true,
+    "body_snippet": "{\"error\":\"InternalServerError\",\"message\":\"An unexpected server error occurred.\",\"request_id\":\"06ad4293989b486d866dec231b"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations",
+    "variation": "oversized",
+    "status_code": 201,
+    "is_server_error": false,
+    "body_snippet": "{\"id\":\"inv_3ad061e34b2c4c65\",\"status\":\"QUEUED\",\"title\":\"OVERSIZED_OVERSIZED_OVERSIZED_OVERSIZED_OVERSIZED_OVERSIZED_OVER"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations",
+    "variation": "malformed_nulls",
+    "status_code": 201,
+    "is_server_error": false,
+    "body_snippet": "{\"id\":\"inv_57b26ae8b2a44740\",\"status\":\"QUEUED\",\"title\":\"\\u0000\\u0001\\u0002\u00ff\",\"target_entity_name\":\"\\u0000\\u0001\\u0002\u00ff\","
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations",
+    "variation": "valid",
+    "status_code": 405,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Method Not Allowed\"}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations",
+    "variation": "oversized_query",
+    "status_code": 405,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Method Not Allowed\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/uploads/presigned-url",
+    "variation": "valid",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/uploads/presigned-url",
+    "variation": "empty",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/uploads/presigned-url",
+    "variation": "invalid_types",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/uploads/presigned-url",
+    "variation": "oversized",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/uploads/presigned-url",
+    "variation": "malformed_nulls",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/consent",
+    "variation": "valid",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/consent",
+    "variation": "empty",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/consent",
+    "variation": "invalid_types",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/consent",
+    "variation": "oversized",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/consent",
+    "variation": "malformed_nulls",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/delete-data",
+    "variation": "valid",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/delete-data",
+    "variation": "empty",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/delete-data",
+    "variation": "invalid_types",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/delete-data",
+    "variation": "oversized",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/privacy/delete-data",
+    "variation": "malformed_nulls",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/deepfake/verify",
+    "variation": "valid",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/deepfake/verify",
+    "variation": "empty",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/deepfake/verify",
+    "variation": "invalid_types",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/deepfake/verify",
+    "variation": "oversized",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/deepfake/verify",
+    "variation": "malformed_nulls",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93",
+    "variation": "valid",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"id\":\"inv_85f0e39af95e4d93\",\"status\":\"QUEUED\",\"title\":\"Fuzz Base\",\"target_entity_name\":\"Target\",\"primary_url\":null,\"sum"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93",
+    "variation": "oversized_query",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"id\":\"inv_85f0e39af95e4d93\",\"status\":\"QUEUED\",\"title\":\"Fuzz Base\",\"target_entity_name\":\"Target\",\"primary_url\":null,\"sum"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/inputs",
+    "variation": "valid",
+    "status_code": 422,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"inputs\"],\"msg\":\"Field required\",\"input\":{\"type\":\"TEXT\",\"value\":\"Guaranteed 1"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/inputs",
+    "variation": "empty",
+    "status_code": 422,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"inputs\"],\"msg\":\"Field required\",\"input\":{}}]}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/inputs",
+    "variation": "invalid_types",
+    "status_code": 422,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"inputs\"],\"msg\":\"Field required\",\"input\":{\"type\":12345678,\"value\":12345678}}]"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/inputs",
+    "variation": "oversized",
+    "status_code": 422,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"inputs\"],\"msg\":\"Field required\",\"input\":{\"type\":\"OVERSIZED_OVERSIZED_OVERSIZ"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/inputs",
+    "variation": "malformed_nulls",
+    "status_code": 422,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"inputs\"],\"msg\":\"Field required\",\"input\":{\"type\":\"\\u0000\\u0001\\u0002\u00ff\",\"value"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/analyze",
+    "variation": "valid",
+    "status_code": 202,
+    "is_server_error": false,
+    "body_snippet": "{\"investigation_id\":\"inv_85f0e39af95e4d93\",\"status\":\"COMPLETED\",\"risk_score\":20.0,\"risk_tier\":\"LOW\",\"risk_summary\":\"Stub"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/analyze",
+    "variation": "empty",
+    "status_code": 202,
+    "is_server_error": false,
+    "body_snippet": "{\"investigation_id\":\"inv_85f0e39af95e4d93\",\"status\":\"COMPLETED\",\"risk_score\":20.0,\"risk_tier\":\"LOW\",\"risk_summary\":\"Stub"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/analyze",
+    "variation": "invalid_types",
+    "status_code": 422,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":[{\"type\":\"list_type\",\"loc\":[\"body\",\"analyzer_subset\"],\"msg\":\"Input should be a valid list\",\"input\":12345678}]}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/analyze",
+    "variation": "oversized",
+    "status_code": 202,
+    "is_server_error": false,
+    "body_snippet": "{\"investigation_id\":\"inv_85f0e39af95e4d93\",\"status\":\"COMPLETED\",\"risk_score\":20.0,\"risk_tier\":\"LOW\",\"risk_summary\":\"Stub"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/analyze",
+    "variation": "malformed_nulls",
+    "status_code": 422,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":[{\"type\":\"list_type\",\"loc\":[\"body\",\"analyzer_subset\"],\"msg\":\"Input should be a valid list\",\"input\":\"\\u0000\\u00"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/report",
+    "variation": "valid",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"id\":\"rpt_f1fc298f0c9149ec\",\"investigation_id\":\"inv_85f0e39af95e4d93\",\"status\":\"FINAL\",\"executive_summary\":null,\"risk_s"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/report",
+    "variation": "oversized_query",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"id\":\"rpt_94b63e4352a04066\",\"investigation_id\":\"inv_85f0e39af95e4d93\",\"status\":\"FINAL\",\"executive_summary\":null,\"risk_s"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/evidence",
+    "variation": "valid",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"investigation_id\":\"inv_85f0e39af95e4d93\",\"total\":0,\"evidence\":[]}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/evidence",
+    "variation": "oversized_query",
+    "status_code": 200,
+    "is_server_error": false,
+    "body_snippet": "{\"investigation_id\":\"inv_85f0e39af95e4d93\",\"total\":0,\"evidence\":[]}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/audit-log",
+    "variation": "valid",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investigations/inv_85f0e39af95e4d93/audit-log",
+    "variation": "oversized_query",
+    "status_code": 404,
+    "is_server_error": false,
+    "body_snippet": "{\"detail\":\"Not Found\"}"
+  }
+]

@@ -20,6 +20,7 @@ from .core.middleware import RequestContextMiddleware
 from .core.observability import init_observability, logger
 from .core.redis_client import redis_client
 from .core.security_headers import SecurityHeadersMiddleware
+from .veronica.router import veronica_router
 
 
 @asynccontextmanager
@@ -75,6 +76,9 @@ app.add_middleware(
 
 # Mount Versioned API (Architecture Rule 2)
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
+
+# Mount Floating Assistant Veronica (Additive Feature)
+app.include_router(veronica_router, prefix="/api/veronica")
 
 
 # Root health and ready aliases for load balancers and orchestrators

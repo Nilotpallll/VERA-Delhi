@@ -120,15 +120,17 @@ export function EvidenceExplorer({
   });
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4">
+    <div className="rounded-2xl border border-[#E7E3D8] bg-white p-6 space-y-5 shadow-sm animate-fade-in">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-4">
         <div>
-          <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-indigo-400" />
+          <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-orange-100 text-orange-600 border border-orange-200">
+              <FileText className="w-5 h-5" />
+            </div>
             Multimodal Evidence Vault Explorer
           </h3>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-xs text-stone-600 mt-1">
             Immutable SHA-256 hashed evidence items ingested into the investigation.
           </p>
         </div>
@@ -136,7 +138,7 @@ export function EvidenceExplorer({
         {onUploadClick && (
           <button
             onClick={onUploadClick}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white transition-all duration-200 flex items-center gap-1.5 shadow-sm"
           >
             + Upload New Evidence
           </button>
@@ -145,13 +147,13 @@ export function EvidenceExplorer({
 
       {/* Filter and Search Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-0.5 text-[11px]">
+        <div className="flex items-center gap-1 bg-stone-100 border border-stone-200 rounded-xl p-0.5 text-xs">
           {["ALL", "TEXT", "URL", "IMAGE", "VIDEO", "APK"].map((t) => (
             <button
               key={t}
               onClick={() => setSelectedType(t)}
-              className={`px-2.5 py-1 rounded ${
-                selectedType === t ? "bg-indigo-600 text-white font-medium" : "text-slate-400 hover:text-slate-200"
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-200 ${
+                selectedType === t ? "bg-orange-500 text-white shadow-sm" : "text-stone-600 hover:text-stone-900"
               }`}
             >
               {t}
@@ -159,80 +161,66 @@ export function EvidenceExplorer({
           ))}
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+        <div className="relative w-full sm:w-72">
+          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search payload or findings..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-[#FAF7F2] border border-stone-300 rounded-xl pl-9 pr-3 py-2 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-orange-500 transition-all duration-200"
           />
         </div>
       </div>
 
       {/* Grid of Evidence Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filtered.map((item) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((item, cardIdx) => {
           const Icon = ICONS[item.type] || FileText;
           return (
             <div
               key={item.id}
-              className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between space-y-3"
+              className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#E7E3D8] hover:border-orange-300 transition-all duration-300 flex flex-col justify-between space-y-3 card-hover shadow-sm animate-fade-in"
+              style={{ animationDelay: `${cardIdx * 0.06}s` }}
             >
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-indigo-950/70 border border-indigo-800/60 text-indigo-400">
+                    <div className="p-2 rounded-xl bg-orange-100 border border-orange-200 text-orange-600">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-semibold text-slate-200 truncate">{item.title}</h4>
-                      <span className="text-[10px] text-slate-500 font-mono uppercase">{item.type}</span>
+                      <h4 className="text-xs font-bold text-stone-900 truncate">{item.title}</h4>
+                      <span className="text-[10px] text-stone-500 font-mono uppercase">{item.type}</span>
                     </div>
                   </div>
                   {item.confidence && (
-                    <span className="text-[10px] font-mono text-indigo-400 bg-indigo-950/60 border border-indigo-900 px-1.5 py-0.5 rounded">
+                    <span className="text-[11px] font-mono font-bold text-orange-800 bg-orange-100 border border-orange-200 px-2 py-0.5 rounded-lg">
                       {(item.confidence * 100).toFixed(0)}%
                     </span>
                   )}
                 </div>
 
-                <div className="p-2 rounded bg-slate-900/80 border border-slate-800/80 text-[11px] font-mono text-slate-300 break-all line-clamp-3">
+                <div className="p-3 rounded-xl bg-white border border-stone-200 text-xs font-mono text-stone-800 break-all line-clamp-3 shadow-sm">
                   {item.payload}
                 </div>
 
-                <div className="text-[11px] text-slate-400 leading-relaxed bg-slate-900/40 p-2 rounded border border-slate-800/40">
-                  <span className="text-amber-400 font-medium">Findings: </span>
+                <div className="text-xs text-stone-700 leading-relaxed bg-white p-3 rounded-xl border border-stone-200 shadow-sm">
+                  <span className="text-orange-700 font-bold">Findings: </span>
                   {item.findings}
                 </div>
 
                 {item.type === "video" && (
-                  <div className="p-2 rounded bg-amber-950/30 border border-amber-900/60 text-[10px] text-amber-300/90 leading-tight">
-                    <span className="font-semibold block mb-0.5">⚠️ LOW-CONFIDENCE SCREENING SIGNAL</span>
+                  <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-tight">
+                    <span className="font-bold block mb-0.5">⚠️ LOW-CONFIDENCE SCREENING SIGNAL</span>
                     MesoNet provides an exploratory facial artifact screening heuristic, not conclusive forensic proof.
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2 pt-2 border-t border-slate-800/80 text-[10px]">
-                {item.sha256 && (
-                  <div className="flex items-center gap-1 text-slate-500 font-mono truncate" title={item.sha256}>
-                    <Hash className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{item.sha256.slice(0, 18)}...</span>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap gap-1">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800 text-[9px] font-mono"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+              <div className="pt-2 border-t border-stone-200 flex items-center justify-between text-[11px] text-stone-500">
+                <span>Source: {item.source}</span>
+                <span className="font-mono text-orange-700 font-medium">{item.tags?.join(", ")}</span>
               </div>
             </div>
           );

@@ -7,18 +7,19 @@ Invariants:
 """
 
 import logging
-import httpx
 from typing import Any
 
-from ..core.config import settings
+import httpx
+
 from ..ai.chain import CircuitBreaker
+from ..core.config import settings
 
 logger = logging.getLogger("vera.services.worker_client")
 
 
 class MLWorkerClient:
     def __init__(self, base_url: str | None = None, shared_secret: str | None = None):
-        self.base_url = (base_url or getattr(settings, "ML_WORKER_URL", "http://localhost:7860")).rstrip("/")
+        self.base_url = str(base_url or getattr(settings, "ML_WORKER_URL", "http://localhost:7860") or "http://localhost:7860").rstrip("/")
         self.shared_secret = shared_secret or getattr(settings, "WORKER_SHARED_SECRET", "")
         self.breaker = CircuitBreaker(failure_threshold=3, recovery_time_sec=60.0)
 

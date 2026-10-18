@@ -3,42 +3,429 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── 1. LIGHT TOKENS (Default) ────────────────────────────── */
   :root {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --bg-page: #FFFFFF;
+    --navy-1: #1E3A8A;
+    --navy-2: #4A63B0;
+    --lavender: #AEBDE8;
+    --mist: #F4F6FF;
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-solid: #FFFFFF;
+    --border: rgba(255, 255, 255, 0.85);
+    --border-outer: rgba(30, 58, 138, 0.10);
+    --text-primary: #0B0F1F;
+    --text-muted: #5B6482;
+    --text-subtle: #8A94A6;
+    
+    /* Primary action */
+    --accent: #0B0B0F;
+    --accent-ink: #FFFFFF;
+    --btn-primary-bg: #0B0B0F;
+    --btn-primary-fg: #FFFFFF;
+    --btn-primary-shadow: 0 10px 30px rgba(11, 11, 15, 0.25);
+    
+    /* Diffuse card shadows */
+    --shadow-card: 0 24px 80px rgba(40, 60, 140, 0.14), 0 2px 6px rgba(40, 60, 140, 0.06);
+    --shadow-pop: 0 16px 40px rgba(40, 60, 140, 0.12);
 
-    --card: 224 71% 7%;
-    --card-foreground: 213 31% 91%;
+    /* Verdicts (icon + label + color, never color alone) */
+    --verdict-safe: #0F7B6C;
+    --verdict-safe-bg: #ECFDF5;
+    --verdict-suspicious: #B45309;
+    --verdict-suspicious-bg: #FFFBEB;
+    --verdict-high-risk: #C81E3C;
+    --verdict-high-risk-bg: #FEF2F2;
 
-    --popover: 224 71% 7%;
-    --popover-foreground: 213 31% 91%;
+    /* Emergency Helpline 1930 */
+    --helpline-bg: rgba(200, 30, 60, 0.10);
+    --helpline-text: #B4142F;
+    --helpline-border: rgba(200, 30, 60, 0.20);
 
-    --primary: 210 100% 52%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Navigation */
+    --nav-bg: rgba(255, 255, 255, 0.65);
+    --nav-border: rgba(255, 255, 255, 0.85);
+    --nav-active-pill: #FFFFFF;
+    --nav-active-text: #1E3A8A;
+    --nav-track: rgba(30, 58, 138, 0.06);
 
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary Chips & Inputs */
+    --chip-bg: rgba(255, 255, 255, 0.78);
+    --chip-text: #1E3A8A;
+    --chip-border: rgba(255, 255, 255, 0.85);
+    --input-bg: rgba(255, 255, 255, 0.85);
+    --input-border: rgba(203, 213, 225, 0.9);
+    --dropzone-border: #B0BDD1;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    /* Hero Text Colors (Light mode sits on navy panel) */
+    --hero-h1-color: #FFFFFF;
+    --hero-subtitle-color: rgba(255, 255, 255, 0.85);
+  }
 
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
+  /* ── 2. DARK TOKENS ───────────────────────────────────────── */
+  [data-theme="dark"] {
+    --bg-page: #050505;
+    --surface: rgba(22, 25, 23, 0.72);
+    --surface-solid: #101211;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-outer: rgba(255, 255, 255, 0.04);
+    --text-primary: #F5F7F5;
+    --text-muted: #98A39B;
+    --text-subtle: #657067;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    /* Accent & Glow */
+    --accent: #86E08B;
+    --accent-ink: #04140A;
+    --glow: #7BE495;
+    --btn-primary-bg: #86E08B;
+    --btn-primary-fg: #04140A;
+    --btn-primary-shadow: 0 0 40px rgba(134, 224, 139, 0.35);
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 216 34% 45%;
+    /* Dark Shadows */
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 30px 80px rgba(0, 0, 0, 0.6);
+    --shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 20px 50px rgba(0, 0, 0, 0.7);
 
-    --radius: 0.5rem;
+    /* Verdicts */
+    --verdict-safe: #2DD4BF;
+    --verdict-safe-bg: rgba(45, 212, 191, 0.12);
+    --verdict-suspicious: #FBBF24;
+    --verdict-suspicious-bg: rgba(251, 191, 36, 0.12);
+    --verdict-high-risk: #FF5A5F;
+    --verdict-high-risk-bg: rgba(255, 90, 95, 0.14);
+
+    /* Emergency Helpline 1930 */
+    --helpline-bg: rgba(255, 90, 95, 0.14);
+    --helpline-text: #FF8A8E;
+    --helpline-border: rgba(255, 90, 95, 0.25);
+
+    /* Navigation */
+    --nav-bg: rgba(16, 18, 17, 0.75);
+    --nav-border: rgba(255, 255, 255, 0.08);
+    --nav-active-pill: rgba(255, 255, 255, 0.08);
+    --nav-active-text: #86E08B;
+    --nav-track: rgba(255, 255, 255, 0.04);
+
+    /* Secondary Chips & Inputs */
+    --chip-bg: rgba(22, 25, 23, 0.72);
+    --chip-text: #F5F7F5;
+    --chip-border: rgba(255, 255, 255, 0.08);
+    --input-bg: rgba(22, 25, 23, 0.85);
+    --input-border: rgba(255, 255, 255, 0.10);
+    --dropzone-border: rgba(255, 255, 255, 0.14);
+
+    /* Hero Text Colors (Dark mode sits on dark background) */
+    --hero-h1-color: #F5F7F5;
+    --hero-subtitle-color: #98A39B;
   }
 }
 
+/* ── 3. BASE STYLES & ATMOSPHERES ───────────────────────────── */
 body {
-  color: hsl(var(--foreground));
-  background: hsl(var(--background));
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  position: relative;
   min-height: 100vh;
+  font-family: var(--font-sans), 'Geist', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 300ms ease, color 300ms ease;
+  overflow-x: hidden;
+}
+
+/* LIGHT: Inset Hero Panel (12px inset, 680px height, radius 32px) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 12px;
+  top: 12px;
+  height: 680px;
+  border-radius: 32px;
+  background: linear-gradient(180deg, #1E3A8A 0%, #4A63B0 42%, #AEBDE8 78%, #F4F6FF 100%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 1;
+  transition: opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (max-width: 768px) {
+  body::before {
+    inset: 8px;
+    top: 8px;
+    height: 560px;
+    border-radius: 24px;
+  }
+}
+
+[data-theme="dark"] body::before {
+  opacity: 0;
+}
+
+/* DARK: Radial Green Glows (Centered behind composer lower half + faint secondary top) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  background:
+    radial-gradient(ellipse 900px 520px at 50% 480px, rgba(123, 228, 149, 0.55) 0%, transparent 70%),
+    radial-gradient(circle 600px at 50% 0px, rgba(123, 228, 149, 0.12) 0%, transparent 70%);
+}
+
+[data-theme="dark"] body::after {
+  opacity: 1;
+}
+
+/* ── 4. FLUID TYPE SCALE ───────────────────────────────────── */
+.text-fluid-h1 {
+  font-size: clamp(2.375rem, 5vw, 4rem);
+  line-height: 1.06;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.text-fluid-h2 {
+  font-size: 32px;
+  line-height: 38px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.text-fluid-h3 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.text-fluid-body {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 400;
+}
+
+.text-fluid-small {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.text-fluid-micro {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.font-mono-tabular {
+  font-family: var(--font-mono), 'Geist Mono', 'SF Mono', monospace;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+[lang="hi"], .font-hindi {
+  font-family: var(--font-hindi), 'Noto Sans Devanagari', sans-serif;
+  line-height: 1.65;
+}
+
+/* ── 5. GLASS SURFACES & COMPOSER ──────────────────────────── */
+.vera-glass {
+  background: var(--surface);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), var(--shadow-card);
+  transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 200ms ease, border-color 200ms ease;
+}
+
+[data-theme="dark"] .vera-glass {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--shadow-card);
+}
+
+.vera-composer {
+  width: 100%;
+  max-width: 760px;
+  border-radius: 28px;
+  background: var(--surface);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), var(--shadow-card);
+  padding: 24px;
+}
+
+[data-theme="dark"] .vera-composer {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--shadow-card);
+}
+
+/* Segmented Pill Tabs (Flowfi style, 44px tall) */
+.vera-segmented-track {
+  height: 44px;
+  background: var(--nav-track);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+}
+
+.vera-segmented-tab {
+  flex: 1;
+  height: 38px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all 180ms ease;
+  user-select: none;
+  cursor: pointer;
+}
+
+.vera-segmented-tab.active {
+  background: var(--nav-active-pill);
+  color: var(--nav-active-text);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Primary Action Button (Must be the strongest element on screen) */
+.vera-btn-primary {
+  position: relative;
+  overflow: hidden;
+  height: 52px;
+  min-width: 200px;
+  border-radius: 9999px;
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  box-shadow: var(--btn-primary-shadow);
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 180ms ease, opacity 180ms ease;
+  cursor: pointer;
+}
+
+.vera-btn-primary::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 220%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.24) 50%,
+    transparent 65%
+  );
+  transform: translateX(-100%);
+  transition: transform 600ms cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: none;
+}
+
+.vera-btn-primary:hover:not(:disabled)::after {
+  transform: translateX(100%);
+}
+
+.vera-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.vera-btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.vera-btn-primary:disabled {
+  background-color: var(--btn-primary-bg);
+  opacity: 0.4 !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+/* Floating Glass Sample Chips */
+.vera-sample-chip {
+  background: var(--chip-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--chip-border);
+  color: var(--chip-text);
+  box-shadow: var(--shadow-pop);
+  border-radius: 9999px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 180ms ease;
+}
+
+.vera-sample-chip:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.vera-sample-chip:active {
+  transform: scale(0.96);
+}
+
+/* ── 6. FLOATING NAVIGATION BAR ────────────────────────────── */
+.vera-nav-floating {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(960px, calc(100% - 48px));
+  height: 56px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 9999px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: var(--shadow-card);
+  transition: background 200ms ease;
+}
+
+.vera-nav-scrolled {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+[data-theme="dark"] .vera-nav-scrolled {
+  background: rgba(16, 18, 17, 0.92);
+}
+
+/* Smooth Tab Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 240ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
 }

@@ -7,7 +7,6 @@ Default retention: 90 days for investigations, 30 days for raw evidence blobs.
 Can be overridden via env var RETENTION_DAYS_INVESTIGATIONS / RETENTION_DAYS_EVIDENCE.
 """
 
-import asyncio
 from datetime import UTC, datetime, timedelta
 
 from ..core.observability import logger
@@ -45,7 +44,7 @@ class DataRetentionService:
         try:
             # Only attempt if we have a real DB session
             if db_session is not None:
-                from sqlalchemy import delete, text
+                from sqlalchemy import text
 
                 # Delete old evidence first (FK constraint order)
                 ev_result = await db_session.execute(

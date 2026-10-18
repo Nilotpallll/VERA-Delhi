@@ -1,0 +1,20 @@
+{
+  "scam": {
+    "success": true,
+    "findings": {
+      "target": "scam.invest@upi",
+      "is_mismatch": true,
+      "reasons": [
+        "UPI ID 'scam.invest@upi' is in the high-risk fraudulent recipient register."
+      ]
+    }
+  },
+  "clean": {
+    "success": true,
+    "findings": {
+      "target": "legitimate.broker@hdfcbank",
+      "is_mismatch": false,
+      "reasons": []
+    }
+  }
+}

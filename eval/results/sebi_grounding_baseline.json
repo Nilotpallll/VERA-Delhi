@@ -1,0 +1,251 @@
+{
+  "evaluation_name": "Phase 1 SEBI Regulatory Grounding Baseline Evaluation",
+  "ground_truth_dataset": "eval/data/sebi_source_of_truth.json",
+  "total_test_queries": 15,
+  "fraud_queries_evaluated": 10,
+  "execution_duration_sec": 0.047,
+  "metrics": {
+    "citation_precision": 0.76,
+    "citation_recall_top1": 0.1,
+    "citation_recall_top3": 0.1,
+    "hallucination_rate": 0.24,
+    "total_citations_emitted": 25,
+    "valid_citations_count": 19,
+    "hallucinated_citations_count": 6
+  },
+  "query_results": [
+    {
+      "query_id": "gt_q_01",
+      "query": "Guaranteed 50% monthly profit Telegram VIP group with zero risk",
+      "category": "guaranteed_returns",
+      "expected_circular_id": "CIR/2023/123",
+      "detector_violation": true,
+      "detector_confidence": 0.95,
+      "retrieved_cids": [
+        "NSE/2024/SOCIAL-ALERT"
+      ],
+      "emitted_cids": [
+        "NSE/2024/SOCIAL-ALERT",
+        "CIR/2023/123"
+      ],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_02",
+      "query": "Join unregistered insider trading WhatsApp group with operator circuit calls",
+      "category": "unregistered_intermediary",
+      "expected_circular_id": "CIR/2024/45",
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [
+        "NSE/2024/SOCIAL-ALERT"
+      ],
+      "emitted_cids": [
+        "NSE/2024/SOCIAL-ALERT",
+        "CIR/2024/45"
+      ],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_03",
+      "query": "Pre-IPO special allotment of unlisted shares transfer money to personal account",
+      "category": "pre_ipo_fraud",
+      "expected_circular_id": "CIR/2024/45",
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [
+        "CIR/2024/45",
+        "SEBI Master Circular: Mandator",
+        "RBI/2023/ALERT-LIST"
+      ],
+      "emitted_cids": [
+        "CIR/2024/45",
+        "UNVERIFIED_SEBI Master Circular"
+      ],
+      "top1_match": true,
+      "top3_match": true
+    },
+    {
+      "query_id": "gt_q_04",
+      "query": "Trade binary options on unlicensed foreign forex app with UPI deposit",
+      "category": "unauthorized_forex",
+      "expected_circular_id": "RBI/2023/ALERT-LIST",
+      "detector_violation": true,
+      "detector_confidence": 0.9,
+      "retrieved_cids": [
+        "CIR/2024/45"
+      ],
+      "emitted_cids": [
+        "CIR/2024/45",
+        "RBI/2023/ALERT-LIST"
+      ],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_05",
+      "query": "Social media operator channel pumping penny stocks for sudden upper circuit",
+      "category": "social_media_pump_and_dump",
+      "expected_circular_id": "NSE/2024/SOCIAL-ALERT",
+      "detector_violation": false,
+      "detector_confidence": 0.0,
+      "retrieved_cids": [],
+      "emitted_cids": [],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_06",
+      "query": "SEBI certified cyber cell will recover your lost scam money for 10% advance fee",
+      "category": "recovery_scam",
+      "expected_circular_id": "CIR/2024/45",
+      "detector_violation": false,
+      "detector_confidence": 0.0,
+      "retrieved_cids": [],
+      "emitted_cids": [],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_07",
+      "query": "Pay 15000 Demat unfreeze fee to UPI handle to avoid SEBI legal penalty",
+      "category": "impersonation_extortion",
+      "expected_circular_id": "CIR/2024/45",
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [],
+      "emitted_cids": [
+        "UNVERIFIED_SEBI Master Circular",
+        "CIR/2023/123"
+      ],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_08",
+      "query": "100% loss-proof algorithmic options trading bot giving daily assured returns",
+      "category": "guaranteed_returns",
+      "expected_circular_id": "CIR/2023/123",
+      "detector_violation": true,
+      "detector_confidence": 0.95,
+      "retrieved_cids": [],
+      "emitted_cids": [
+        "UNVERIFIED_SEBI Public Cautiona",
+        "CIR/2023/123"
+      ],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_09",
+      "query": "Dabba trading off-exchange terminal without PAN or KYC cash transactions",
+      "category": "unregistered_intermediary",
+      "expected_circular_id": "CIR/2024/45",
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [],
+      "emitted_cids": [
+        "UNVERIFIED_SEBI Public Cautiona",
+        "RBI/2023/ALERT-LIST"
+      ],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_10",
+      "query": "Offshore binary trading platform OlympTrade Quotex deposit INR",
+      "category": "unauthorized_forex",
+      "expected_circular_id": "RBI/2023/ALERT-LIST",
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [],
+      "emitted_cids": [
+        "RBI/2023/ALERT-LIST",
+        "UNVERIFIED_SEBI Public Cautiona"
+      ],
+      "top1_match": false,
+      "top3_match": false
+    },
+    {
+      "query_id": "gt_q_11",
+      "query": "HDFC Securities quarterly research outlook on banking sector and loan book growth",
+      "category": "legitimate_research",
+      "expected_circular_id": null,
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [
+        "CIR/2023/123",
+        "NSE/2024/SOCIAL-ALERT"
+      ],
+      "emitted_cids": [
+        "CIR/2023/123",
+        "NSE/2024/SOCIAL-ALERT"
+      ],
+      "top1_match": true,
+      "top3_match": true
+    },
+    {
+      "query_id": "gt_q_12",
+      "query": "Mutual fund investments are subject to market risks read all scheme documents",
+      "category": "legitimate_disclosure",
+      "expected_circular_id": null,
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [
+        "CIR/2023/123"
+      ],
+      "emitted_cids": [
+        "CIR/2023/123",
+        "CIR/2024/45"
+      ],
+      "top1_match": true,
+      "top3_match": true
+    },
+    {
+      "query_id": "gt_q_13",
+      "query": "NSE Samvat Muhurat trading session timings 18:15 to 19:15 official circular",
+      "category": "legitimate_notice",
+      "expected_circular_id": null,
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [],
+      "emitted_cids": [
+        "CIR/2024/45",
+        "UNVERIFIED_SEBI Public Cautiona"
+      ],
+      "top1_match": true,
+      "top3_match": true
+    },
+    {
+      "query_id": "gt_q_14",
+      "query": "AMFI monthly report on equity mutual fund inflows and SIP momentum",
+      "category": "legitimate_disclosure",
+      "expected_circular_id": null,
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [],
+      "emitted_cids": [
+        "CIR/2023/123"
+      ],
+      "top1_match": true,
+      "top3_match": true
+    },
+    {
+      "query_id": "gt_q_15",
+      "query": "SEBI study discloses that 9 out of 10 retail traders incur net losses in F&O",
+      "category": "legitimate_disclosure",
+      "expected_circular_id": null,
+      "detector_violation": false,
+      "detector_confidence": 0.75,
+      "retrieved_cids": [],
+      "emitted_cids": [
+        "CIR/2023/123",
+        "CIR/2024/45"
+      ],
+      "top1_match": true,
+      "top3_match": true
+    }
+  ]
+}

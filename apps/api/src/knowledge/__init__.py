@@ -1,6 +1,6 @@
 """Knowledge module entrypoint."""
 
-from .evaluation import BenchmarkEvaluator, LABELED_EVALUATION_DATASET
+from .evaluation import LABELED_EVALUATION_DATASET, BenchmarkEvaluator
 from .guideline_matcher import SEBIGuidelineDetector
 from .pipeline import RegulatoryPipeline
 from .store import RegulatoryVectorStore

@@ -124,7 +124,7 @@ class ImageAnalyzer(BaseAnalyzer):
     def _extract_metadata(self, image_bytes: bytes) -> dict[str, Any]:
         """Extract PIL / EXIF metadata."""
         try:
-            from PIL import Image, ImageOps
+            from PIL import Image
             im = Image.open(io.BytesIO(image_bytes))
             im_format = im.format or "UNKNOWN"
             width, height = im.size

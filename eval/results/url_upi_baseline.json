@@ -1,0 +1,1039 @@
+{
+  "evaluation_name": "Phase 1 URL, UPI, and Entity Verification Baseline Evaluation",
+  "dataset": "eval/data/url_upi_company_eval.json",
+  "sample_count": 100,
+  "random_seed": 42,
+  "execution_duration_sec": 2.702,
+  "metrics": {
+    "confusion_matrix": {
+      "tp": 47,
+      "fp": 8,
+      "tn": 42,
+      "fn": 3
+    },
+    "classification": {
+      "accuracy": 0.89,
+      "precision": 0.8545,
+      "recall": 0.94,
+      "specificity": 0.84,
+      "false_positive_rate": 0.16,
+      "f1": 0.8952
+    },
+    "auroc": 0.961,
+    "fpr_at_95_recall": 0.5,
+    "expected_calibration_error": 0.0559,
+    "confidence_intervals_95": {
+      "f1_ci_95": [
+        0.8257,
+        0.9524
+      ],
+      "precision_ci_95": [
+        0.7547,
+        0.9434
+      ],
+      "recall_ci_95": [
+        0.8636,
+        1.0
+      ],
+      "auroc_ci_95": [
+        0.9141,
+        0.9946
+      ]
+    },
+    "reliability_diagram_bins": [
+      {
+        "bin": "[0.0, 0.2]",
+        "count": 45,
+        "confidence": 0.1056,
+        "accuracy": 0.0667,
+        "gap": 0.039
+      },
+      {
+        "bin": "[0.2, 0.4]",
+        "count": 0,
+        "confidence": 0.3,
+        "accuracy": 0.0,
+        "gap": 0.0
+      },
+      {
+        "bin": "[0.4, 0.6]",
+        "count": 0,
+        "confidence": 0.5,
+        "accuracy": 0.0,
+        "gap": 0.0
+      },
+      {
+        "bin": "[0.6, 0.8]",
+        "count": 0,
+        "confidence": 0.7,
+        "accuracy": 0.0,
+        "gap": 0.0
+      },
+      {
+        "bin": "[0.8, 1.0]",
+        "count": 55,
+        "confidence": 0.9244,
+        "accuracy": 0.8545,
+        "gap": 0.0698
+      }
+    ]
+  },
+  "breakdown_by_modality": {
+    "url": {
+      "samples": 50,
+      "confusion_matrix": {
+        "tp": 24,
+        "fp": 8,
+        "tn": 17,
+        "fn": 1
+      },
+      "metrics": {
+        "accuracy": 0.82,
+        "precision": 0.75,
+        "recall": 0.96,
+        "specificity": 0.68,
+        "false_positive_rate": 0.32,
+        "f1": 0.8421
+      },
+      "auroc": 0.948
+    },
+    "upi": {
+      "samples": 30,
+      "confusion_matrix": {
+        "tp": 13,
+        "fp": 0,
+        "tn": 15,
+        "fn": 2
+      },
+      "metrics": {
+        "accuracy": 0.9333,
+        "precision": 1.0,
+        "recall": 0.8667,
+        "specificity": 1.0,
+        "false_positive_rate": 0.0,
+        "f1": 0.9286
+      },
+      "auroc": 0.9333
+    },
+    "company": {
+      "samples": 20,
+      "confusion_matrix": {
+        "tp": 10,
+        "fp": 0,
+        "tn": 10,
+        "fn": 0
+      },
+      "metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "specificity": 1.0,
+        "false_positive_rate": 0.0,
+        "f1": 1.0
+      },
+      "auroc": 1.0
+    }
+  },
+  "samples": [
+    {
+      "id": "eval_url_phish_001",
+      "modality": "url",
+      "content": "https://zerodha-trading-login-secure1.top/verify",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9995,
+      "details": "is_suspicious=True, indicators=4, ml_risk=0.9995"
+    },
+    {
+      "id": "eval_url_phish_002",
+      "modality": "url",
+      "content": "http://192.168.1.105:8080/sebi-allotment/login.html",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9998,
+      "details": "is_suspicious=True, indicators=3, ml_risk=0.9998"
+    },
+    {
+      "id": "eval_url_phish_003",
+      "modality": "url",
+      "content": "https://groww-vip-investments.xyz/app-download",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9995,
+      "details": "is_suspicious=True, indicators=3, ml_risk=0.9995"
+    },
+    {
+      "id": "eval_url_phish_004",
+      "modality": "url",
+      "content": "https://angelone-pro-trader.club/auth/login",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.8581,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.8581"
+    },
+    {
+      "id": "eval_url_phish_005",
+      "modality": "url",
+      "content": "https://sebi-verification-portal.click/unfreeze",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9995,
+      "details": "is_suspicious=True, indicators=3, ml_risk=0.9995"
+    },
+    {
+      "id": "eval_url_phish_006",
+      "modality": "url",
+      "content": "http://tata-technologies-preipo-allotment.online",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=2, ml_risk=0.8176"
+    },
+    {
+      "id": "eval_url_phish_007",
+      "modality": "url",
+      "content": "https://nseindia-insider-portal.site/register",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.8581,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.8581"
+    },
+    {
+      "id": "eval_url_phish_008",
+      "modality": "url",
+      "content": "https://icici-direct-instant-loan.biz/apply",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9734,
+      "details": "is_suspicious=True, indicators=2, ml_risk=0.9734"
+    },
+    {
+      "id": "eval_url_phish_009",
+      "modality": "url",
+      "content": "https://h-d-f-c-securities-vip.top/portal",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9983,
+      "details": "is_suspicious=True, indicators=3, ml_risk=0.9983"
+    },
+    {
+      "id": "eval_url_phish_010",
+      "modality": "url",
+      "content": "https://kotak-cherry-bonus.vip/claim",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9995,
+      "details": "is_suspicious=True, indicators=3, ml_risk=0.9995"
+    },
+    {
+      "id": "eval_url_phish_011",
+      "modality": "url",
+      "content": "http://bit.ly/sebi-investor-bonus-2024",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.4256"
+    },
+    {
+      "id": "eval_url_phish_012",
+      "modality": "url",
+      "content": "https://tinyurl.com/zerodha-vip-signals",
+      "is_fraud_true": true,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_phish_013",
+      "modality": "url",
+      "content": "https://motilaloswal-circuit-tips.cc/join",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.8581,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.8581"
+    },
+    {
+      "id": "eval_url_phish_014",
+      "modality": "url",
+      "content": "https://upstox-free-demat-crypto.tk/bonus",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9995,
+      "details": "is_suspicious=True, indicators=4, ml_risk=0.9995"
+    },
+    {
+      "id": "eval_url_phish_015",
+      "modality": "url",
+      "content": "https://5paisa-vip-institutional.ml/access",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9983,
+      "details": "is_suspicious=True, indicators=2, ml_risk=0.9983"
+    },
+    {
+      "id": "eval_url_phish_016",
+      "modality": "url",
+      "content": "https://binance-india-p2p-arbitrage.top/deposit",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9983,
+      "details": "is_suspicious=True, indicators=3, ml_risk=0.9983"
+    },
+    {
+      "id": "eval_url_phish_017",
+      "modality": "url",
+      "content": "https://wazirx-recovery-portal.xyz/claim",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9837,
+      "details": "is_suspicious=True, indicators=2, ml_risk=0.9837"
+    },
+    {
+      "id": "eval_url_phish_018",
+      "modality": "url",
+      "content": "http://rbi-currency-exchange-nodal.info/release",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9983,
+      "details": "is_suspicious=True, indicators=4, ml_risk=0.9983"
+    },
+    {
+      "id": "eval_url_phish_019",
+      "modality": "url",
+      "content": "https://sharekhan-gold-scheme.club/pay",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9926,
+      "details": "is_suspicious=True, indicators=2, ml_risk=0.9926"
+    },
+    {
+      "id": "eval_url_phish_020",
+      "modality": "url",
+      "content": "https://paytm-money-double-bonanza.click/win",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9995,
+      "details": "is_suspicious=True, indicators=4, ml_risk=0.9995"
+    },
+    {
+      "id": "eval_url_phish_021",
+      "modality": "url",
+      "content": "https://dhan-algo-trading-bot.site/download",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_phish_022",
+      "modality": "url",
+      "content": "https://aliceblue-free-call-tips.top/group",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9427,
+      "details": "is_suspicious=True, indicators=2, ml_risk=0.9427"
+    },
+    {
+      "id": "eval_url_phish_023",
+      "modality": "url",
+      "content": "https://religare-broking-vip.buzz/login",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9837,
+      "details": "is_suspicious=True, indicators=2, ml_risk=0.9837"
+    },
+    {
+      "id": "eval_url_phish_024",
+      "modality": "url",
+      "content": "http://103.224.182.242/zerodha/auth",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9998,
+      "details": "is_suspicious=True, indicators=3, ml_risk=0.9998"
+    },
+    {
+      "id": "eval_url_phish_025",
+      "modality": "url",
+      "content": "https://fyers-pro-terminal.rest/connect",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.7311"
+    },
+    {
+      "id": "eval_url_legit_001",
+      "modality": "url",
+      "content": "https://www.sebi.gov.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_002",
+      "modality": "url",
+      "content": "https://www.nseindia.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_003",
+      "modality": "url",
+      "content": "https://www.bseindia.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_004",
+      "modality": "url",
+      "content": "https://zerodha.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_005",
+      "modality": "url",
+      "content": "https://groww.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_006",
+      "modality": "url",
+      "content": "https://www.amfiindia.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_007",
+      "modality": "url",
+      "content": "https://www.rbi.org.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_008",
+      "modality": "url",
+      "content": "https://www.incometax.gov.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_009",
+      "modality": "url",
+      "content": "https://www.mca.gov.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_010",
+      "modality": "url",
+      "content": "https://www.angelone.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_011",
+      "modality": "url",
+      "content": "https://www.icicidirect.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_012",
+      "modality": "url",
+      "content": "https://www.hdfcsec.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_013",
+      "modality": "url",
+      "content": "https://www.kotaksecurities.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_014",
+      "modality": "url",
+      "content": "https://www.motilaloswal.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_015",
+      "modality": "url",
+      "content": "https://upstox.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_016",
+      "modality": "url",
+      "content": "https://www.5paisa.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_017",
+      "modality": "url",
+      "content": "https://dhan.co",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_018",
+      "modality": "url",
+      "content": "https://www.cdslindia.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_019",
+      "modality": "url",
+      "content": "https://www.nsdl.co.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_020",
+      "modality": "url",
+      "content": "https://www.crisil.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_021",
+      "modality": "url",
+      "content": "https://www.icra.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_022",
+      "modality": "url",
+      "content": "https://www.careedge.in",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_023",
+      "modality": "url",
+      "content": "https://www.sbicaps.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": true,
+      "score": 0.85,
+      "details": "is_suspicious=True, indicators=1, ml_risk=0.6457"
+    },
+    {
+      "id": "eval_url_legit_024",
+      "modality": "url",
+      "content": "https://www.utiicai.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_url_legit_025",
+      "modality": "url",
+      "content": "https://www.nipponindiaim.com",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1419,
+      "details": "is_suspicious=False, indicators=0, ml_risk=0.1419"
+    },
+    {
+      "id": "eval_upi_fraud_001",
+      "modality": "upi",
+      "content": "sebi-investor-verification-1@paytm",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_fraud_002",
+      "modality": "upi",
+      "content": "nse-ipo-allocation-desk@ybl",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_fraud_003",
+      "modality": "upi",
+      "content": "bse-allotment-refund@okhdfc",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_fraud_004",
+      "modality": "upi",
+      "content": "zerodha-pro-trading-vip@icici",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Payment handle uses deceptive solicitation terminology.']"
+    },
+    {
+      "id": "eval_upi_fraud_005",
+      "modality": "upi",
+      "content": "tata.tech.ipo.payment@ibl",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_fraud_006",
+      "modality": "upi",
+      "content": "groww.vip.signals.daily@axl",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Payment handle uses deceptive solicitation terminology.']"
+    },
+    {
+      "id": "eval_upi_fraud_007",
+      "modality": "upi",
+      "content": "rbi.forex.penalty.desk@sbi",
+      "is_fraud_true": true,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_fraud_008",
+      "modality": "upi",
+      "content": "angelone.institutional.margin@barodampay",
+      "is_fraud_true": true,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_fraud_009",
+      "modality": "upi",
+      "content": "sebi.recovery.nodal.officer@freecharge",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_fraud_010",
+      "modality": "upi",
+      "content": "motilal.insider.tips@ybl",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Payment handle uses deceptive solicitation terminology.']"
+    },
+    {
+      "id": "eval_upi_fraud_011",
+      "modality": "upi",
+      "content": "crypto.recovery.specialist@airtel",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_fraud_012",
+      "modality": "upi",
+      "content": "vip.circuit.trader.fees@oksbi",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Payment handle uses deceptive solicitation terminology.']"
+    },
+    {
+      "id": "eval_upi_fraud_013",
+      "modality": "upi",
+      "content": "demat.unfreeze.sebi@postbank",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_fraud_014",
+      "modality": "upi",
+      "content": "dabba.trading.cashless@icici",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.', 'Payment handle uses deceptive solicitation terminology.']"
+    },
+    {
+      "id": "eval_upi_fraud_015",
+      "modality": "upi",
+      "content": "preipo.shares.direct@okaxis",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.9,
+      "details": "is_mismatch=True, reasons=['Consumer UPI handle improperly impersonates official regulator, exchange, or IPO allotment desk.']"
+    },
+    {
+      "id": "eval_upi_legit_001",
+      "modality": "upi",
+      "content": "zerodha.funds@hdfcbank",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_002",
+      "modality": "upi",
+      "content": "groww.pay@icici",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_003",
+      "modality": "upi",
+      "content": "angelone.pay@axisbank",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_004",
+      "modality": "upi",
+      "content": "icicisecurities.funds@icici",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_005",
+      "modality": "upi",
+      "content": "kotaksec.funds@kotak",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_006",
+      "modality": "upi",
+      "content": "motilaloswal.pay@hdfcbank",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_007",
+      "modality": "upi",
+      "content": "upstox.funds@hdfcbank",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_008",
+      "modality": "upi",
+      "content": "5paisa.pay@yesbank",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_009",
+      "modality": "upi",
+      "content": "dhan.funds@icici",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_010",
+      "modality": "upi",
+      "content": "amfi.investors@sbi",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_011",
+      "modality": "upi",
+      "content": "cdsl.investor@icici",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_012",
+      "modality": "upi",
+      "content": "nsdl.investor@hdfcbank",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_013",
+      "modality": "upi",
+      "content": "uti.mutualfund@sbi",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_014",
+      "modality": "upi",
+      "content": "hdfcmf.invest@hdfcbank",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_upi_legit_015",
+      "modality": "upi",
+      "content": "sbimf.sip@sbi",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.1,
+      "details": "is_mismatch=False, reasons=[]"
+    },
+    {
+      "id": "eval_entity_reg_001",
+      "modality": "company",
+      "content": "ZERODHA BROKING LIMITED (SEBI Reg: INZ000031633)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: Zerodha Broking Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_reg_002",
+      "modality": "company",
+      "content": "ICICI SECURITIES LIMITED (SEBI Reg: INZ000183631)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: ICICI Securities Limited (Stock Broker & Merchant Banker)."
+    },
+    {
+      "id": "eval_entity_reg_003",
+      "modality": "company",
+      "content": "HDFC SECURITIES LIMITED (SEBI Reg: INZ000186937)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: HDFC Securities Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_reg_004",
+      "modality": "company",
+      "content": "KOTAK SECURITIES LIMITED (SEBI Reg: INZ000200137)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: Kotak Securities Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_reg_005",
+      "modality": "company",
+      "content": "ANGEL ONE LIMITED (SEBI Reg: INZ000161534)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: Angel One Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_reg_006",
+      "modality": "company",
+      "content": "MOTILAL OSWAL FINANCIAL SERVICES LIMITED (SEBI Reg: INZ000158836)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: Motilal Oswal Financial Services Limited (Stock Broker & Portfolio Manager)."
+    },
+    {
+      "id": "eval_entity_reg_007",
+      "modality": "company",
+      "content": "RKSV SECURITIES INDIA PRIVATE LIMITED (SEBI Reg: INZ000185137)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: RKSV Securities India Private Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_reg_008",
+      "modality": "company",
+      "content": "5PAISA CAPITAL LIMITED (SEBI Reg: INZ000010231)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: 5paisa Capital Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_reg_009",
+      "modality": "company",
+      "content": "SHAREKHAN LIMITED (SEBI Reg: INZ000171337)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: Sharekhan Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_reg_010",
+      "modality": "company",
+      "content": "SBICAP SECURITIES LIMITED (SEBI Reg: INZ000200032)",
+      "is_fraud_true": false,
+      "is_flagged_pred": false,
+      "score": 0.05,
+      "details": "Positively verified in SEBI database: SBICAP Securities Limited (Stock Broker)."
+    },
+    {
+      "id": "eval_entity_unreg_001",
+      "modality": "company",
+      "content": "Global Alpha Wealth Fund Syndicate (Status: UNREGISTERED)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'Global Alpha Wealth Fund Syndicate' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_002",
+      "modality": "company",
+      "content": "Quantum Algo AI Wealth Management (Status: FAKE_REG_INZ999999999)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'Quantum Algo AI Wealth Management' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_003",
+      "modality": "company",
+      "content": "Tata Tech Pre-IPO Allocation Trust (Status: NONE)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'Tata Tech Pre-IPO Allocation Trust' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_004",
+      "modality": "company",
+      "content": "SEBI Certified Recovery Taskforce Ltd (Status: IMPERSONATION)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'SEBI Certified Recovery Taskforce Ltd' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_005",
+      "modality": "company",
+      "content": "VIP Circuit Wealth Advisers Pvt Ltd (Status: UNREGISTERED)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'VIP Circuit Wealth Advisers Pvt Ltd' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_006",
+      "modality": "company",
+      "content": "Royal Forex Arbitrage India Ltd (Status: RBI_ALERT_LIST)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'Royal Forex Arbitrage India Ltd' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_007",
+      "modality": "company",
+      "content": "Olymp Trade Binary Option Ltd (Status: RBI_ALERT_LIST)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'Olymp Trade Binary Option Ltd' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_008",
+      "modality": "company",
+      "content": "Apex Crypto Yield Mining Syndicate (Status: UNREGISTERED)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'Apex Crypto Yield Mining Syndicate' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_009",
+      "modality": "company",
+      "content": "SMC Global Clone Trading Hub (Status: CLONE_ENTITY)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'SMC Global Clone Trading Hub' not found in official SEBI intermediary database."
+    },
+    {
+      "id": "eval_entity_unreg_010",
+      "modality": "company",
+      "content": "Mahadev Book Stock Market Tips Cell (Status: DEBARRED)",
+      "is_fraud_true": true,
+      "is_flagged_pred": true,
+      "score": 0.95,
+      "details": "Entity 'Mahadev Book Stock Market Tips Cell' not found in official SEBI intermediary database."
+    }
+  ]
+}

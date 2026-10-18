@@ -1,0 +1,6 @@
+{
+  "status": "SUCCESS",
+  "analyzer_name": "engine.video.deepfake.mesonet",
+  "is_deepfake": null,
+  "frames_analyzed": 5
+}
