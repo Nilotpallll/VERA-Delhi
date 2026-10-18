@@ -95,7 +95,7 @@ export function VeraCover({
             title={t.coverVeronicaBtn}
           >
             <span className="vera-veronica-sparkle-dot" />
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <VeraLogo className="vera-cover-veronica-logo" />
             <span>{t.coverVeronicaBtn}</span>
           </button>
           <button
@@ -152,7 +152,7 @@ export function VeraCover({
               className="vera-cover-cta vera-cover-veronica-hero-cta"
               onClick={() => handleOpenVeronica()}
             >
-              <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-300" />
+              <VeraLogo className="vera-cover-veronica-hero-logo" />
               <span>{t.coverVeronicaHeroCta}</span>
             </button>
             <a className="vera-cover-cta vera-cover-explore" href="#cover-story">
@@ -243,7 +243,7 @@ export function VeraCover({
                 }
               }}
             >
-              <div className="vera-veronica-banner-avatar">V</div>
+              <VeraLogo className="vera-veronica-banner-avatar" />
               <div className="vera-veronica-banner-text">
                 <span className="vera-veronica-banner-badge">{locale === "hi" ? "वेरोनिका त्वरित सहायता" : "VERONICA INSTANT COPILOT"}</span>
                 <p>“{locale === "hi" ? "क्या पुलिस या सीबीआई स्काइप पर डिजिटल अरेस्ट कर सकती है?" : "Can police or CBI arrest someone on a Skype video call?"}”</p>

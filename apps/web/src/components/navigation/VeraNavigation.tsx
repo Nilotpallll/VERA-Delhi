@@ -140,11 +140,11 @@ export function VeraNavigation({
                 window.dispatchEvent(new Event("vera:toggle-veronica"));
               }
             }}
-            className="h-9 px-3.5 rounded-full border border-amber-500/35 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-semibold hover:bg-amber-500/20 transition-colors shadow-sm flex items-center gap-1.5"
+            className="h-9 pl-2 pr-3.5 rounded-full border border-amber-500/35 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-semibold hover:bg-amber-500/20 transition-colors shadow-sm flex items-center gap-2 overflow-hidden"
             title="Veronica AI Forensic Assistant"
             aria-label="Veronica AI Forensic Assistant"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <VeraLogo className="vera-nav-veronica-logo" />
             <span className="font-bold">Veronica AI</span>
           </button>
 
@@ -204,7 +204,7 @@ export function VeraNavigation({
             title="Veronica AI Assistant"
             aria-label="Veronica AI Assistant"
           >
-            ✨
+            <VeraLogo className="vera-nav-veronica-mobile-logo" />
           </button>
           <button
             onClick={onLocaleToggle}

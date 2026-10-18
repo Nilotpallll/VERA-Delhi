@@ -7,6 +7,7 @@ import { VERONICA_STRINGS } from "./i18n";
 import { VeronicaChat } from "./VeronicaChat";
 import { VeronicaFaqChips } from "./VeronicaFaqChips";
 import { VeronicaInput } from "./VeronicaInput";
+import { VeraLogo } from "../brand/VeraLogo";
 
 interface VeronicaPanelProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export const VeronicaPanel: React.FC<VeronicaPanelProps> = ({
       <div className={styles.vrnHeader}>
         <div className={styles.vrnHeaderLeft}>
           <div className={styles.vrnAvatar}>
-            V
+            <VeraLogo className={styles.vrnAvatarLogo} />
             <div className={styles.vrnAvatarDot} />
           </div>
           <div>
