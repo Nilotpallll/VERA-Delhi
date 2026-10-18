@@ -132,7 +132,13 @@ class Settings(BaseSettings):
         ]
 
         # In production, at least one real LLM key is mandatory
-        has_llm = bool(values.get("GEMINI_API_KEY") or values.get("GROQ_API_KEY"))
+        def is_real_key(val: object, forbidden: list[str]) -> bool:
+            if not val or str(val).strip() in ("", "None"):
+                return False
+            return not any(sub.lower() in str(val).lower() for sub in forbidden)
+
+        has_llm = is_real_key(values.get("GEMINI_API_KEY"), ["your-gemini", "placeholder", "None"]) or \
+                  is_real_key(values.get("GROQ_API_KEY"), ["your-groq", "placeholder", "None"])
         if not has_llm:
             bad_keys.append("GEMINI_API_KEY (or GROQ_API_KEY)")
 

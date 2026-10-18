@@ -50,23 +50,32 @@ class SupabaseStorageProvider(StorageProvider):
         clean_key = sanitize_storage_path(key)
 
         # In production with Supabase configured, execute REST call
-        if self._url and self._key and not self._url.startswith("http://placeholder"):
+        if self._url and self._key and not self._url.startswith("http://placeholder") and "your-project" not in self._url:
             upload_url = f"{self._url}/storage/v1/object/{self._bucket}/{clean_key}"
             headers = {
                 "Authorization": f"Bearer {self._key}",
                 "apikey": self._key,
                 "Content-Type": mime_type,
             }
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                res = await client.post(upload_url, content=content, headers=headers)
-                if res.status_code not in (200, 201):
-                    logger.error("Supabase storage upload failed with %d: %s", res.status_code, res.text)
-                    if settings.is_production:
-                        from fastapi import HTTPException
-                        raise HTTPException(
-                            status_code=503,
-                            detail={"error": "storage_unavailable", "message": "Failed to upload evidence to cloud storage."},
-                        )
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    res = await client.post(upload_url, content=content, headers=headers)
+                    if res.status_code not in (200, 201):
+                        logger.error("Supabase storage upload failed with %d: %s", res.status_code, res.text)
+                        if settings.is_production:
+                            from fastapi import HTTPException
+                            raise HTTPException(
+                                status_code=503,
+                                detail={"error": "storage_unavailable", "message": "Failed to upload evidence to cloud storage."},
+                            )
+            except httpx.ConnectError:
+                if settings.is_production:
+                    from fastapi import HTTPException
+                    raise HTTPException(
+                        status_code=503,
+                        detail={"error": "storage_unavailable", "message": "Failed to upload evidence to cloud storage."},
+                    )
+                logger.warning("Supabase storage unreachable in development; returning local storage reference.")
         elif settings.is_production:
             from fastapi import HTTPException
             raise HTTPException(
@@ -83,18 +92,21 @@ class SupabaseStorageProvider(StorageProvider):
         )
 
     async def get_download_url(self, storage_ref: StorageReference, expires_in_seconds: int = 3600) -> str:
-        if self._url and not self._url.startswith("http://placeholder"):
+        if self._url and not self._url.startswith("http://placeholder") and "your-project" not in self._url:
             return f"{self._url}/storage/v1/object/public/{storage_ref.bucket}/{storage_ref.storage_path}"
         return f"https://mock-supabase.local/storage/{storage_ref.bucket}/{storage_ref.storage_path}"
 
     async def delete(self, storage_ref: StorageReference) -> bool:
-        if self._url and self._key and not self._url.startswith("http://placeholder"):
+        if self._url and self._key and not self._url.startswith("http://placeholder") and "your-project" not in self._url:
             delete_url = f"{self._url}/storage/v1/object/{storage_ref.bucket}/{storage_ref.storage_path}"
             headers = {
                 "Authorization": f"Bearer {self._key}",
                 "apikey": self._key,
             }
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.delete(delete_url, headers=headers)
-                return res.status_code in (200, 204)
+            try:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    res = await client.delete(delete_url, headers=headers)
+                    return res.status_code in (200, 204)
+            except httpx.ConnectError:
+                return True
         return True
