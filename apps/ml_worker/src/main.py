@@ -208,9 +208,8 @@ async def analyze_video(req: VideoAnalyzeRequest):
     if frames and locate_face_crop:
         for fr in frames:
             crop = locate_face_crop(fr)
-            face_crops.append(crop)
-    elif frames:
-        face_crops = frames[:5]
+            if crop is not None:
+                face_crops.append(crop)
 
     frame_scores = []
     if face_crops and infer_single_crop:

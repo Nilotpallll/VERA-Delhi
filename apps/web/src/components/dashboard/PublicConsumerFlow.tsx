@@ -512,30 +512,37 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         if (isVisualFake) {
           reasons.push(
             locale === "hi"
-              ? `चेहरे में कृत्रिम बदलाव (${Math.round(agg * 100)}% संभावना) पाए गए हैं।`
-              : `Detected artificial facial manipulation with ${Math.round(agg * 100)}% likelihood.`
+              ? `चेहरे में कृत्रिम हेरफेर के संकेत (मॉडल स्कोर: ${Math.round(agg * 100)}/100) पाए गए हैं।`
+              : `Model detected signals associated with facial manipulation (Estimated manipulation score: ${Math.round(agg * 100)}/100).`
+          );
+        } else if ((data.faces_detected ?? 0) === 0) {
+          reasons.push(
+            locale === "hi"
+              ? "वीडियो फ़्रेमों में कोई मानवीय चेहरा नहीं पाया गया। दृश्य फ़ोरेंसिक अनिर्णायक है।"
+              : "No human faces detected in sampled video frames. Visual facial forensics inconclusive."
           );
         }
-        if ((data.temporal_flicker_score ?? 0) > 0.15) {
+        if ((data.temporal_flicker_score ?? 0) > 0.15 && isVisualFake) {
           reasons.push(
             `Temporal flicker artifacts detected (${data.temporal_flicker_score?.toFixed(3)}) — characteristic of synthetic AI deepfakes.`
           );
         }
 
         // 3. Clean authentic video case
-        if (!isVisualFake && !hasAdvisory) {
+        if (!isVisualFake && (data.faces_detected ?? 0) > 0 && !hasAdvisory) {
           reasons.push(
             locale === "hi"
-              ? "वीडियो वास्तविक है: चेहरे में कोई हेरफेर नहीं मिला, और भाषण में कोई भ्रामक वित्तीय सलाह नहीं पाई गई।"
-              : "Authentic video footage: No significant facial manipulation detected, and video speech transcript contains no illegal financial advisory signals."
+              ? "विश्लेषित फ़्रेमों में चेहरे में किसी महत्वपूर्ण हेरफेर के संकेत नहीं मिले, और भाषण में कोई भ्रामक वित्तीय सलाह नहीं पाई गई।"
+              : "No significant signals of facial manipulation detected across analyzed frames, and speech contains no illegal financial advisory signals."
           );
-        } else if (!isVisualFake && hasAdvisory) {
+        } else if (!isVisualFake && (data.faces_detected ?? 0) > 0 && hasAdvisory) {
           reasons.push(
             locale === "hi"
-              ? "वीडियो फुटेज वास्तविक है (चेहरे में कोई हेरफेर नहीं), लेकिन बोलने वाला व्यक्ति अवैध वित्तीय योजना को बढ़ावा दे रहा है।"
-              : "Visual camera footage is authentic (no facial deepfake detected), but the speaker is peddling an unauthorized financial scheme."
+              ? "चेहरे में कोई हेरफेर के संकेत नहीं मिले, लेकिन बोलने वाला व्यक्ति अवैध वित्तीय योजना को बढ़ावा दे रहा है।"
+              : "Visual camera footage contains no detected facial deepfake signals, but the speaker is peddling an unauthorized financial scheme."
           );
         }
+
 
         setVerdict({
           riskTier: (data.composite_risk_tier || (hasAdvisory || isVisualFake ? "HIGH" : "MINIMAL")) as ScanVerdict["riskTier"],
@@ -1984,14 +1991,18 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                       </span>
                       <span
                         className={`text-xs font-mono-tabular font-bold px-2.5 py-0.5 rounded-full border ${
-                          verdict.visualManipulationDetected
+                          verdict.deepfakeDetails.facesDetected === 0
+                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                            : verdict.visualManipulationDetected
                             ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
                             : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                         }`}
                       >
-                        {verdict.visualManipulationDetected
-                          ? "Facial Manipulation Detected"
-                          : "Authentic Camera Video"}
+                        {verdict.deepfakeDetails.facesDetected === 0
+                          ? "Inconclusive (No Faces)"
+                          : verdict.visualManipulationDetected
+                          ? "Facial Manipulation Signals"
+                          : "No Manipulation Signals Detected"}
                       </span>
                     </div>
 
@@ -2009,27 +2020,37 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         </span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-[var(--nav-track)] border border-[var(--border)]">
-                        <span className="text-xs text-[var(--text-muted)] block">AI Anomaly</span>
+                        <span className="text-xs text-[var(--text-muted)] block">Model Score</span>
                         <span
                           className={`font-mono-tabular font-bold text-sm ${
-                            verdict.deepfakeDetails.temporalAggregate >= 0.6
+                            verdict.deepfakeDetails.facesDetected === 0
+                              ? "text-[var(--text-muted)]"
+                              : verdict.deepfakeDetails.temporalAggregate >= 0.6
                               ? "text-rose-600 dark:text-rose-400"
                               : "text-emerald-600 dark:text-emerald-400"
                           }`}
                         >
-                          {(verdict.deepfakeDetails.temporalAggregate * 100).toFixed(1)}%
+                          {verdict.deepfakeDetails.facesDetected === 0
+                            ? "N/A"
+                            : `${Math.round(verdict.deepfakeDetails.temporalAggregate * 100)} / 100`}
                         </span>
                       </div>
                       <div className="p-2.5 rounded-xl bg-[var(--nav-track)] border border-[var(--border)]">
                         <span className="text-xs text-[var(--text-muted)] block">Temporal</span>
                         <span
                           className={`font-mono-tabular font-bold text-sm ${
-                            verdict.deepfakeDetails.flickerScore < 0.15
+                            verdict.deepfakeDetails.facesDetected === 0
+                              ? "text-[var(--text-muted)]"
+                              : verdict.deepfakeDetails.flickerScore < 0.15
                               ? "text-emerald-600 dark:text-emerald-400"
                               : "text-rose-600 dark:text-rose-400"
                           }`}
                         >
-                          {verdict.deepfakeDetails.flickerScore < 0.15 ? "Stable (Camera)" : "Artifacts (Deepfake)"}
+                          {verdict.deepfakeDetails.facesDetected === 0
+                            ? "N/A"
+                            : verdict.deepfakeDetails.flickerScore < 0.15
+                            ? "Consistent"
+                            : "Fluctuations"}
                         </span>
                       </div>
                     </div>
@@ -2039,8 +2060,12 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         {verdict.deepfakeDetails.statement}
                       </p>
                     )}
+                    <p className="mt-1 text-[10px] text-[var(--text-muted)] font-mono-tabular opacity-80">
+                      * Model score represents estimated manipulation signal intensity on sampled frames. It is an automated screening heuristic, not a measure of detector accuracy or definitive proof of authenticity.
+                    </p>
                   </div>
                 )}
+
               </div>
             </div>
 

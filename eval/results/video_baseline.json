@@ -3,7 +3,7 @@
   "dataset": "eval/data/video_eval_manifest.json",
   "sample_count": 30,
   "random_seed": 42,
-  "execution_duration_sec": 5.114,
+  "execution_duration_sec": 30.068,
   "phrasing_rule_violations": 0,
   "metrics": {
     "confusion_matrix": {
