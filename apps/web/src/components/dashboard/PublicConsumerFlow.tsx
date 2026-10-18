@@ -661,8 +661,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     const textToScan = inputText.trim();
     const lower = textToScan.toLowerCase();
 
-    // 1. SEBI Registration ID Pattern (12 chars: INZ, INA, INH, etc.)
-    const sebiRegPattern = /\b(IN[A-Z]{1,3}\d{6,10})\b/i;
+    // 1. SEBI Registration ID Pattern (matches INA, INH, INP, INZ with 4-10 digits)
+    const sebiRegPattern = /\b(IN[A-Z]{1,3}\d{4,10})\b/i;
     const regIdMatch = textToScan.match(sebiRegPattern);
     const claimedRegId = regIdMatch ? regIdMatch[1].toUpperCase() : null;
 
@@ -731,7 +731,16 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         }
       }
     }
-    const normalizedClaimedName = normalizeRegistryName(claimedAdvisorName);
+    if (!claimedAdvisorName && !claimedRegId) {
+      const candidateClean = textToScan
+        .replace(/^(check|verify|is|advisor|adviser|name:?|persona:?)\s+/i, "")
+        .replace(/[,\.\?!]+$/, "")
+        .trim();
+      if (candidateClean.length >= 3 && candidateClean.length <= 60 && !candidateClean.includes("\n")) {
+        claimedAdvisorName = candidateClean;
+      }
+    }
+
     const claimedRoleText = lower.match(/\b(portfolio\s+manager|research\s+analyst|investment\s+advis(?:e|o)r)\b/);
     const claimedRole = claimedRoleText?.[1].replace(/\s+/g, " ").replace("advisor", "adviser");
     if (!claimedRegId && claimedAdvisorName) {
@@ -753,11 +762,20 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         registryLookup = { state: "UNAVAILABLE" };
       }
     }
+
+    if (datasetRecord && !claimedAdvisorName) {
+      claimedAdvisorName = datasetRecord.contactPerson || datasetRecord.entityName;
+    }
+    const normalizedClaimedName = normalizeRegistryName(claimedAdvisorName);
+
     const claimedNameMatchesDataset = Boolean(
       datasetRecord &&
         normalizedClaimedName &&
         [datasetRecord.entityName, datasetRecord.contactPerson]
-          .some((name) => normalizeRegistryName(name) === normalizedClaimedName)
+          .some((name) => {
+            const n = normalizeRegistryName(name);
+            return n === normalizedClaimedName || n.includes(normalizedClaimedName) || normalizedClaimedName.includes(n);
+          })
     );
     const roleMatchesDataset = Boolean(
       !claimedRole || !datasetRecord || normalizeRegistryName(claimedRole) === normalizeRegistryName(datasetRecord.intermediaryType)

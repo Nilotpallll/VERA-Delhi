@@ -148,11 +148,20 @@ function normalizeRegistryName(value: string): string {
 }
 
 export async function GET(request: NextRequest) {
-  const rawRegistration = request.nextUrl.searchParams.get("registrationNumber") ?? "";
+  const qParam = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+  let rawRegistration = request.nextUrl.searchParams.get("registrationNumber") ?? "";
+  let rawName = request.nextUrl.searchParams.get("name")?.trim() ?? "";
+  if (!rawRegistration && !rawName && qParam) {
+    if (/^(INA|INH|INP|INZ)/i.test(qParam.replace(/[\s-]/g, ""))) {
+      rawRegistration = qParam;
+    } else {
+      rawName = qParam;
+    }
+  }
+
   const registrationNumber = rawRegistration.toUpperCase().replace(/[\s-]/g, "");
-  const rawName = request.nextUrl.searchParams.get("name")?.trim() ?? "";
   const requestedType = request.nextUrl.searchParams.get("intermediaryType") ?? "";
-  const match = registrationNumber.match(/^(INA|INH|INP|INZ)[0-9A-Z]{8,10}$/);
+  const match = registrationNumber.match(/^(INA|INH|INP|INZ)[0-9A-Z]{4,10}$/);
 
   if (!match && !rawName) {
     return NextResponse.json({ state: "OUT_OF_SCOPE" }, { headers: { "Cache-Control": "no-store" } });
@@ -188,14 +197,24 @@ export async function GET(request: NextRequest) {
         );
       }
       const allRecords = Object.values(snapshot.records).flatMap((record) => Array.isArray(record) ? record : [record]);
-      const exactMatches = allRecords.filter((record) => {
+      let matchingRecords = allRecords.filter((record) => {
         if (intermediaryType && record.intermediaryType !== intermediaryType) return false;
         return [record.entityName, record.contactPerson].some(
           (candidate) => candidate && normalizeRegistryName(candidate) === normalizedQuery
         );
       });
+      if (!matchingRecords.length) {
+        matchingRecords = allRecords.filter((record) => {
+          if (intermediaryType && record.intermediaryType !== intermediaryType) return false;
+          return [record.entityName, record.contactPerson].some((candidate) => {
+            if (!candidate) return false;
+            const candNorm = normalizeRegistryName(candidate);
+            return candNorm.includes(normalizedQuery) || normalizedQuery.includes(candNorm);
+          });
+        });
+      }
       const uniqueMatches = Array.from(new Map(
-        exactMatches.map((record) => [`${record.registrationNumber}|${record.entityName}|${record.contactPerson}`, record])
+        matchingRecords.map((record) => [`${record.registrationNumber}|${record.entityName}|${record.contactPerson}`, record])
       ).values());
       if (!uniqueMatches.length) {
         return NextResponse.json(
@@ -223,7 +242,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const stored = snapshot.records[registrationNumber];
+    let stored = snapshot.records[registrationNumber];
+    if (!stored && match) {
+      const prefix = match[1];
+      const digits = registrationNumber.slice(prefix.length);
+      if (/^\d+$/.test(digits)) {
+        const padded = prefix + digits.padStart(9, "0");
+        stored = snapshot.records[padded];
+      }
+    }
 
     if (!stored) {
       return NextResponse.json(
