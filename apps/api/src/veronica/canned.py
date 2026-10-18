@@ -189,6 +189,230 @@ CANNED_RESPONSES: dict[str, dict[str, Any]] = {
             ]
         }
     },
+    "digital_arrest_scam": {
+        "keywords": [
+            "digital arrest", "police video call", "cbi video call", "ed video call",
+            "skype arrest", "arrest on skype", "skype call from police", "customs video call",
+            "narcotics parcel call", "fake arrest warrant", "supreme court video call",
+            "डिजिटल अरेस्ट", "पुलिस वीडियो कॉल", "सीबीआई कॉल", "कस्टम पार्सल", "डिजिटल अरेस्ट क्या है"
+        ],
+        "en": {
+            "reply": (
+                "🚨 **CRITICAL ALERT: DIGITAL ARREST EXTORTION SCAM**\n\n"
+                "**Indian Law Enforcement (Police, CBI, ED, NIA, Customs, or the Judiciary) NEVER conducts arrests, trials, or interrogations over Skype, WhatsApp, or video calls.**\n\n"
+                "1. **Zero Legal Validity**: There is no concept of 'Digital Arrest' under Indian criminal law (CrPC / Bharatiya Nagarik Suraksha Sanhita).\n"
+                "2. **Hang Up Immediately**: Do not be intimidated by fraudsters wearing fake uniforms, showing forged Supreme Court seals, or threatening immediate jail.\n"
+                "3. **Never Transfer 'Verification Funds'**: Scammers claim your bank account is linked to narcotics or money laundering and demand transfers to a 'RBI Safe Account'. These are fraudulent mule accounts.\n"
+                "4. **Report Instantly**: Dial the National Cyber Crime Helpline **1930** or submit an incident report at **[cybercrime.gov.in](https://cybercrime.gov.in)**."
+            ),
+            "actions": [
+                {"type": "open_helpline", "label": "📞 Call 1930 Helpline", "payload": "tel:1930"},
+                {"type": "external_link", "label": "🌐 Cybercrime Portal", "payload": "https://cybercrime.gov.in"},
+                {"type": "navigate", "label": "🔍 Scan Caller Number in VERA", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Why do scammers impersonate CBI or Police?",
+                "What if I already sent money to them? 🚨",
+                "How do scammers fake official arrest warrants?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "🚨 **अति गंभीर चेतावनी: डिजिटल अरेस्ट (Digital Arrest) फर्जीवाड़ा**\n\n"
+                "**भारतीय कानून (Police, CBI, ED, NIA, कस्टम्स या कोर्ट) में 'डिजिटल अरेस्ट' नाम का कोई प्रावधान नहीं है।**\n\n"
+                "1. **वीडियो कॉल तुरंत काटें**: कोई भी पुलिस अधिकारी, जांच एजेंसी या न्यायाधीश कभी भी व्हाट्सएप या स्काइप वीडियो कॉल पर पूछताछ या गिरफ्तारी नहीं करता।\n"
+                "2. **फर्जी वर्दी और सील से न डरें**: अपराधी आपको डराने के लिए फर्जी पुलिस स्टेशन बैकग्राउंड, नकली वर्दी और जाली वारंट दिखाते हैं।\n"
+                "3. **'वेरिफिकेशन' के नाम पर पैसे कभी न भेजें**: वे दावा करते हैं कि आपके खाते में अवैध पैसे आए हैं और जांच के लिए पैसे 'सरकारी खाते' में ट्रांसफर करें। यह पूरी तरह से म्यूल खाता होता है।\n"
+                "4. **तत्काल 1930 पर शिकायत करें**: राष्ट्रीय साइबर अपराध हेल्पलाइन **1930** पर कॉल करें या **[cybercrime.gov.in](https://cybercrime.gov.in)** पर रिपोर्ट करें।"
+            ),
+            "actions": [
+                {"type": "open_helpline", "label": "📞 1930 हेल्पलाइन पर कॉल करें", "payload": "tel:1930"},
+                {"type": "external_link", "label": "🌐 साइबरक्राइम पोर्टल", "payload": "https://cybercrime.gov.in"},
+                {"type": "navigate", "label": "🔍 VERA में कॉलर नंबर जांचें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "स्कैमर्स पुलिस बनकर क्यों धमकाते हैं?",
+                "अगर मैंने पैसे भेज दिए हैं तो क्या करूँ? 🚨",
+                "क्या कोर्ट वीडियो कॉल पर ज़मानत मांग सकता है?"
+            ]
+        }
+    },
+    "apk_scam_guidance": {
+        "keywords": [
+            "download apk", "sent me an apk", "install apk", "trading apk", "apk file",
+            "sideload apk", "unknown app link", "download our app link", "app not on play store",
+            "एपीके डाउनलोड", "एपीके फाइल", "ऐप डाउनलोड लिंक", "प्ले स्टोर पर नहीं है"
+        ],
+        "en": {
+            "reply": (
+                "🚨 **CRITICAL DANGER: FRAUDULENT TRADING APK DETECTED**\n\n"
+                "**Never download or sideload .APK files sent via WhatsApp, Telegram, or unknown web links.**\n\n"
+                "• **SMS & OTP Interception**: Malicious APKs demand Accessibility and SMS permissions to silently capture two-factor authentication OTPs from your banking apps.\n"
+                "• **Manipulated Virtual Ledger**: The app will show skyrocketing artificial profits, but all deposited funds go directly to fraud syndicate mule accounts.\n"
+                "• **SEBI & App Store Invariant**: Every registered Indian stockbroker and depository participant distributes apps strictly through Google Play Store or Apple App Store with verified developer signatures.\n\n"
+                "**Protective Action**: If you already installed the APK, immediately turn on Airplane Mode, uninstall the application, run an antivirus scan, and contact your bank to reset credentials."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🛡️ Analyze File in VERA", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 Call 1930 Helpline", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "How do fraudulent APKs steal OTPs?",
+                "How to verify if a broker app is genuine?",
+                "What permissions should I never give an app?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "🚨 **गंभीर खतरा: फर्जी ट्रेडिंग ऐप (APK) की चेतावनी**\n\n"
+                "**व्हाट्सएप, टेलीग्राम या किसी लिंक से भेजे गए .APK फाइल को कभी भी फोन में डाउनलोड या इंस्टॉल न करें।**\n\n"
+                "• **ओटीपी (OTP) और पासवर्ड की चोरी**: ये फर्जी ऐप्स फोन में एक्सेसिबिलिटी और SMS अनुमति लेकर बैंक से आने वाले गुप्त ओटीपी को चुरा लेते हैं।\n"
+                "• **नकली मुनाफे का खेल**: स्क्रीन पर दिख रहा ट्रेडिंग अकाउंट सिर्फ एक फर्जी सिमुलेशन होता है; आपके द्वारा जमा किए गए पैसे सीधे जालसाजों के खातों में जाते हैं।\n"
+                "• **आधिकारिक प्ले स्टोर ही सुरक्षित**: सभी सेबी-पंजीकृत वैध ब्रोकर्स के ऐप्स केवल गूगल प्ले स्टोर या एप्पल ऐप स्टोर पर ही उपलब्ध होते हैं।\n\n"
+                "**सुरक्षा कदम**: यदि आपने ऐप इंस्टॉल कर लिया है, तो तुरंत फोन का इंटरनेट बंद करें, ऐप डिलीट करें और बैंक का पासवर्ड बदलें।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🛡️ VERA में फ़ाइल जांचें", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 1930 हेल्पलाइन पर कॉल करें", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "फर्जी ऐप्स ओटीपी कैसे चुराते हैं?",
+                "असली और नकली ट्रेडिंग ऐप की पहचान कैसे करें?",
+                "क्या प्ले स्टोर से बाहर ऐप डाउनलोड करना खतरनाक है?"
+            ]
+        }
+    },
+    "task_job_scam": {
+        "keywords": [
+            "task scam", "youtube like task", "hotel rating task", "google review task",
+            "part time review task", "prepaid task", "telegram task scam", "task fraud",
+            "टास्क स्कैम", "यूट्यूब लाइक टास्क", "होटल रेटिंग टास्क", "रिव्यू टास्क", "टास्क फ्रॉड"
+        ],
+        "en": {
+            "reply": (
+                "⚠️ **FRAUD ALERT: PART-TIME TASK & RATING INVESTMENT TRAP**\n\n"
+                "This is the fastest-growing financial scam targeting users across Telegram and WhatsApp:\n\n"
+                "• **Phase 1 (The Hook)**: You receive ₹150–₹500 via UPI for completing simple tasks like liking YouTube videos or leaving 5-star Google/hotel reviews.\n"
+                "• **Phase 2 (The VIP Prepaid Trap)**: You are added to a Telegram 'VIP Task Group' where you must deposit ₹2,000–₹50,000 for high-yielding 'crypto merchant prepaid tasks'.\n"
+                "• **Phase 3 (The Freeze & Extortion)**: When you try to withdraw your accumulated balance, they freeze the portal and demand 20%–30% 'tax clearance fees' or 'security deposits'.\n\n"
+                "**Protective Rule**: Cease all communication immediately. Any money already sent cannot be recovered through their portal—dial **1930** immediately."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Scan Group in VERA", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 Call 1930 Helpline", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "Why do scammers give ₹150 at the beginning?",
+                "What is a 'prepaid task' scam?",
+                "Can I withdraw my money if I pay their tax fee?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "⚠️ **धोखाधड़ी चेतावनी: यूट्यूब लाइक और होटल रेटिंग टास्क स्कैम**\n\n"
+                "यह टेलीग्राम और व्हाट्सएप पर चलने वाला एक सुनियोजित वित्तीय जाल है:\n\n"
+                "• **पहला चरण (विश्वास जीतना)**: यूट्यूब वीडियो लाइक करने या होटल रिव्यू देने के लिए शुरू में ₹150 से ₹500 सीधे आपके यूपीआई खाते में भेजे जाते हैं।\n"
+                "• **दूसरा चरण (प्रीपेड टास्क का जाल)**: विश्वास जमने के बाद आपको टेलीग्राम वीआईपी ग्रुप में जोड़ा जाता है और 'मर्चेंट टास्क' या 'क्रिप्टो ट्रेडिंग' के लिए ₹5,000 से ₹1,00,000 जमा करने को कहा जाता है।\n"
+                "• **तीसरा चरण (पैसे फ्रीज)**: जब आप अपना पैसा निकालना चाहते हैं, तो 'टैक्स', 'कमीशन' या 'सिस्टम एरर' का बहाना बनाकर और पैसे मांगे जाते हैं।\n\n"
+                "**तुरंत कदम**: बातचीत तुरंत बंद करें और किसी भी कीमत पर और पैसे न भेजें। तुरंत **1930** पर शिकायत दर्ज करें।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 VERA में ग्रुप मैसेज जांचें", "payload": "#scanner-section"},
+                {"type": "open_helpline", "label": "📞 1930 हेल्पलाइन पर कॉल करें", "payload": "tel:1930"}
+            ],
+            "suggested_chips": [
+                "स्कैमर्स शुरू में ₹150 सच में क्यों भेजते हैं?",
+                "अगर पैसे अटक गए हैं तो क्या करें? 🚨",
+                "क्या टैक्स देकर पैसे वापस मिल सकते हैं?"
+            ]
+        }
+    },
+    "fake_ipo_allocation": {
+        "keywords": [
+            "ipo allotment scam", "pre ipo scam", "pre-ipo scam", "fii quota scam",
+            "institutional quota scam", "fake ipo allotment", "guaranteed ipo allotment",
+            "hni quota allotment", "संस्थागत कोटा", "आईपीओ घोटाला", "प्री-आईपीओ फ्रॉड"
+        ],
+        "en": {
+            "reply": (
+                "⚠️ **HIGH RISK ALERT: FAKE PRE-IPO / FII INSTITUTIONAL ALLOCATION**\n\n"
+                "Under **SEBI regulations**, retail investors **cannot** participate in institutional/FII quotas through private WhatsApp groups, nor can anyone guarantee 100% IPO allotment.\n\n"
+                "• **Regulatory Requirement**: Genuine IPO applications can only be submitted via your ASBA-enabled bank account or your SEBI-registered stockbroker (INZ number).\n"
+                "• **The Fraud Scheme**: Fraudsters fabricate allotment letters, create mock trading screens, and instruct you to deposit subscription money into third-party current accounts.\n"
+                "• **Fund Pooling Ban (SEBI Circular CIR/2023/123)**: It is illegal for any entity or advisor to collect or pool retail funds in private bank accounts for stock or IPO purchases."
+            ),
+            "actions": [
+                {"type": "external_link", "label": "🌐 SEBI Official Intermediary Directory", "payload": "https://www.sebi.gov.in"},
+                {"type": "navigate", "label": "🔍 Verify Claims in VERA", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Can anyone guarantee 100% IPO allotment?",
+                "What is the SEBI fund pooling circular?",
+                "How do I apply for an IPO safely via ASBA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "⚠️ **गंभीर चेतावनी: फर्जी प्री-आईपीओ (Pre-IPO) और FII संस्थागत कोटा**\n\n"
+                "**SEBI नियमों के अनुसार कोई भी व्यक्ति या संस्था व्हाट्सएप ग्रुप के माध्यम से विदेशी संस्थागत (FII) या विशेष कोटे में 100% IPO आवंटन की गारंटी नहीं दे सकता।**\n\n"
+                "• **वैध तरीका**: किसी भी आईपीओ में आवेदन केवल आपके बैंक के ASBA (Application Supported by Blocked Amount) या SEBI-पंजीकृत डीमैट खाते से ही होता है।\n"
+                "• **जालसाजी की तकनीक**: स्कैमर्स फर्जी आवंटन पत्र (Allotment Letter) और नकली वेबसाइट बनाकर किसी तीसरे व्यक्ति के बैंक खाते में पैसे जमा करवाते हैं।\n"
+                "• **फंड पूलिंग पर प्रतिबंध (SEBI Circular CIR/2023/123)**: किसी भी सलाहकार या बिचौलिए द्वारा निवेशकों के पैसे को निजी खाते में इकट्ठा करना कानूनी अपराध है।"
+            ),
+            "actions": [
+                {"type": "external_link", "label": "🌐 सेबी आधिकारिक पोर्टल", "payload": "https://www.sebi.gov.in"},
+                {"type": "navigate", "label": "🔍 VERA में दावे की जांच करें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "क्या कोई 100% आईपीओ अलॉटमेंट की गारंटी दे सकता है?",
+                "ASBA के जरिए सुरक्षित आईपीओ आवेदन कैसे करें?",
+                "SEBI में रजिस्टर्ड ब्रोकर की पहचान कैसे करें?"
+            ]
+        }
+    },
+    "sebi_circular_check": {
+        "keywords": [
+            "sebi circular", "cir/2023/123", "cir/2024/45", "fund pooling rule",
+            "pooling of funds", "algo ban rule", "sebi master circular",
+            "सेबी सर्कुलर", "फंड पूलिंग नियम", "सेबी नियम"
+        ],
+        "en": {
+            "reply": (
+                "📘 **KEY SEBI REGULATORY SAFEGUARDS & CIRCULARS**\n\n"
+                "Crucial SEBI directives established to safeguard retail investors against illicit schemes:\n\n"
+                "• **SEBI Master Circular CIR/2023/123 (Fund Pooling Prohibition)**: Intermediaries, advisers, and brokers are strictly forbidden from pooling or holding client funds. Investor funds must flow directly from the investor's verified bank account to the Clearing Corporation.\n"
+                "• **SEBI Circular CIR/2024/45 (Ban on Guaranteed Algo Returns)**: Stockbrokers and registered entities cannot directly or indirectly advertise or promise fixed/guaranteed returns for algorithmic trading strategies.\n"
+                "• **Mandatory Credential Display**: All registered intermediaries must prominently display their SEBI registration number (INA for Advisers, INH for Research Analysts, INZ for Stockbrokers) on all publications and websites."
+            ),
+            "actions": [
+                {"type": "external_link", "label": "🌐 SEBI Circulars Repository", "payload": "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=1&smid=0&smoid=0"},
+                {"type": "navigate", "label": "🔍 Screen Registration in VERA", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "What is the difference between RIA (INA) and RA (INH)?",
+                "Why is routing money to personal UPI prohibited?",
+                "How does VERA verify SEBI registration numbers?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "📘 **प्रमुख SEBI सर्कुलर और निवेशक सुरक्षा नियम**\n\n"
+                "खुदरा निवेशकों को सुरक्षित रखने के लिए सेबी के आवश्यक कानूनी प्रावधान:\n\n"
+                "• **SEBI मास्टर सर्कुलर CIR/2023/123 (फंड पूलिंग निषेध)**: किसी भी ब्रोकर या सलाहकार को निवेशकों का पैसा अपने या किसी तीसरे खाते में इकट्ठा (Pool) करने की सख्त मनाही है। पैसा सीधे निवेशक के बैंक से क्लीयरिंग कॉर्पोरेशन जाता है।\n"
+                "• **SEBI सर्कुलर CIR/2024/45 (गारंटीड एल्गो रिटर्न पर प्रतिबंध)**: किसी भी एल्गोरिथमिक या स्वचालित ट्रेडिंग सिस्टम पर गारंटीड या निश्चित प्रतिशत मुनाफे का दावा करना पूरी तरह प्रतिबंधित है।\n"
+                "• **अनिवार्य लाइसेंस प्रदर्शन**: सभी अधिकृत सलाहकारों को अपना आधिकारिक रजिस्ट्रेशन नंबर (INA, INH या INZ) दर्शाना अनिवार्य है।"
+            ),
+            "actions": [
+                {"type": "external_link", "label": "🌐 सेबी आधिकारिक सर्कुलर पोर्टल", "payload": "https://www.sebi.gov.in"},
+                {"type": "navigate", "label": "🔍 VERA में लाइसेंस जांचें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्यक्तिगत UPI पर पैसे मांगना गैर-कानूनी क्यों है?",
+                "RIA और RA में क्या अंतर है?",
+                "VERA सेबी रजिस्ट्रेशन की पुष्टि कैसे करता है?"
+            ]
+        }
+    },
     "refusal_stock_tip": {
         "keywords": [
             "buy stock", "stock tip", "which share", "nifty", "banknifty", "multibagger",
@@ -815,7 +1039,12 @@ PRIORITIZED_INTENTS = [
     "emergency_money_sent",
     "refusal_stock_tip",
 
-    # 2. Specific Platform & Regulatory Inquiries
+    # 2. Specific Platform, Typologies & Regulatory Inquiries
+    "digital_arrest_scam",
+    "apk_scam_guidance",
+    "task_job_scam",
+    "fake_ipo_allocation",
+    "sebi_circular_check",
     "what_is_vera",
     "check_sebi",
     "where_is_scanner",

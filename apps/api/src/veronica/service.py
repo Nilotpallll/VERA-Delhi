@@ -12,6 +12,9 @@ Flow:
 """
 
 
+import re
+from typing import Any
+
 from ..ai.factory import get_llm_provider
 from ..core.observability import logger
 from .budget import veronica_budget
@@ -35,6 +38,203 @@ from .schemas import (
 )
 
 
+def extract_forensic_entities(text: str) -> dict[str, Any]:
+    """Extracts suspected forensic entities and flags scam typologies from input text."""
+    lowered = text.lower()
+
+    # 1. UPI VPAs: e.g. trader99@okhdfcbank, wealth.advisor@ybl, 9876543210@paytm
+    upi_vpas = re.findall(r'\b[a-zA-Z0-9.\-_]{2,64}@[a-zA-Z0-9.\-_]{2,32}\b', text)
+    upi_candidates = [
+        vpa for vpa in upi_vpas
+        if not vpa.lower().endswith(('.com', '.org', '.net', '.edu', '.gov', '.io'))
+        or any(h in vpa.lower() for h in ['@upi', '@okhdfcbank', '@oksbi', '@okaxis', '@okicici', '@paytm', '@ybl', '@axl', '@ibl'])
+    ]
+
+    # 2. SEBI Registration IDs: INA/INH/INZ/INM followed by digits/letters
+    sebi_ids = re.findall(r'\bIN[A-Z0-9]{8,12}\b', text.upper())
+
+    # 3. URLs and Domains
+    urls = re.findall(r'https?://[^\s]+|t\.me/[^\s]+|wa\.me/[^\s]+', text)
+
+    # 4. APK references
+    apk_matches = re.findall(r'\b[\w\-]+\.apk\b|\bapk\b|\bsideload\b', lowered)
+
+    # 5. Detected Modus Operandi Typologies
+    detected_typologies = []
+    if any(k in lowered for k in ["digital arrest", "police video call", "cbi video", "ed video", "skype arrest", "कॉल पुलिस", "डिजिटल अरेस्ट"]):
+        detected_typologies.append("Digital Arrest & Impersonation Extortion")
+    if any(k in lowered for k in ["youtube like", "hotel rating", "task scam", "prepaid task", "टास्क स्कैम", "लाइक टास्क"]):
+        detected_typologies.append("Task / Rating / Prepaid Investment Trap")
+    if any(k in lowered for k in ["pre-ipo", "pre ipo", "fii quota", "institutional quota", "संस्थागत कोटा"]):
+        detected_typologies.append("Pre-IPO / FII Quota Allocation Bluff")
+    if apk_matches:
+        detected_typologies.append("Malicious Sideloaded APK (OTP Interception)")
+    if any(k in lowered for k in ["guaranteed return", "100% profit", "double money", "पक्का मुनाफा", "निश्चित रिटर्न"]):
+        detected_typologies.append("Unrealistic Guaranteed Return Trap (SEBI Violation)")
+    if any(k in lowered for k in ["sent money", "transferred", "lost money", "already paid", "पैसे कट गए", "पैसे भेज दिए"]):
+        detected_typologies.append("Financial Loss Incident (Golden Hour Priority)")
+
+    return {
+        "upi_vpas": upi_candidates,
+        "sebi_ids": sebi_ids,
+        "urls": urls,
+        "apks": apk_matches,
+        "typologies": detected_typologies,
+    }
+
+
+def build_forensic_context(query: str, entities: dict[str, Any]) -> str:
+    """Formats forensic entities into an internal cognitive reasoning scratchpad for Veronica."""
+    lines = ["[VERA FORENSIC COGNITIVE ENGINE TELEMETRY]"]
+    if entities["typologies"]:
+        lines.append(f"- Detected Modus Operandi: {', '.join(entities['typologies'])}")
+    if entities["upi_vpas"]:
+        lines.append(f"- Suspect UPI VPAs: {', '.join(entities['upi_vpas'])}")
+    if entities["sebi_ids"]:
+        lines.append(f"- Suspect SEBI Registration Codes: {', '.join(entities['sebi_ids'])}")
+    if entities["urls"]:
+        lines.append(f"- Extracted Links/Domains: {', '.join(entities['urls'])}")
+    if entities["apks"]:
+        lines.append("- Detected Sideloaded/APK references: Extreme risk of SMS/Accessibility OTP interception.")
+
+    lines.append("- Cognitive Directives:")
+    lines.append("  1. Threat Identification: Clearly label the fraud mechanism.")
+    lines.append("  2. Forensic Red Flags: Cite specific indicators (e.g. fund pooling, personal UPI, fake seals, OTP theft).")
+    lines.append("  3. Immediate Actionable Defense: Tell the user exactly what to do (disconnect, freeze card, dial 1930 if money was sent).")
+    lines.append("  4. Regulatory Standard: Remind that SEBI rules prohibit guaranteed returns, fund pooling (CIR/2023/123), and out-of-store broker APKs.")
+    return "\n".join(lines)
+
+
+def generate_dynamic_actions(query: str, entities: dict[str, Any], lang: str = "en") -> tuple[list[VeronicaAction], list[str]]:
+    """Builds context-aware action chips and suggested next prompts."""
+    is_hi = lang == "hi"
+    actions: list[VeronicaAction] = []
+    chips: list[str] = []
+
+    # Priority 1: Emergency or money lost
+    if "Financial Loss Incident (Golden Hour Priority)" in entities["typologies"] or any(k in query.lower() for k in ["sent money", "lost", "paid", "पैसे"]):
+        actions.append(VeronicaAction(
+            type="open_helpline",
+            label="📞 1930 पर कॉल करें" if is_hi else "📞 Call 1930 Helpline",
+            payload="tel:1930"
+        ))
+        actions.append(VeronicaAction(
+            type="external_link",
+            label="🌐 साइबरक्राइम पोर्टल" if is_hi else "🌐 Cybercrime Portal",
+            payload="https://cybercrime.gov.in"
+        ))
+        actions.append(VeronicaAction(
+            type="navigate",
+            label="📋 VERA में सबूत जांचें" if is_hi else "📋 File Evidence in VERA",
+            payload="#scanner-section"
+        ))
+        chips = (
+            ["सबूत कैसे सुरक्षित रखें?", "बैंक खाता फ्रीज कैसे कराएं?", "VERA स्कैनर का उपयोग कैसे करें?"]
+            if is_hi else
+            ["How do I preserve evidence?", "How to freeze bank accounts?", "How to use VERA scanner?"]
+        )
+        return actions, chips
+
+    # Priority 2: Digital Arrest / Extortion
+    if "Digital Arrest & Impersonation Extortion" in entities["typologies"]:
+        actions.append(VeronicaAction(
+            type="open_helpline",
+            label="📞 1930 हेल्पलाइन पर कॉल करें" if is_hi else "📞 Call 1930 Helpline",
+            payload="tel:1930"
+        ))
+        actions.append(VeronicaAction(
+            type="external_link",
+            label="🌐 साइबरक्राइम पोर्टल" if is_hi else "🌐 Cybercrime Portal",
+            payload="https://cybercrime.gov.in"
+        ))
+        actions.append(VeronicaAction(
+            type="navigate",
+            label="🔍 VERA में कॉलर नंबर जांचें" if is_hi else "🔍 Scan Caller Number in VERA",
+            payload="#scanner-section"
+        ))
+        chips = (
+            ["क्या पुलिस वीडियो कॉल पर अरेस्ट कर सकती है?", "अगर पैसे भेज दिए तो क्या करें? 🚨", "फर्जी वारंट की पहचान कैसे करें?"]
+            if is_hi else
+            ["Can police arrest via video call?", "What if I already sent money? 🚨", "How do scammers fake arrest warrants?"]
+        )
+        return actions, chips
+
+    # Priority 3: Sideloaded APK detected
+    if entities["apks"] or "Malicious Sideloaded APK (OTP Interception)" in entities["typologies"]:
+        actions.append(VeronicaAction(
+            type="navigate",
+            label="🛡️ VERA में APK जांचें" if is_hi else "🛡️ Scan APK in VERA",
+            payload="#scanner-section"
+        ))
+        actions.append(VeronicaAction(
+            type="open_helpline",
+            label="📞 1930 हेल्पलाइन पर कॉल करें" if is_hi else "📞 Call 1930 Helpline",
+            payload="tel:1930"
+        ))
+        chips = (
+            ["फर्जी ऐप्स ओटीपी कैसे चुराते हैं?", "वैध ट्रेडिंग ऐप की पहचान कैसे करें?", "फोन से मैलवेयर कैसे हटाएं?"]
+            if is_hi else
+            ["How do malicious APKs steal OTPs?", "How to verify broker app on Google Play?", "How to clean infected phone?"]
+        )
+        return actions, chips
+
+    # Priority 4: UPI VPA detected
+    if entities["upi_vpas"]:
+        actions.append(VeronicaAction(
+            type="navigate",
+            label="🔍 VERA में UPI जांचें" if is_hi else "🔍 Scan UPI in VERA",
+            payload="#scanner-section"
+        ))
+        actions.append(VeronicaAction(
+            type="open_helpline",
+            label="📞 1930 हेल्पलाइन पर कॉल करें" if is_hi else "📞 Call 1930 Helpline",
+            payload="tel:1930"
+        ))
+        chips = (
+            ["व्यक्तिगत UPI पर पैसे मांगना गैर-कानूनी क्यों है?", "म्यूल बैंक अकाउंट क्या होता है?", "SEBI फंड पूलिंग नियम"]
+            if is_hi else
+            ["Why is routing money to personal UPI prohibited?", "What is a mule account?", "SEBI fund pooling rules"]
+        )
+        return actions, chips
+
+    # Priority 5: SEBI ID detected
+    if entities["sebi_ids"]:
+        actions.append(VeronicaAction(
+            type="external_link",
+            label="🏛️ SEBI आधिकारिक पोर्टल" if is_hi else "🏛️ Official SEBI Registry",
+            payload="https://www.sebi.gov.in"
+        ))
+        actions.append(VeronicaAction(
+            type="navigate",
+            label="🔍 VERA में लाइसेंस जांचें" if is_hi else "🔍 Verify License in VERA",
+            payload="#scanner-section"
+        ))
+        chips = (
+            ["RIA और RA में क्या अंतर है?", "फर्जी SEBI सर्टिफिकेट कैसे पहचानें?", "क्या सेबी कभी गारंटीड रिटर्न देता है?"]
+            if is_hi else
+            ["What is the difference between RIA and RA?", "How do scammers fake SEBI certificates?", "Does SEBI ever promise returns?"]
+        )
+        return actions, chips
+
+    # Default versatile actions
+    actions.append(VeronicaAction(
+        type="navigate",
+        label="🔍 स्कैनर खोलें" if is_hi else "🔍 Open Scanner",
+        payload="#scanner-section"
+    ))
+    actions.append(VeronicaAction(
+        type="open_helpline",
+        label="📞 1930 हेल्पलाइन पर कॉल करें" if is_hi else "📞 Cyber Helpline 1930",
+        payload="tel:1930"
+    ))
+    chips = (
+        ["व्हाट्सएप ग्रुप की जांच", "SEBI रजिस्ट्रेशन चेक", "1930 हेल्पलाइन"]
+        if is_hi else
+        ["Check WhatsApp group", "SEBI registration check", "1930 Helpline"]
+    )
+    return actions, chips
+
+
 class VeronicaService:
     @staticmethod
     async def process_chat(request: VeronicaChatRequest) -> VeronicaChatResponse:
@@ -49,7 +249,10 @@ class VeronicaService:
             reply = "कृपया अपना प्रश्न लिखें।" if lang == "hi" else "Please enter your question or request."
             return VeronicaChatResponse(reply=reply, language=lang, source="canned")
 
-        # 2. Prompt Injection Guard
+        # 2. Extract Forensic Telemetry & Entities
+        forensic_entities = extract_forensic_entities(masked_query)
+
+        # 3. Prompt Injection Guard
         if check_prompt_injection(masked_query):
             logger.warning("Prompt injection detected in Veronica chat: %s", clean_query[:50])
             reply = (
@@ -64,7 +267,7 @@ class VeronicaService:
                 suggested_chips=["How does VERA work?", "Check a WhatsApp group", "SEBI registration verify"]
             )
 
-        # 3. Check Canned Answers (0 tokens, deterministic)
+        # 4. Check Canned Answers (0 tokens, deterministic)
         canned = find_canned_response(masked_query, language=lang)
         if canned:
             return VeronicaChatResponse(
@@ -75,7 +278,7 @@ class VeronicaService:
                 suggested_chips=canned.get("suggested_chips", [])
             )
 
-        # 4. Check Query Cache (0 tokens)
+        # 5. Check Query Cache (0 tokens)
         cached = veronica_budget.get_cache(masked_query, language=lang)
         if cached:
             return VeronicaChatResponse(
@@ -86,7 +289,10 @@ class VeronicaService:
                 suggested_chips=cached.get("suggested_chips", [])
             )
 
-        # 5. Check Free-Tier LLM Budget
+        # 6. Generate Dynamic Actions and Chips
+        dynamic_actions, dynamic_chips = generate_dynamic_actions(masked_query, forensic_entities, lang=lang)
+
+        # 7. Check Free-Tier LLM Budget
         allowed, budget_msg = veronica_budget.check_llm_budget(session_id=request.session_id)
         if not allowed:
             logger.info("Veronica budget check denied request: %s", budget_msg)
@@ -101,18 +307,25 @@ class VeronicaService:
                 reply=reply,
                 language=lang,
                 source="fallback",
-                actions=[VeronicaAction(type="navigate", label="🔍 Go to Scanner", payload="#scanner-section")],
-                suggested_chips=["What is VERA?", "How does VERA verify SEBI?", "Call 1930 Helpline"]
+                actions=dynamic_actions,
+                suggested_chips=dynamic_chips
             )
 
-        # 6. Call LLM Provider (Gemini Free Tier)
+        # 8. Call LLM Provider (Gemini Free Tier) with Forensic Telemetry
         system_prompt = SYSTEM_PROMPT_HI if lang == "hi" else SYSTEM_PROMPT_EN
         context_turns = []
         for m in request.messages[-5:]:
             role_label = "User" if m.role == "user" else "Assistant"
             context_turns.append(f"{role_label}: {sanitize_input(m.content, max_chars=300)}")
         conversation_context = "\n".join(context_turns)
-        full_prompt = f"Conversation history:\n{conversation_context}\n\nUser Question: {masked_query}\n\nVeronica's Response:"
+        forensic_context = build_forensic_context(masked_query, forensic_entities)
+
+        full_prompt = (
+            f"{forensic_context}\n\n"
+            f"Conversation history:\n{conversation_context}\n\n"
+            f"User Question: {masked_query}\n\n"
+            f"Veronica's Response:"
+        )
 
         try:
             provider = get_llm_provider("gemini")
@@ -128,7 +341,7 @@ class VeronicaService:
             logger.error("Error generating Veronica response from LLM provider: %s", e)
             output_text = ""
 
-        # 7. Output Safety Filter & Post-Processing
+        # 9. Output Safety Filter & Post-Processing
         if not output_text:
             query_lower = masked_query.lower()
             if any(term in query_lower for term in ["buy", "sell", "stock", "shares", "crypto", "bitcoin", "invest", "portfolio", "nifty", "trading", "profit", "ipo", "forex", "fund", "return", "शेयर"]):
@@ -145,22 +358,11 @@ class VeronicaService:
             output_text = filtered_text
             source_label = "gemini"
 
-        # Suggested actions and chips
-        actions = [
-            VeronicaAction(type="navigate", label="🔍 Open Scanner", payload="#scanner-section"),
-            VeronicaAction(type="open_helpline", label="📞 Cyber Helpline 1930", payload="tel:1930")
-        ]
-        suggested_chips = (
-            ["व्हाट्सएप ग्रुप की जांच", "SEBI रजिस्ट्रेशन चेक", "1930 हेल्पलाइन"]
-            if lang == "hi"
-            else ["Check WhatsApp group", "SEBI registration check", "1930 Helpline"]
-        )
-
         response_data = {
             "reply": output_text,
             "language": lang,
-            "actions": [a.model_dump() for a in actions],
-            "suggested_chips": suggested_chips
+            "actions": [a.model_dump() for a in dynamic_actions],
+            "suggested_chips": dynamic_chips
         }
 
         # Cache valid generated responses
@@ -171,6 +373,7 @@ class VeronicaService:
             reply=output_text,
             language=lang,
             source=source_label,
-            actions=actions,
-            suggested_chips=suggested_chips
+            actions=dynamic_actions,
+            suggested_chips=dynamic_chips
         )
+
