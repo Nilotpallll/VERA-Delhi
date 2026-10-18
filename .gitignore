@@ -25,6 +25,7 @@ build/
 .next/
 out/
 .turbo/
+.vercel/
 
 # Environment and secrets (CRITICAL: Architecture Rule 11)
 .env
