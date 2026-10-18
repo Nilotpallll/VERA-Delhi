@@ -636,12 +636,19 @@ body::after {
 .vera-demo-outcome em { color: #706c62; font-size: 8px; font-style: normal; }
 .vera-demo-outcome-arrow { width: 14px; height: 14px; color: #8a7247; }
 .vera-demo-disclaimer { margin: 9px 0 0; color: #878277; font-size: 8px; letter-spacing: .025em; }
-.vera-cover-feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 45px; }
+.vera-cover-feature-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 45px; }
+@media (max-width: 1080px) {
+  .vera-cover-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .vera-cover-feature-grid { grid-template-columns: 1fr; }
+}
 .vera-cover-feature { position: relative; min-height: 205px; padding: 25px 25px 28px; overflow: hidden; border: 1px solid #e3ded2; border-radius: 5px; background: linear-gradient(145deg, rgba(255,254,250,.95), rgba(247,245,239,.8)); box-shadow: 0 9px 30px rgba(70, 59, 39, .035); animation: vera-rise-in 750ms cubic-bezier(.2,.7,.2,1) both; }
 .vera-cover-feature:nth-child(2) { animation-delay: 120ms; }
 .vera-cover-feature:nth-child(3) { animation-delay: 240ms; }
+.vera-cover-feature:nth-child(4) { animation-delay: 360ms; }
 .vera-cover-feature-number { color: #a1844e; font: 500 12px/1 var(--font-display); letter-spacing: .1em; }
-.vera-cover-feature h3 { margin: 28px 0 9px; color: #211f1b; font: 500 22px/1.15 var(--font-display); letter-spacing: -.01em; }
+.vera-cover-feature h3 { margin: 24px 0 9px; color: #211f1b; font: 500 20px/1.2 var(--font-display); letter-spacing: -.01em; }
 .vera-cover-feature p { max-width: 330px; margin: 0; color: #625d53; font-size: 13px; line-height: 1.65; }
 .vera-cover-feature-rule { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; transform: scaleX(.12); transform-origin: left; background: linear-gradient(90deg, #a78951, #e5d7b8); transition: transform 450ms ease; }
 .vera-cover-feature:hover .vera-cover-feature-rule { transform: scaleX(1); }
@@ -649,6 +656,171 @@ body::after {
 .vera-cover-feature::before { position: absolute; inset: 0; content: ""; opacity: 0; background: radial-gradient(circle at 92% 8%, rgba(210,188,139,.2), transparent 38%); transition: opacity 500ms ease; pointer-events: none; }
 .vera-cover-feature:hover { transform: translateY(-7px); border-color: #cbbb98; box-shadow: 0 20px 44px rgba(70,59,39,.1); }
 .vera-cover-feature:hover::before { opacity: 1; }
+
+.vera-cover-feature-veronica {
+  border-color: rgba(185, 151, 100, 0.45);
+  background: linear-gradient(145deg, rgba(255, 252, 245, 0.98), rgba(246, 238, 222, 0.88));
+  cursor: pointer;
+}
+.vera-cover-feature-veronica:hover {
+  border-color: #b99764;
+  box-shadow: 0 20px 45px rgba(107, 77, 39, 0.16);
+}
+
+.vera-cover-veronica-btn {
+  background: linear-gradient(135deg, rgba(247, 238, 218, 0.92), rgba(235, 218, 185, 0.92)) !important;
+  border-color: #cbb489 !important;
+  color: #5c4524 !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+}
+.vera-cover-veronica-btn:hover {
+  background: linear-gradient(135deg, #eedec0, #e2c99b) !important;
+  box-shadow: 0 4px 15px rgba(107, 77, 39, 0.18);
+  transform: translateY(-1px);
+}
+
+.vera-veronica-sparkle-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+  animation: vera-signal-pulse 2s infinite ease-in-out;
+}
+
+.vera-cover-nav-enter-btn {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid #b9a273;
+  border-radius: 999px;
+  color: #1c1a15;
+  background: linear-gradient(135deg, #e7d9b9, #d8c394);
+  font: 700 11px/1 var(--font-ui);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 12px rgba(93, 72, 32, .12);
+}
+.vera-cover-nav-enter-btn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #eddfc1, #dfcda7);
+  box-shadow: 0 6px 18px rgba(93, 72, 32, .18);
+}
+
+.vera-cover-enter-hero-cta {
+  cursor: pointer;
+  outline: none;
+}
+.vera-cover-veronica-hero-cta {
+  display: inline-flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  border: 1px solid rgba(185, 151, 100, 0.55);
+  border-radius: 4px;
+  color: #4b381a;
+  background: rgba(255, 254, 250, 0.92);
+  box-shadow: 0 4px 18px rgba(93, 72, 32, 0.08);
+  font: 700 12px/1 var(--font-ui);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 240ms ease;
+}
+.vera-cover-veronica-hero-cta:hover {
+  transform: translateY(-2px);
+  background: #fdfaf3;
+  border-color: #b99764;
+  box-shadow: 0 8px 24px rgba(93, 72, 32, 0.14);
+}
+
+.vera-veronica-cover-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border: 1px dashed rgba(185, 151, 100, 0.55);
+  border-radius: 6px;
+  background: rgba(255, 250, 240, 0.75);
+  cursor: pointer;
+  transition: all 220ms ease;
+}
+.vera-veronica-cover-banner:hover {
+  background: rgba(255, 248, 230, 0.95);
+  border-color: #9a7448;
+  transform: translateY(-1px);
+}
+.vera-veronica-banner-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #765532 0%, #b99764 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(118, 85, 50, 0.25);
+}
+.vera-veronica-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+.vera-veronica-banner-badge {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #8c7141;
+  margin-bottom: 2px;
+}
+.vera-veronica-banner-text p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #2b271f;
+  font-weight: 600;
+}
+.vera-veronica-banner-action {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8c7141;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .vera-cover { color: #f5f4ef; }
+[data-theme="dark"] .vera-cover-title { color: #fdfaf3; }
+[data-theme="dark"] .vera-cover-title em { color: #dbc49a; }
+[data-theme="dark"] .vera-cover-description { color: #c5beaf; }
+[data-theme="dark"] .vera-cover-brand { color: #f7f4ec; }
+[data-theme="dark"] .vera-cover-brand-descriptor { color: #b5ac9a; }
+[data-theme="dark"] .vera-cover-control { background: rgba(30, 27, 22, 0.72); border-color: rgba(185, 151, 100, 0.3); color: #e5ded2; }
+[data-theme="dark"] .vera-cover-control:hover { background: rgba(45, 40, 32, 0.85); border-color: #dbc49a; }
+[data-theme="dark"] .vera-cover-veronica-btn { background: linear-gradient(135deg, rgba(65, 48, 25, 0.85), rgba(95, 72, 38, 0.85)) !important; border-color: #9a7448 !important; color: #f7e8cb !important; }
+[data-theme="dark"] .vera-cover-veronica-btn:hover { background: linear-gradient(135deg, #5c4320, #7a5a2e) !important; }
+[data-theme="dark"] .vera-cover-veronica-hero-cta { background: rgba(28, 24, 18, 0.92); border-color: rgba(185, 151, 100, 0.35); color: #eadecb; }
+[data-theme="dark"] .vera-cover-veronica-hero-cta:hover { background: rgba(42, 36, 27, 0.96); border-color: #b99764; }
+[data-theme="dark"] .vera-cover-feature { background: linear-gradient(145deg, rgba(28, 25, 20, 0.92), rgba(20, 18, 14, 0.85)); border-color: rgba(255, 255, 255, 0.08); }
+[data-theme="dark"] .vera-cover-feature h3 { color: #fdfaf3; }
+[data-theme="dark"] .vera-cover-feature p { color: #b8b1a3; }
+[data-theme="dark"] .vera-cover-feature-veronica { border-color: rgba(185, 151, 100, 0.35); background: linear-gradient(145deg, rgba(38, 30, 20, 0.95), rgba(24, 20, 15, 0.9)); }
+[data-theme="dark"] .vera-veronica-cover-banner { background: rgba(35, 28, 18, 0.75); border-color: rgba(185, 151, 100, 0.35); }
+[data-theme="dark"] .vera-veronica-cover-banner:hover { background: rgba(48, 38, 24, 0.92); border-color: #b99764; }
+[data-theme="dark"] .vera-veronica-banner-text p { color: #f7f2e7; }
+[data-theme="dark"] .vera-veronica-banner-badge { color: #dbc49a; }
+[data-theme="dark"] .vera-veronica-banner-action { color: #dbc49a; }
 .vera-cover-cta { position: relative; overflow: hidden; isolation: isolate; }
 .vera-cover-cta::after { position: absolute; z-index: 0; top: -80%; bottom: -80%; left: -45%; width: 28%; content: ""; transform: rotate(22deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.48), transparent); transition: left 650ms cubic-bezier(.2,.7,.2,1); pointer-events: none; }
 .vera-cover-cta:hover::after { left: 125%; }

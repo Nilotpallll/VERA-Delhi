@@ -41,16 +41,21 @@ export const VeronicaChat: React.FC<VeronicaChatProps> = ({
     } else if (action.type === "external_link") {
       window.open(action.payload, "_blank", "noopener,noreferrer");
     } else if (action.type === "navigate") {
-      if (action.payload.startsWith("#")) {
-        const el = document.querySelector(action.payload);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-        } else {
-          window.scrollTo({ top: 350, behavior: "smooth" });
-        }
-      } else {
-        window.location.href = action.payload;
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("vera:enter-app"));
       }
+      setTimeout(() => {
+        if (action.payload.startsWith("#")) {
+          const el = document.querySelector(action.payload);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          } else {
+            window.scrollTo({ top: 350, behavior: "smooth" });
+          }
+        } else {
+          window.location.href = action.payload;
+        }
+      }, 50);
     } else if (action.type === "run_sample" && onTriggerChip) {
       onTriggerChip(action.label);
     }

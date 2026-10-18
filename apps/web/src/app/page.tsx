@@ -56,6 +56,28 @@ export default function Home() {
     setLocale((prev) => (prev === "en" ? "hi" : "en"));
   };
 
+  useEffect(() => {
+    const handleEnterApp = () => {
+      setShowCover(false);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+    };
+    const handleOpenCover = () => {
+      setShowCover(true);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+    };
+
+    window.addEventListener("vera:enter-app", handleEnterApp);
+    window.addEventListener("vera:open-cover", handleOpenCover);
+    return () => {
+      window.removeEventListener("vera:enter-app", handleEnterApp);
+      window.removeEventListener("vera:open-cover", handleOpenCover);
+    };
+  }, []);
+
   if (showCover) {
     return (
       <VeraCover
@@ -83,6 +105,10 @@ export default function Home() {
         onLocaleToggle={handleToggleLocale}
         theme={theme}
         onThemeToggle={handleToggleTheme}
+        onOpenCover={() => {
+          setShowCover(true);
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }}
       />
 
       {/* ── MAIN CONTENT AREA (Centered, max 1120px) ────────────────────────── */}

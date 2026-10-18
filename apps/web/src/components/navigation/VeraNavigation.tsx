@@ -14,6 +14,7 @@ interface VeraNavigationProps {
   onLocaleToggle: () => void;
   theme: "light" | "dark";
   onThemeToggle: () => void;
+  onOpenCover?: () => void;
 }
 
 export function VeraNavigation({
@@ -23,6 +24,7 @@ export function VeraNavigation({
   onLocaleToggle,
   theme,
   onThemeToggle,
+  onOpenCover,
 }: VeraNavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [isBrandExpanded, setIsBrandExpanded] = useState(false);
@@ -100,8 +102,24 @@ export function VeraNavigation({
           })}
         </div>
 
-        {/* Right: Language toggle + Theme toggle */}
+        {/* Right: Veronica AI + Language toggle + Theme toggle */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Veronica AI Quick Trigger */}
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new Event("vera:toggle-veronica"));
+              }
+            }}
+            className="h-9 px-3.5 rounded-full border border-amber-500/35 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-semibold hover:bg-amber-500/20 transition-colors shadow-sm flex items-center gap-1.5"
+            title="Veronica AI Forensic Assistant"
+            aria-label="Veronica AI Forensic Assistant"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-bold">Veronica AI</span>
+          </button>
+
           {/* Language Toggle (40px pill) */}
           <button
             onClick={onLocaleToggle}
@@ -131,8 +149,21 @@ export function VeraNavigation({
 
       {/* ── MOBILE CONTROLS (< 768px) ─────────────────────────────────────── */}
       <div className="md:hidden">
-        {/* Top-Right: Floating Language + Theme Cluster (44px circles) */}
+        {/* Top-Right: Floating Veronica + Language + Theme Cluster (44px circles) */}
         <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new Event("vera:toggle-veronica"));
+              }
+            }}
+            className="w-11 h-11 rounded-full border border-amber-500/40 bg-[var(--surface)] text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center backdrop-blur-xl shadow-md"
+            title="Veronica AI Assistant"
+            aria-label="Veronica AI Assistant"
+          >
+            ✨
+          </button>
           <button
             onClick={onLocaleToggle}
             className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-bold flex items-center justify-center backdrop-blur-xl shadow-md"

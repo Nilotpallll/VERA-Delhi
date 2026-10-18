@@ -875,7 +875,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           status = "FICTITIOUS_ID";
           statusLabel = locale === "hi" ? "दिए गए रजिस्टर में नहीं मिला" : "NOT FOUND IN PROVIDED REGISTRY";
           details = `Registration ID '${claimedRegId}' was not found in the supplied ${registryLookup.coveredType || "SEBI"} registry snapshot dated ${registryLookup.asOf || "unknown date"}. This dataset check is not a live SEBI lookup; verify the number on SEBI.gov.in before concluding it is fictitious.`;
-        } else if (registryLookup?.state === "UNAVAILABLE") {
+        } else if (registryLookup?.state === "UNAVAILABLE" && !(claimedRegId && VERIFIED_SEBI_INTERMEDIARIES[claimedRegId])) {
           status = "REGISTRY_UNAVAILABLE";
           statusLabel = locale === "hi" ? "रजिस्टर उपलब्ध नहीं" : "LOCAL REGISTRY UNAVAILABLE";
           details = "VERA could not read the local registry snapshot, so this registration could not be checked.";

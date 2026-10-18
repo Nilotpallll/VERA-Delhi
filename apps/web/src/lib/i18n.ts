@@ -96,6 +96,11 @@ export const translations = {
     coverLimitThree: "Results explain what was checked and what remains unchecked.",
     coverClosingTitle: "When something feels off, start with a clearer view.",
     coverClosingBody: "Check the message before you act.",
+    coverVeronicaBtn: "Veronica AI Guide",
+    coverVeronicaHeroCta: "Ask Veronica AI",
+    coverEnterHero: "Launch Fraud Scanner",
+    coverFeatureVeronica: "Veronica AI Forensic Copilot",
+    coverFeatureVeronicaBody: "Interactive bilingual interrogation of fraud claims, SEBI credential screening, and emergency cyber helpline guidance.",
   },
   hi: {
     title: "वेरा (VERA) निवेश धोखाधड़ी जाँच",
@@ -188,5 +193,10 @@ export const translations = {
     coverLimitThree: "परिणाम बताते हैं कि क्या जाँचा गया और क्या नहीं।",
     coverClosingTitle: "कुछ ठीक न लगे, तो पहले उसे साफ़ तौर पर समझें।",
     coverClosingBody: "कार्रवाई से पहले संदेश जाँचें.",
+    coverVeronicaBtn: "वेरोनिका एआई गाइड",
+    coverVeronicaHeroCta: "वेरोनिका से सलाह लें",
+    coverEnterHero: "स्कैनर शुरू करें",
+    coverFeatureVeronica: "वेरोनिका एआई सुरक्षा सहायक",
+    coverFeatureVeronicaBody: "संदिग्ध दावों की दो-तरफ़ा पूछताछ, सेबी लाइसेंस मिलान और तत्काल हेल्पलाइन मार्गदर्शन।",
   },
 };
