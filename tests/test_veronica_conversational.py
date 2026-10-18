@@ -46,6 +46,11 @@ GENERIC_TURNS_EN = [
     ("bye", ["goodbye", "stay vigilant"]),
     ("cool", ["thank you", "assistance"]),
     ("great", ["thank you", "assistance"]),
+    ("what's up", ["monitoring", "investments", "going"]),
+    ("can we chat", ["chat", "glad to chat", "happy to chat"]),
+    ("i am scared", ["deep breath", "not alone", "calmly"]),
+    ("you are smart", ["thank you", "sharp", "forensics"]),
+    ("why veronica", ["veronica", "veritas", "truth"]),
 ]
 
 GENERIC_TURNS_HI = [
@@ -63,6 +68,11 @@ GENERIC_TURNS_HI = [
     ("नहीं", ["कोई बात नहीं", "सुरक्षित"]),
     ("माफ करें", ["माफ़ी की कोई बात नहीं", "सहायता"]),
     ("अलविदा", ["अलविदा", "सतर्क"]),
+    ("क्या चल रहा है", ["ठीक", "पैटर्न", "नज़र"]),
+    ("बात कर सकती हो", ["बातचीत", "तैयार"]),
+    ("डर लग रहा है", ["घबराएं नहीं", "शांत"]),
+    ("तुम बहुत समझदार हो", ["धन्यवाद", "मार्गदर्शन"]),
+    ("तुम्हारा नाम वेरोनिका क्यों है", ["वेरोनिका", "veritas", "सत्य"]),
 ]
 
 
@@ -79,7 +89,7 @@ async def test_veronica_conversational_turns_en(query: str, expected_terms: list
         resp = await client.post("/api/veronica/chat", json=payload)
         assert resp.status_code == 200
         data = resp.json()
-        assert data["source"] in ("canned", "gemini")
+        assert data["source"] in ("canned", "gemini", "fallback")
         reply_lower = data["reply"].lower()
         # Verify at least one of the expected terms is present
         assert any(term in reply_lower for term in expected_terms), f"Query '{query}' reply did not contain any of {expected_terms}. Reply: {data['reply']}"

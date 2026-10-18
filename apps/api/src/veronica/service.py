@@ -235,6 +235,51 @@ def generate_dynamic_actions(query: str, entities: dict[str, Any], lang: str = "
     return actions, chips
 
 
+def generate_conversational_fallback(query: str, lang: str = "en") -> str:
+    """Provides short, poised, and professional conversational replies for normal interactions."""
+    q = query.lower()
+    is_hi = lang == "hi"
+
+    # 1. Worries / Anxiety
+    if any(k in q for k in ["worried", "scared", "nervous", "anxious", "fear", "डर", "चिंता", "परेशान", "घबराहट"]):
+        return (
+            "शांत रहें, घबराने की कोई बात नहीं है। स्कैमर्स अक्सर डर और जल्दबाजी का माहौल बनाते हैं। मुझे पूरी बात बताएं, हम मिलकर स्थिति की जांच करेंगे।"
+            if is_hi else
+            "Please take a deep breath. Scammers rely on manufactured urgency and panic. Tell me what happened, and we'll calmly review the details together."
+        )
+
+    # 2. Compliments / Appreciation
+    if any(k in q for k in ["smart", "intelligent", "clever", "great job", "awesome", "good agent", "समझदार", "अच्छा काम", "शानदार"]):
+        return (
+            "बहुत धन्यवाद! मेरा लक्ष्य आपको सटीक और सुरक्षित वित्तीय मार्गदर्शन देना है। क्या आपके पास कोई संदेश या लिंक है जिसकी आप जांच करना चाहते हैं?"
+            if is_hi else
+            "Thank you! I strive to be sharp, accurate, and helpful in keeping your investments safe. Is there anything specific you'd like to check?"
+        )
+
+    # 3. Willingness to chat
+    if any(k in q for k in ["chat", "talk", "speak", "बात", "गपशप"]):
+        return (
+            "बिल्कुल, मैं बात करने के लिए तैयार हूँ। आप किसी भी निवेश ऑफर, ट्रेडिंग ग्रुप या सुरक्षा नियम के बारे में पूछ सकते हैं।"
+            if is_hi else
+            "Of course! I'm right here and happy to chat. Feel free to ask about any message, investment scheme, or safety guidelines."
+        )
+
+    # 4. Questions about platform, identity, or purpose
+    if any(k in q for k in ["vera", "who", "what do you do", "scanner", "वेरा", "आप क्या"]):
+        return (
+            "मैं VERA सुरक्षा सहायक हूँ। मैं किसी भी संदिग्ध संदेश, सेबी पंजीकरण या लिंक की तुरंत जांच करने में आपकी मदद कर सकती हूँ। आप क्या जानना चाहते हैं?"
+            if is_hi else
+            "I'm here as your VERA fraud prevention guide. I can help examine suspect messages, verify SEBI credentials, or analyze unknown links. What would you like to explore?"
+        )
+
+    # 5. General short, poised & professional conversational turn
+    return (
+        "नमस्ते! मैं वेरोनिका हूँ, आपकी VERA सुरक्षा सहायक। मैं सामान्य बातचीत और संदिग्ध निवेशों की फोरेंसिक जांच दोनों के लिए यहाँ हूँ। आज मैं आपकी क्या सहायता करूँ?"
+        if is_hi else
+        "Hello! I am Veronica, your VERA fraud safety assistant. I'm right here to answer questions, chat, or inspect suspect messages in our forensic scanner. How can I help you today?"
+    )
+
+
 class VeronicaService:
     @staticmethod
     async def process_chat(request: VeronicaChatRequest) -> VeronicaChatResponse:
@@ -347,11 +392,7 @@ class VeronicaService:
             if any(term in query_lower for term in ["buy", "sell", "stock", "shares", "crypto", "bitcoin", "invest", "portfolio", "nifty", "trading", "profit", "ipo", "forex", "fund", "return", "शेयर"]):
                 output_text = REFUSAL_INVESTMENT_ADVICE_HI if lang == "hi" else REFUSAL_INVESTMENT_ADVICE_EN
             else:
-                output_text = (
-                    "मैं वेरोनिका हूँ, आपकी VERA सुरक्षा सहायक। मैं संदिग्ध निवेश संदेशों, सेबी पंजीकरण सत्यापन और धोखाधड़ी जांच में सहायता के लिए यहाँ हूँ। आप नीचे दिए गए VERA स्कैनर में संदिग्ध लिंक या संदेश डालकर भी त्वरित जांच कर सकते हैं। आज मैं आपकी कैसे सहायता कर सकती हूँ?"
-                    if lang == "hi"
-                    else "I am Veronica, your VERA fraud safety assistant. I can help you check suspicious investment messages, verify SEBI registrations, or inspect suspect links and APKs in our forensic scanner. How can I help you today?"
-                )
+                output_text = generate_conversational_fallback(masked_query, lang=lang)
             source_label = "fallback"
         else:
             filtered_text, was_flagged = filter_generated_output(output_text, language=lang)

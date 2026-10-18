@@ -937,7 +937,7 @@ CANNED_RESPONSES: dict[str, dict[str, Any]] = {
     },
     "check_presence": {
         "keywords": [
-            "are you there", "you there", "anyone there", "hello?", "can you hear me",
+            "are you there", "you there", "anyone there", "can you hear me",
             "sun rahe ho", "क्या आप सुन रहे हैं", "सुनो", "सुन रहे हो"
         ],
         "en": {
@@ -1031,6 +1031,173 @@ CANNED_RESPONSES: dict[str, dict[str, Any]] = {
                 "VERA क्या है?"
             ]
         }
+    },
+    "smalltalk_casual": {
+        "keywords": [
+            "what's up", "whats up", "what is up", "sup", "howdy",
+            "what are you doing", "what are you up to",
+            "क्या चल रहा है", "क्या हो रहा है", "क्या कर रही हो"
+        ],
+        "en": {
+            "reply": (
+                "Not much, just monitoring threat vectors and standing by to help protect your investments. How is everything going with you?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Check a suspicious WhatsApp group",
+                "How does VERA verify SEBI?",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "बस सब ठीक है! मैं वित्तीय धोखाधड़ी के पैटर्न पर नज़र रख रही हूँ और आपकी सहायता के लिए तैयार हूँ। आपका दिन कैसा चल रहा है?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच करें",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "conversational_chat_check": {
+        "keywords": [
+            "can we chat", "can i talk to you", "talk to me", "let's chat", "lets chat",
+            "chat with me", "can we talk", "just chatting",
+            "बात कर सकती हो", "बात करनी है", "बात करें", "बात करो", "गपशप"
+        ],
+        "en": {
+            "reply": (
+                "Of course! I'm here and glad to chat. You can ask me anything about investment safety, share suspicious messages you've received, or ask how VERA works."
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Open Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "What are common scam red flags?",
+                "Why are you called Veronica?",
+                "How does VERA verify SEBI?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "बिल्कुल! मैं बातचीत के लिए तैयार हूँ। आप निवेश सुरक्षा, किसी संदिग्ध संदेश की जांच, या VERA की कार्यप्रणाली के बारे में कुछ भी पूछ सकते हैं।"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर खोलें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "धोखाधड़ी के सामान्य लक्षण क्या हैं?",
+                "आपका नाम वेरोनिका क्यों है?",
+                "SEBI रजिस्ट्रेशन कैसे चेक करें?"
+            ]
+        }
+    },
+    "reassurance_worried": {
+        "keywords": [
+            "i am scared", "i'm scared", "i am worried", "i'm worried", "feeling anxious",
+            "nervous", "so scared", "fear", "anxious",
+            "डर लग रहा है", "चिंता हो रही है", "परेशान हूँ", "घबराहट हो रही है"
+        ],
+        "en": {
+            "reply": (
+                "Please take a deep breath—you are not alone. Fraudsters deliberately manufacture urgency and fear to make people panic. Tell me what happened, and we will calmly examine the facts together."
+            ),
+            "actions": [
+                {"type": "open_helpline", "label": "📞 Call 1930 Helpline", "payload": "tel:1930"},
+                {"type": "navigate", "label": "🔍 Examine in Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "I already sent money. What should I do? 🚨",
+                "How do scammers fake arrest warrants?",
+                "Can VERA scan a phone number?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "घबराएं नहीं, शांत रहें। स्कैमर्स लोगों को डराने और जल्दबाजी में फैसले लेने के लिए दबाव बनाते हैं। मुझे शांति से बताएं क्या बात है, हम मिलकर तथ्यों की जांच करेंगे।"
+            ),
+            "actions": [
+                {"type": "open_helpline", "label": "📞 1930 हेल्पलाइन पर कॉल करें", "payload": "tel:1930"},
+                {"type": "navigate", "label": "🔍 VERA में जांचें", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "मैंने पैसे भेज दिए हैं, मुझे क्या करना चाहिए? 🚨",
+                "फर्जी वारंट की पहचान कैसे करें?",
+                "क्या VERA नंबर की जांच कर सकता है?"
+            ]
+        }
+    },
+    "smart_compliment": {
+        "keywords": [
+            "you are smart", "you're smart", "you are intelligent", "you're intelligent",
+            "smart bot", "good agent", "you are great", "nice bot", "clever",
+            "तुम बहुत समझदार हो", "तुम अच्छी हो", "स्मार्ट हो", "अच्छा काम"
+        ],
+        "en": {
+            "reply": (
+                "Thank you! I strive to be sharp, reliable, and up to date on cyber forensics and SEBI guidelines. Let me know if you'd like to check any messages or schemes!"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Go to Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "Check a WhatsApp group",
+                "Verify SEBI registration",
+                "What is VERA?"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "बहुत धन्यवाद! मेरा लक्ष्य आपको सबसे सटीक और सुरक्षित वित्तीय मार्गदर्शन देना है। क्या आप किसी संदिग्ध संदेश या लिंक की जांच करना चाहते हैं?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर पर जाएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "व्हाट्सएप ग्रुप की जांच करें",
+                "SEBI रजिस्ट्रेशन चेक करें",
+                "VERA क्या है?"
+            ]
+        }
+    },
+    "bot_name_origin": {
+        "keywords": [
+            "why veronica", "why are you called veronica", "who named you",
+            "meaning of your name", "what does veronica mean",
+            "तुम्हारा नाम वेरोनिका क्यों है", "नाम का मतलब", "वेरोनिका नाम क्यों"
+        ],
+        "en": {
+            "reply": (
+                "Veronica is derived from 'Veritas' (truth) and 'Icon' (image)—reflecting VERA's mission to uncover verifiable truth and objective evidence against financial fraud. How can I assist you today?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 Try the Scanner", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "What is VERA?",
+                "How does VERA verify SEBI?",
+                "Check a WhatsApp group"
+            ]
+        },
+        "hi": {
+            "reply": (
+                "वेरोनिका नाम 'Veritas' (सत्य) और 'Icon' (प्रतीक) से मिलकर बना है—जो वित्तीय धोखाधड़ी के खिलाफ सत्य और फोरेंसिक साक्ष्य का प्रतीक है। आज मैं आपकी क्या मदद करूँ?"
+            ),
+            "actions": [
+                {"type": "navigate", "label": "🔍 स्कैनर आज़माएं", "payload": "#scanner-section"}
+            ],
+            "suggested_chips": [
+                "VERA क्या है?",
+                "SEBI रजिस्ट्रेशन कैसे चेक करें?",
+                "व्हाट्सएप ग्रुप की जांच करें"
+            ]
+        }
     }
 }
 
@@ -1051,12 +1218,17 @@ PRIORITIZED_INTENTS = [
     "check_whatsapp",
     "what_next",
 
-    # 3. Conversational Capabilities & Bot Identity
+    # 3. Conversational Capabilities, Normal Dialogue & Bot Identity
     "help_capabilities",
     "bot_identity",
     "bot_nature",
+    "bot_name_origin",
     "is_free_service",
     "how_are_you",
+    "smalltalk_casual",
+    "conversational_chat_check",
+    "reassurance_worried",
+    "smart_compliment",
     "check_presence",
     "has_question",
     "apology",
@@ -1096,7 +1268,7 @@ def find_canned_response(text: str, language: str = "en") -> dict[str, Any] | No
         if not intent_data:
             continue
         for kw in intent_data["keywords"]:
-            kw_norm = kw.strip().lower()
+            kw_norm = re.sub(r'[\s.,!?:;"\'`()\[\]{}]+', ' ', kw.lower()).strip()
             if not kw_norm:
                 continue
 
