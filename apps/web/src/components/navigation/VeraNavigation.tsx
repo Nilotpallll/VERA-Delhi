@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, BookOpen, PhoneCall, Sun, Moon, ArrowLeft } from "lucide-react";
+import { ShieldCheck, BookOpen, PhoneCall, Sun, Moon, Home } from "lucide-react";
 import { Locale, translations } from "@/lib/i18n";
 import { VeraLogo } from "@/components/brand/VeraLogo";
 
@@ -62,13 +62,14 @@ export function VeraNavigation({
           {onOpenCover && (
             <button
               type="button"
+              id="btn-nav-home"
               onClick={onOpenCover}
               className="vera-nav-back-btn group h-9 px-3 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold hover:border-[var(--text-muted)] hover:bg-[var(--surface-solid)] transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
-              title={t.backToCover || "Back to Cover"}
-              aria-label={t.backToCover || "Back to Cover"}
+              title={t.backToCover}
+              aria-label={t.backToCover}
             >
-              <ArrowLeft className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-200 ease-out group-hover:-translate-x-1" />
-              <span className="font-semibold tracking-tight">{locale === "hi" ? "कवर" : "Cover"}</span>
+              <Home className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-200 ease-out group-hover:scale-110" />
+              <span className="font-semibold tracking-tight">{t.backToCover}</span>
             </button>
           )}
 
@@ -103,8 +104,8 @@ export function VeraNavigation({
                 }}
                 className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline group cursor-pointer"
               >
-                <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                <span>{locale === "hi" ? "कवर पेज पर वापस जाएं" : "Return to Cover Page"}</span>
+                <Home className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                <span>{locale === "hi" ? "होम पेज पर वापस जाएं" : "Return to Home"}</span>
               </button>
             )}
           </div>
@@ -117,6 +118,7 @@ export function VeraNavigation({
             return (
               <button
                 key={id}
+                id={`nav-tab-${id.toLowerCase()}`}
                 onClick={() => { setIsBrandExpanded(false); onTabChange(id); }}
                 className={`h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 select-none ${
                   isActive
@@ -135,6 +137,7 @@ export function VeraNavigation({
           {/* Veronica AI Quick Trigger */}
           <button
             type="button"
+            id="btn-nav-veronica"
             onClick={() => {
               if (typeof window !== "undefined") {
                 window.dispatchEvent(new Event("vera:toggle-veronica"));
@@ -150,6 +153,7 @@ export function VeraNavigation({
 
           {/* Language Toggle (40px pill) */}
           <button
+            id="btn-nav-lang"
             onClick={onLocaleToggle}
             className="h-9 px-3.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold hover:border-[var(--text-muted)] transition-colors shadow-sm"
             title="Toggle language"
@@ -160,6 +164,7 @@ export function VeraNavigation({
 
           {/* Theme Toggle (40px circle) */}
           <button
+            id="btn-nav-theme"
             onClick={onThemeToggle}
             className="w-9 h-9 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] flex items-center justify-center hover:border-[var(--text-muted)] transition-colors shadow-sm"
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
@@ -177,17 +182,18 @@ export function VeraNavigation({
 
       {/* ── MOBILE CONTROLS (< 768px) ─────────────────────────────────────── */}
       <div className="md:hidden">
-        {/* Top-Left: Back to Cover Button */}
+        {/* Top-Left: Home Button */}
         {onOpenCover && (
           <button
             type="button"
+            id="btn-mobile-nav-home"
             onClick={onOpenCover}
             className="vera-nav-back-btn fixed top-3 left-3 z-50 h-11 px-3.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold flex items-center gap-1.5 backdrop-blur-xl shadow-md group active:scale-95 transition-all"
-            title={t.backToCover || "Back to Cover"}
-            aria-label={t.backToCover || "Back to Cover"}
+            title={t.backToCover}
+            aria-label={t.backToCover}
           >
-            <ArrowLeft className="w-4 h-4 transition-transform duration-200 ease-out group-hover:-translate-x-1" />
-            <span>{locale === "hi" ? "कवर" : "Cover"}</span>
+            <Home className="w-4 h-4 transition-transform duration-200 ease-out group-hover:scale-110" />
+            <span>{t.backToCover}</span>
           </button>
         )}
 

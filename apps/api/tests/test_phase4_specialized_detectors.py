@@ -22,7 +22,6 @@ import base64
 import hashlib
 import io
 import zipfile
-from datetime import UTC, datetime
 
 import pytest
 from apps.api.src.contracts.analyzers import AnalyzerExecutionStatus
@@ -30,9 +29,10 @@ from apps.api.src.contracts.evidence import CanonicalEvidenceItem, EvidenceMedia
 from apps.api.src.contracts.verification import VerificationResult, VerificationState
 from apps.api.src.engines.apk_analyzer import APKAnalyzer
 from apps.api.src.engines.audio_analyzer import AudioAnalyzer
-from apps.api.src.engines.evaluation import ModelEvaluator, model_evaluator
+from apps.api.src.engines.evaluation import ModelEvaluator
 from apps.api.src.engines.image_analyzer import ImageAnalyzer
 from apps.api.src.engines.message_analyzer import MessageAnalyzer
+from apps.api.src.engines.ocr_engine import PaddleOCREngine
 from apps.api.src.engines.profile_analyzer import ProfileAnalyzer
 from apps.api.src.engines.registry import analyzer_registry
 from apps.api.src.engines.url_analyzer import URLAnalyzer
@@ -220,6 +220,111 @@ class TestImageAnalyzer:
         # Fallback metadata parser handles raw byte headers even without PIL
         meta = analyzer._extract_metadata(b"\x89PNG\r\n\x1a\n...")
         assert meta["format"] == "PNG"
+
+    def test_ocr_failure_never_invents_registration_text(self):
+        analyzer = PaddleOCREngine()
+        analyzer._ocr = object()
+        from PIL import Image
+
+        image_buffer = io.BytesIO()
+        Image.new("RGB", (2, 2), color="white").save(image_buffer, format="PNG")
+        evidence = _make_evidence(
+            EvidenceMediaType.IMAGE,
+            base64.b64encode(image_buffer.getvalue()).decode(),
+        )
+
+        result, uncertainty = asyncio.run(analyzer._execute(evidence))
+
+        assert result["full_text"] == ""
+        assert result["lines"] == []
+        assert result["is_fallback"] is True
+        assert result["engine"] == "unavailable"
+        assert uncertainty == 1.0
+
+    @pytest.mark.asyncio
+    async def test_ocr_on_real_valid_image_fixture_preserves_safety_invariants(self):
+        from PIL import Image, ImageDraw
+
+        image_buffer = io.BytesIO()
+        img = Image.new("RGB", (200, 60), color="white")
+        draw = ImageDraw.Draw(img)
+        draw.text((10, 20), "SEBI REGISTRATION INA000012345", fill="black")
+        img.save(image_buffer, format="PNG")
+
+        raw_b64 = base64.b64encode(image_buffer.getvalue()).decode()
+        evidence = _make_evidence(EvidenceMediaType.IMAGE, raw_b64)
+
+        ocr_engine = PaddleOCREngine()
+        result, uncertainty = await ocr_engine._execute(evidence)
+
+        # Invariant 1: If native engine fails or is unavailable, never invent text or lower uncertainty
+        if result["engine"] == "unavailable":
+            assert result["full_text"] == ""
+            assert result["lines"] == []
+            assert uncertainty == 1.0
+            assert result["is_fallback"] is True
+        else:
+            # Native OCR succeeded
+            assert result["engine"] == "paddleocr-native"
+            assert uncertainty < 0.2
+
+        # Invariant 2: Never inject the legacy hardcoded fake certificate string on failure
+        if result["is_fallback"]:
+            assert "SEBI CERTIFICATE" not in result["full_text"]
+
+        # Invariant 3: ImageAnalyzer integration retains uncertainty
+        img_analyzer = ImageAnalyzer(ocr_engine=ocr_engine)
+        record = await img_analyzer.execute(evidence)
+        assert record.uncertainty == uncertainty or record.uncertainty >= 0.35
+
+    @pytest.mark.asyncio
+    async def test_native_paddleocr_release_gate(self):
+        """Opt-in integration test verifying native PaddleOCR release readiness.
+
+        When REQUIRE_NATIVE_OCR or VERA_REQUIRE_NATIVE_OCR is set to 1/true,
+        this test fails if native OCR is unavailable, falls back, fails to extract
+        fixture text, or returns high uncertainty.
+        """
+        import os
+
+        require_native = (
+            os.getenv("REQUIRE_NATIVE_OCR", "").strip().lower() in ("1", "true", "yes")
+            or os.getenv("VERA_REQUIRE_NATIVE_OCR", "").strip().lower() in ("1", "true", "yes")
+        )
+        if not require_native:
+            pytest.skip("Opt-in native OCR test skipped. Set REQUIRE_NATIVE_OCR=1 to enforce.")
+
+        from PIL import Image, ImageDraw, ImageFont
+
+        image_buffer = io.BytesIO()
+        img = Image.new("RGB", (600, 150), color="white")
+        draw = ImageDraw.Draw(img)
+        fixture_text = "SEBI REGISTRATION INA000012345"
+        try:
+            font = ImageFont.load_default(size=28)
+        except TypeError:
+            font = ImageFont.load_default()
+        draw.text((30, 50), fixture_text, fill="black", font=font)
+        img.save(image_buffer, format="PNG")
+
+        raw_bytes = image_buffer.getvalue()
+        raw_b64 = base64.b64encode(raw_bytes).decode()
+        evidence = _make_evidence(EvidenceMediaType.IMAGE, raw_b64)
+
+        ocr_engine = PaddleOCREngine()
+        result, uncertainty = await ocr_engine._execute(evidence)
+
+        # Release Gate Assertions:
+        assert result["engine"] == "paddleocr-native", f"Native engine was not used: {result.get('engine')}"
+        assert result.get("is_fallback") is False, "Result was unexpectedly marked as fallback"
+        assert fixture_text in result.get("full_text", ""), (
+            f"Recognized text '{result.get('full_text')}' did not contain fixture '{fixture_text}'"
+        )
+        assert uncertainty < 1.0, f"Uncertainty {uncertainty} was not below fallback maximum (1.0)"
+        assert uncertainty <= 0.1, f"Expected native confidence uncertainty <= 0.1, got {uncertainty}"
+        assert len(result.get("lines", [])) > 0, "No bounding boxes returned by native OCR"
+
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════

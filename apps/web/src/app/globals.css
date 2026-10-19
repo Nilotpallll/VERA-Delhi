@@ -537,7 +537,7 @@ body::after {
 .vera-cover-control { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: 7px; padding: 0 13px; border: 1px solid #ddd5c6; border-radius: 999px; color: #373229; background: rgba(255, 254, 250, .72); font: 600 11px/1 var(--font-ui); letter-spacing: .04em; }
 .vera-cover-control svg { width: 15px; height: 15px; }
 .vera-cover-control:hover { background: #eee5d2; border-color: #c9b88f; }
-.vera-cover-hero { position: relative; display: grid; width: min(100% - 64px, 1440px); min-height: min(760px, calc(100svh - 90px)); margin: 0 auto; padding: clamp(60px, 8vw, 120px) 0 85px; grid-template-columns: minmax(380px, .82fr) minmax(450px, 1.18fr); align-items: center; gap: clamp(24px, 4vw, 72px); }
+.vera-cover-hero { position: relative; display: grid; width: min(100% - 64px, 1440px); min-height: min(760px, calc(100svh - 90px)); margin: 0 auto; padding: clamp(16px, 2.5vw, 36px) 0 60px; grid-template-columns: minmax(380px, .82fr) minmax(450px, 1.18fr); align-items: center; gap: clamp(24px, 4vw, 72px); }
 .vera-cover-copy { position: relative; z-index: 2; max-width: 670px; animation: vera-rise-in 850ms cubic-bezier(.2,.7,.2,1) both; }
 .vera-cover-eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 25px; color: #80683b; font-size: 10px; font-weight: 700; letter-spacing: .2em; line-height: 1.4; text-transform: uppercase; }
 .vera-cover-eyebrow-mark { width: 24px; height: 1px; background: #b99c62; }
@@ -1053,7 +1053,7 @@ video::cue {
   .vera-cover-brand-descriptor, .vera-cover-brand-rule, .vera-cover-nav-link { display: none; }
   .vera-cover-nav-actions { gap: 8px; }
   .vera-cover-control { min-height: 38px; padding: 0 10px; }
-  .vera-cover-hero { padding: 70px 0 65px; grid-template-columns: 1fr; gap: 38px; }
+  .vera-cover-hero { padding: 28px 0 45px; grid-template-columns: 1fr; gap: 38px; }
   .vera-cover-copy { max-width: 640px; }
   .vera-cover-title { max-width: 620px; font-size: clamp(3.6rem, 12vw, 5.7rem); }
   .vera-cover-video-frame { min-height: 0; margin-top: -8px; border-radius: 10px; }

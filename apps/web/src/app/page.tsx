@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   Info,
   FileText,
-  ArrowLeft,
+  Home as HomeIcon,
 } from "lucide-react";
 import { VeraNavigation, NavTab } from "@/components/navigation/VeraNavigation";
 import { PublicConsumerFlow } from "@/components/dashboard/PublicConsumerFlow";
@@ -25,6 +25,7 @@ export default function Home() {
   const [locale, setLocale] = useState<Locale>("en");
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [showCover, setShowCover] = useState(true);
+  const t = translations[locale];
 
   useEffect(() => {
     try {
@@ -58,14 +59,38 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const checkAppRoute = () => {
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get("app") === "true" || window.location.hash === "#app") {
+            setShowCover(false);
+          }
+        }
+      } catch (_) {}
+    };
+    checkAppRoute();
+    window.addEventListener("hashchange", checkAppRoute);
+    return () => window.removeEventListener("hashchange", checkAppRoute);
+  }, []);
+
+  useEffect(() => {
     const handleEnterApp = () => {
       setShowCover(false);
+      try {
+        window.location.hash = "app";
+      } catch (_) {}
       if (typeof window !== "undefined") {
         window.scrollTo({ top: 0, behavior: "instant" });
       }
     };
     const handleOpenCover = () => {
       setShowCover(true);
+      try {
+        if (window.location.hash === "#app") {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      } catch (_) {}
       if (typeof window !== "undefined") {
         window.scrollTo({ top: 0, behavior: "instant" });
       }
@@ -89,6 +114,9 @@ export default function Home() {
           onThemeToggle={handleToggleTheme}
           onEnter={() => {
             setShowCover(false);
+            try {
+              window.location.hash = "app";
+            } catch (_) {}
             window.scrollTo({ top: 0, behavior: "instant" });
           }}
         />
@@ -127,10 +155,11 @@ export default function Home() {
                 window.scrollTo({ top: 0, behavior: "instant" });
               }}
               className="group inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-solid)] text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs font-semibold shadow-sm transition-all duration-200 active:scale-95 cursor-pointer vera-nav-back-btn"
-              aria-label={locale === "hi" ? "मुख्य कवर पेज पर वापस जाएं" : "Back to Cover"}
+              aria-label={t.backToCover}
+              title={t.backToCover}
             >
-              <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-200 ease-out group-hover:-translate-x-1" />
-              <span>{locale === "hi" ? "मुख्य कवर पर वापस जाएं" : "Back to Cover Overview"}</span>
+              <HomeIcon className="w-3.5 h-3.5 transition-transform duration-200 ease-out group-hover:scale-110" />
+              <span>{t.backToCover}</span>
             </button>
 
             {/* H1 Title: white over navy panel in light, text color in dark */}

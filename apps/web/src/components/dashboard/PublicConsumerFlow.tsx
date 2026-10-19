@@ -1196,6 +1196,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Left Chip 2: Authentic Video (Clean) */}
         <button
           type="button"
+          id="chip-sample-authentic-video"
           onClick={handleSelectSampleAuthenticVideo}
           className="vera-sample-chip absolute -left-6 -translate-x-full top-28"
           title="Try Sample Authentic Camera Footage (No Deepfake / Safe)"
@@ -1207,6 +1208,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Left Chip 3: WhatsApp VIP Signals */}
         <button
           type="button"
+          id="chip-sample-whatsapp"
           onClick={() => handleSelectSamplePrompt(SAMPLE_SCAM_PROMPTS[0].text)}
           className="vera-sample-chip absolute -left-6 -translate-x-full top-48"
           title="Try WhatsApp VIP Signals"
@@ -1218,6 +1220,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Right Chip 1: Deepfake Video Scam */}
         <button
           type="button"
+          id="chip-sample-deepfake-video"
           onClick={handleSelectSampleDeepfakeVideo}
           className="vera-sample-chip absolute -right-6 translate-x-full top-8"
           title="Try Deepfake AI Face-Swap Scam"
@@ -1229,6 +1232,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Right Chip 2: Fake SEBI Advisor */}
         <button
           type="button"
+          id="chip-sample-fake-sebi"
           onClick={() => handleSelectSamplePrompt(SAMPLE_SCAM_PROMPTS[1].text)}
           className="vera-sample-chip absolute -right-6 translate-x-full top-28"
           title="Try Fake SEBI Advisor"
@@ -1240,6 +1244,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Right Chip 3: Phishing Trading Portal */}
         <button
           type="button"
+          id="chip-sample-phishing"
           onClick={() => handleSelectSamplePrompt(SAMPLE_SCAM_PROMPTS[2].text)}
           className="vera-sample-chip absolute -right-6 translate-x-full top-48"
           title="Try Phishing Trading Portal"
@@ -1272,6 +1277,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         <div className="vera-segmented-track mb-5">
           <button
             type="button"
+            id="tab-composer-text"
             onClick={() => setComposerTab("TEXT")}
             className={`vera-segmented-tab ${composerTab === "TEXT" ? "active" : ""}`}
           >
@@ -1279,6 +1285,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           </button>
           <button
             type="button"
+            id="tab-composer-video"
             onClick={() => setComposerTab("VIDEO")}
             className={`vera-segmented-tab ${composerTab === "VIDEO" ? "active" : ""}`}
           >
@@ -1293,6 +1300,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             <div className="space-y-2">
               <div className="relative">
                 <textarea
+                  id="scam-input-textarea"
                   ref={textareaRef}
                   value={inputText}
                   onChange={handleTextareaInput}
@@ -1542,6 +1550,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             {/* Right: Screen for Fraud Button (52px tall, min-width 200, pill) */}
             <button
               type="submit"
+              id="btn-scan-submit"
               disabled={isScanning || (!inputText.trim() && !uploadedB64)}
               className={`vera-btn-primary${isScanning ? " is-scanning" : ""}`}
             >

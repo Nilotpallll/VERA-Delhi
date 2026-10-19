@@ -63,3 +63,7 @@ locust>=2.32.0
 # Agent Orchestration (Phase 5)
 langgraph>=1.2.0
 langchain-core>=1.6.0
+
+# Optional Native OCR Engine (ADR-004; host CPU uses calibrated safe fallback)
+# paddlepaddle>=2.6.0; sys_platform != "win32" or python_version < "3.13"
+# paddleocr>=2.7.0

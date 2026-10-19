@@ -55,13 +55,34 @@ export function VeraCover({
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [showSubtitles, setShowSubtitles] = useState(true);
 
-  // Auto-play on mount and cleanup loop delay timeout on unmount
+  const isVisibleRef = useRef(true);
+
+  // Auto-play on mount and auto-pause when scrolled down out of view, resume when scrolled back up
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    video.play().catch(() => {});
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            isVisibleRef.current = true;
+            video.play().catch(() => {});
+          } else {
+            isVisibleRef.current = false;
+            video.pause();
+          }
+        });
+      },
+      {
+        threshold: 0.2,
+      }
+    );
+
+    observer.observe(video);
 
     return () => {
+      observer.disconnect();
       if (loopTimeoutRef.current) {
         clearTimeout(loopTimeoutRef.current);
       }
@@ -77,7 +98,9 @@ export function VeraCover({
       const video = videoRef.current;
       if (video) {
         video.currentTime = 0;
-        video.play().catch(() => {});
+        if (isVisibleRef.current) {
+          video.play().catch(() => {});
+        }
       }
     }, 3000);
   };
@@ -162,6 +185,7 @@ export function VeraCover({
           </button>
           <button
             type="button"
+            id="btn-cover-theme"
             className="vera-cover-control"
             onClick={onThemeToggle}
             aria-label={t.themeToggle}
@@ -173,6 +197,7 @@ export function VeraCover({
           </button>
           <button
             type="button"
+            id="btn-cover-lang"
             className="vera-cover-control vera-cover-language"
             onClick={onLocaleChange}
             aria-label={t.languageSwitch}
@@ -182,6 +207,7 @@ export function VeraCover({
           </button>
           <button
             type="button"
+            id="btn-cover-enter"
             className="vera-cover-nav-enter-btn"
             onClick={onEnter}
             aria-label={t.coverEnter}
@@ -203,6 +229,7 @@ export function VeraCover({
           <div className="vera-cover-cta-row">
             <button
               type="button"
+              id="btn-hero-launch-scanner"
               className="vera-cover-cta vera-cover-enter-hero-cta"
               onClick={onEnter}
             >
@@ -211,6 +238,7 @@ export function VeraCover({
             </button>
             <button
               type="button"
+              id="btn-hero-veronica"
               className="vera-cover-cta vera-cover-veronica-hero-cta"
               onClick={() => handleOpenVeronica()}
             >
