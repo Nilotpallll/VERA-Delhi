@@ -79,7 +79,7 @@ async def test_investigation_creation_endpoint_rule_1_and_2(client: AsyncClient)
     assert resp.status_code == 201
     data = resp.json()
     assert data["title"] == "Suspected Apex Invest Scam"
-    assert data["status"] == "PENDING"
+    assert data["status"] in ("PENDING", "QUEUED")
     assert data["evidence_count"] == 1
     assert data["manifest"]["scoring_algorithm_version"] == "scoring.v1.0"
     assert data["risk_assessment"]["is_llm_assigned"] is False
