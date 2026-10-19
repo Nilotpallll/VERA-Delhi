@@ -75,13 +75,24 @@ async def test_expensive_routes_fail_closed_when_redis_down():
 @pytest.mark.asyncio
 async def test_production_mode_refuses_in_memory_db_fallback(client: AsyncClient):
     """In production mode, missing DB must return handled HTTP 503, never in-memory fallback."""
-    with patch("apps.api.src.core.config.settings.ENVIRONMENT", "production"):
-        res = await client.post(
-            "/api/v1/investigations",
-            json={"title": "Prod Case", "target_entity_name": "TargetCo"},
-            headers={"Idempotency-Key": "idemp_prod_db_test_01"},
-        )
-        assert res.status_code == 503
-        data = res.json()
-        assert "Database unavailable" in data["detail"]["message"]
-        assert "request_id" in data["detail"]
+    from apps.api.src.api.deps import get_db_session
+    from apps.api.src.main import app
+
+    async def _mock_offline_db():
+        yield None
+
+    app.dependency_overrides[get_db_session] = _mock_offline_db
+    try:
+        with patch("apps.api.src.core.config.settings.ENVIRONMENT", "production"):
+            res = await client.post(
+                "/api/v1/investigations",
+                json={"title": "Prod Case", "target_entity_name": "TargetCo"},
+                headers={"Idempotency-Key": "idemp_prod_db_test_01"},
+            )
+            assert res.status_code == 503
+            data = res.json()
+            assert "Database unavailable" in data["detail"]["message"]
+            assert "request_id" in data["detail"]
+    finally:
+        app.dependency_overrides.pop(get_db_session, None)
+
