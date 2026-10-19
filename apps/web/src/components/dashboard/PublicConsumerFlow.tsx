@@ -1270,18 +1270,20 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              const el = document.getElementById("vera-sebi-verifier");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--nav-track)] hover:bg-[var(--surface-solid)] border border-[var(--border)] text-xs font-semibold text-[var(--text-primary)] whitespace-nowrap transition-colors cursor-pointer shrink-0 shadow-xs active:scale-95"
-            title="Check advisor license & SEBI registration"
-          >
-            <UserCheck className="w-3.5 h-3.5 text-[var(--text-primary)]" />
-            <span>{locale === "hi" ? "सलाहकार सत्यापन ↓" : "Verify Advisor License ↓"}</span>
-          </button>
+          {composerTab === "TEXT" && (
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("vera-sebi-verifier");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--nav-track)] hover:bg-[var(--surface-solid)] border border-[var(--border)] text-xs font-semibold text-[var(--text-primary)] whitespace-nowrap transition-colors cursor-pointer shrink-0 shadow-xs active:scale-95"
+              title="Check advisor license & SEBI registration"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-[var(--text-primary)]" />
+              <span>{locale === "hi" ? "सलाहकार सत्यापन ↓" : "Verify Advisor License ↓"}</span>
+            </button>
+          )}
         </div>
 
         {/* Segmented Pill Tabs (Flowfi style, 44px tall, full width, 2 tabs) */}
@@ -2640,7 +2642,9 @@ Source: VERA Fraud Intelligence Platform`;
       )}
 
       {/* ── SEBI PERSONNEL & ENTITY VERIFICATION MODULE ──────────────────────── */}
-      <SebiPersonnelVerifier locale={locale} />
+      {composerTab === "TEXT" && (
+        <SebiPersonnelVerifier locale={locale} />
+      )}
 
       {/* ── DEDICATED FORENSIC AUDIO TRANSCRIPTION WINDOW (POPUP MODAL) ────── */}
       {isTranscriptModalOpen && verdict && verdict.videoTranscript && (
