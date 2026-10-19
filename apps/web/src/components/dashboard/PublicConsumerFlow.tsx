@@ -1279,7 +1279,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--nav-track)] hover:bg-[var(--surface-solid)] border border-[var(--border)] text-xs font-semibold text-[var(--text-primary)] whitespace-nowrap transition-colors cursor-pointer shrink-0 shadow-xs active:scale-95"
             title="Check advisor license & SEBI registration"
           >
-            <UserCheck className="w-3.5 h-3.5 text-[var(--navy-1)] dark:text-[var(--accent)]" />
+            <UserCheck className="w-3.5 h-3.5 text-[var(--text-primary)]" />
             <span>{locale === "hi" ? "सलाहकार सत्यापन ↓" : "Verify Advisor License ↓"}</span>
           </button>
         </div>
