@@ -26,6 +26,7 @@ build/
 out/
 .turbo/
 .vercel/
+*.traineddata
 
 # Environment and secrets (CRITICAL: Architecture Rule 11)
 .env

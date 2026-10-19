@@ -17,6 +17,7 @@ import {
   Fingerprint,
 } from "lucide-react";
 import { SuspiciousIndicator } from "@vera/contracts";
+import { generateInvestigationPdf } from "@/lib/pdfReportGenerator";
 
 export interface ForensicReportData {
   investigation_id: string;
@@ -61,6 +62,35 @@ export function FinalReportView({
     setTimeout(() => setCopied(false), 2200);
   };
 
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const handleDownloadPdf = () => {
+    try {
+      setPdfGenerating(true);
+      generateInvestigationPdf({
+        reportId: report.investigation_id,
+        title: "Forensic Case Dossier & Evidentiary Report",
+        riskTier: report.risk_level,
+        score: report.risk_score,
+        executiveSummary: report.executive_summary,
+        inference:
+          `Forensic Determination Rationale (Risk Score: ${report.risk_score}/100):\n` +
+          `Investigation establishes that the subject warrants a ${report.risk_level} risk determination based on ` +
+          `statutory multi-engine evidence analysis. Evaluated against SEBI regulatory circulars and algorithmic deception patterns. ` +
+          `Entities promising guaranteed yields or operating without verified licenses violate statutory securities norms.`,
+        highlightedReasons: report.suspicious_indicators.map((s) =>
+          typeof s === "string" ? s : s.description || `${s.signal_type}: weight ${s.weight}`
+        ),
+        recommendedActions: report.recommended_actions,
+        generatedAt: report.generated_at,
+        unverifiedItems: report.missing_evidence,
+      });
+    } catch (err) {
+      alert("Failed to download PDF report. Please try again.");
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
+
   const isCritical = report.risk_level === "CRITICAL" || report.risk_score >= 70;
   const isHigh = report.risk_level === "HIGH" || (report.risk_score >= 45 && report.risk_score < 70);
 
@@ -89,6 +119,15 @@ export function FinalReportView({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={handleDownloadPdf}
+            disabled={pdfGenerating}
+            className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all duration-200 flex items-center gap-1.5 shadow-sm text-xs cursor-pointer disabled:opacity-50"
+            title="Download PDF Report"
+          >
+            <Download className="w-3.5 h-3.5 text-white" />
+            <span>{pdfGenerating ? "Generating PDF..." : "Download PDF Report"}</span>
+          </button>
           <button
             onClick={handleCopySummary}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border border-stone-300 font-medium transition-all duration-200 flex items-center gap-1.5 shadow-sm text-xs"
