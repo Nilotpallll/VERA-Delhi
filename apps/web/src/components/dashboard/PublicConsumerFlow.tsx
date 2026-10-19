@@ -20,6 +20,7 @@ import {
   Zap,
   Activity,
   ShieldCheck,
+  UserCheck,
   Cpu,
   Info,
   Play,
@@ -37,6 +38,7 @@ import {
   Radio,
 } from "lucide-react";
 import { translations, Locale } from "@/lib/i18n";
+import { SebiPersonnelVerifier } from "./SebiPersonnelVerifier";
 
 interface PublicConsumerFlowProps {
   locale: Locale;
@@ -1252,20 +1254,34 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       {/* ── COMPOSER CARD (760w, radius 28, glass, padding 24) ──────────────── */}
       <div className="vera-composer text-left relative z-10">
         {/* Header Row: Shield Tile 40px + VERA Fraud Screening 16px w600 */}
-        <div className="flex items-start gap-3.5 mb-5">
-          <div className="w-10 h-10 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)] flex items-center justify-center text-[var(--navy-1)] dark:text-[var(--accent)] flex-shrink-0 shadow-sm">
-            <ShieldCheck className="w-5 h-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)] flex items-center justify-center text-[var(--navy-1)] dark:text-[var(--accent)] flex-shrink-0 shadow-sm">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
+                {locale === "hi" ? t.title : "VERA Fraud Screening"}
+              </h2>
+              <p className="text-sm text-[var(--text-muted)] font-normal mt-0.5 leading-relaxed">
+                {locale === "hi"
+                  ? t.subtitle
+                  : "Verify investment solicitations, suspicious trading links, and unverified brokers against SEBI regulations."}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
-              {locale === "hi" ? t.title : "VERA Fraud Screening"}
-            </h2>
-            <p className="text-sm text-[var(--text-muted)] font-normal mt-0.5 leading-relaxed">
-              {locale === "hi"
-                ? t.subtitle
-                : "Verify investment solicitations, suspicious trading links, and unverified brokers against SEBI regulations."}
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.getElementById("vera-sebi-verifier");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--nav-track)] hover:bg-[var(--surface-solid)] border border-[var(--border)] text-xs font-semibold text-[var(--text-primary)] whitespace-nowrap transition-colors cursor-pointer shrink-0 shadow-xs active:scale-95"
+            title="Check advisor license & SEBI registration"
+          >
+            <UserCheck className="w-3.5 h-3.5 text-[var(--navy-1)] dark:text-[var(--accent)]" />
+            <span>{locale === "hi" ? "सलाहकार सत्यापन ↓" : "Verify Advisor License ↓"}</span>
+          </button>
         </div>
 
         {/* Segmented Pill Tabs (Flowfi style, 44px tall, full width, 2 tabs) */}
@@ -2640,6 +2656,9 @@ Source: VERA Fraud Intelligence Platform`;
           </div>
         </div>
       )}
+
+      {/* ── SEBI PERSONNEL & ENTITY VERIFICATION MODULE ──────────────────────── */}
+      <SebiPersonnelVerifier locale={locale} />
 
       {/* ── DEDICATED FORENSIC AUDIO TRANSCRIPTION WINDOW (POPUP MODAL) ────── */}
       {isTranscriptModalOpen && verdict && verdict.videoTranscript && (

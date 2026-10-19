@@ -148,6 +148,7 @@ function normalizeRegistryName(value: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const action = request.nextUrl.searchParams.get("action")?.trim() ?? "";
   const qParam = request.nextUrl.searchParams.get("q")?.trim() ?? "";
   let rawRegistration = request.nextUrl.searchParams.get("registrationNumber") ?? "";
   let rawName = request.nextUrl.searchParams.get("name")?.trim() ?? "";
@@ -163,7 +164,7 @@ export async function GET(request: NextRequest) {
   const requestedType = request.nextUrl.searchParams.get("intermediaryType") ?? "";
   const match = registrationNumber.match(/^(INA|INH|INP|INZ)[0-9A-Z]{4,10}$/);
 
-  if (!match && !rawName) {
+  if (!match && !rawName && action !== "roles") {
     return NextResponse.json({ state: "OUT_OF_SCOPE" }, { headers: { "Cache-Control": "no-store" } });
   }
 
@@ -187,6 +188,26 @@ export async function GET(request: NextRequest) {
       }
     }
     const snapshot: RegistrySnapshot = snapshotText ? JSON.parse(snapshotText) : FALLBACK_SNAPSHOT;
+
+    if (action === "roles") {
+      const allRecords = Object.values(snapshot.records).flatMap((record) =>
+        Array.isArray(record) ? record : [record]
+      );
+      const roleCounts: Record<string, number> = {};
+      for (const rec of allRecords) {
+        const type = rec.intermediaryType || "Unclassified";
+        roleCounts[type] = (roleCounts[type] || 0) + 1;
+      }
+      return NextResponse.json(
+        {
+          state: "OK",
+          asOf: snapshot.asOf,
+          totalRecords: allRecords.length,
+          roleCounts,
+        },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    }
 
     if (!match) {
       const normalizedQuery = normalizeRegistryName(rawName);
@@ -260,12 +281,27 @@ export async function GET(request: NextRequest) {
     }
 
     const records = Array.isArray(stored) ? stored : [stored];
+    const nameQueryNorm = rawName ? normalizeRegistryName(rawName) : "";
+    let nameMatchStatus: "MATCHED" | "MISMATCH" | "NOT_CHECKED" = "NOT_CHECKED";
+    if (nameQueryNorm) {
+      const isMatch = records.some((record) => {
+        const entNorm = record.entityName ? normalizeRegistryName(record.entityName) : "";
+        const contNorm = record.contactPerson ? normalizeRegistryName(record.contactPerson) : "";
+        return (
+          (entNorm && (entNorm.includes(nameQueryNorm) || nameQueryNorm.includes(entNorm))) ||
+          (contNorm && (contNorm.includes(nameQueryNorm) || nameQueryNorm.includes(contNorm)))
+        );
+      });
+      nameMatchStatus = isMatch ? "MATCHED" : "MISMATCH";
+    }
+
     if (records.length > 1) {
       return NextResponse.json(
         {
           state: "AMBIGUOUS",
           coveredType: intermediaryType,
           asOf: snapshot.asOf,
+          nameMatchStatus,
           records: records.map((record) => ({
             registrationNumber: record.registrationNumber,
             entityName: record.entityName,
@@ -284,6 +320,7 @@ export async function GET(request: NextRequest) {
         state: "FOUND",
         coveredType: intermediaryType,
         asOf: snapshot.asOf,
+        nameMatchStatus,
         records: records.map((record) => ({
           registrationNumber: record.registrationNumber,
           entityName: record.entityName,
