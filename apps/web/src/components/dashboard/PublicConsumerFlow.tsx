@@ -1327,24 +1327,6 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-solid)]/70 p-3.5">
-                <label htmlFor="claimed-identity-name" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
-                  {locale === "hi" ? "दावा किया गया व्यक्ति / फर्म का नाम" : "Name claimed by the person or firm (optional)"}
-                </label>
-                <input
-                  id="claimed-identity-name"
-                  type="text"
-                  value={claimedIdentityName}
-                  onChange={(event) => setClaimedIdentityName(event.target.value)}
-                  placeholder={locale === "hi" ? "उदाहरण: कविता मेनन" : "Enter the exact name they claim, e.g. Kavitha Menon"}
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-subtle)] bg-[var(--input-bg)] border border-[var(--input-border)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-                />
-                <p className="mt-1.5 text-[11px] text-[var(--text-muted)]">
-                  {locale === "hi"
-                    ? "VERA इस नाम को रजिस्टर में दर्ज फर्म और संपर्क व्यक्ति से मिलाएगा।"
-                    : "VERA compares this name with the registered firm and listed contact person."}
-                </p>
-              </div>
 
               {/* Examples line */}
               <p className="text-xs text-[var(--text-muted)] italic px-1">
