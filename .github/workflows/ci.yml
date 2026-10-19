@@ -100,21 +100,21 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r apps/api/requirements.txt
-          pip install ruff==0.17.1 pytest pytest-asyncio httpx alembic psycopg2-binary asyncpg
+          pip install ruff==0.17.1 pytest pytest-asyncio httpx alembic psycopg2-binary "psycopg[binary]" asyncpg
 
       - name: Run Alembic Upgrade Head
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@127.0.0.1:5432/vera_test
+          DATABASE_URL: postgresql+psycopg2://postgres:postgrespassword@127.0.0.1:5432/vera_test
         run: alembic upgrade head
 
       - name: Run Alembic Downgrade -1
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@127.0.0.1:5432/vera_test
+          DATABASE_URL: postgresql+psycopg2://postgres:postgrespassword@127.0.0.1:5432/vera_test
         run: alembic downgrade -1
 
       - name: Run Alembic Upgrade Head (Re-apply)
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@127.0.0.1:5432/vera_test
+          DATABASE_URL: postgresql+psycopg2://postgres:postgrespassword@127.0.0.1:5432/vera_test
         run: alembic upgrade head
 
       - name: Run Full Pytest Suite against Live Postgres
