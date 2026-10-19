@@ -51,19 +51,6 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResultState | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [registryStats, setRegistryStats] = useState<{ total: number; asOf: string } | null>(null);
-
-  // Fetch live stats on mount
-  useEffect(() => {
-    fetch("/api/registry/sebi?action=roles")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.state === "OK" && data.totalRecords) {
-          setRegistryStats({ total: data.totalRecords, asOf: data.asOf || "2026-10-18" });
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   // Handle Verify Execution
   const handleVerify = async (e?: React.FormEvent) => {
@@ -122,7 +109,7 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
     // Case 1: Verified Authentic
     if (state === "FOUND" && (nameMatchStatus === "MATCHED" || nameMatchStatus === "NOT_CHECKED")) {
       return {
-        tier: "SAFE",
+        tier: "SAFE" as const,
         badge: isHi ? "सेबी पंजीकृत एवं प्रामाणिक" : "SEBI REGISTERED & AUTHENTIC",
         score: 0,
         riskLabel: isHi ? "न्यूनतम जोखिम (0/100)" : "MINIMAL RISK (0/100)",
@@ -135,7 +122,7 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
     // Case 2: License Impersonation / Name Mismatch Risk
     if (state === "FOUND" && nameMatchStatus === "MISMATCH") {
       return {
-        tier: "CRITICAL",
+        tier: "CRITICAL" as const,
         badge: isHi ? "पहचान बेमेल चेतावनी" : "LICENSE IMPERSONATION DETECTED",
         score: 96,
         riskLabel: isHi ? "गंभीर जोखिम (96/100)" : "CRITICAL RISK (96/100)",
@@ -148,7 +135,7 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
     // Case 3: Ambiguous multiple records found
     if (state === "AMBIGUOUS") {
       return {
-        tier: "SUSPICIOUS",
+        tier: "SUSPICIOUS" as const,
         badge: isHi ? "एकाधिक रिकॉर्ड - विशिष्ट पहचान आवश्यक" : "MULTIPLE MATCHES FOUND",
         score: 45,
         riskLabel: isHi ? "सावधानी (45/100)" : "CAUTION (45/100)",
@@ -160,7 +147,7 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
 
     // Case 4: Unverified / Not Found
     return {
-      tier: "HIGH_RISK",
+      tier: "HIGH_RISK" as const,
       badge: isHi ? "गैर-पंजीकृत सलाहकार अलर्ट" : "UNVERIFIED / REGULATORY RED FLAG",
       score: 92,
       riskLabel: isHi ? "उच्च जोखिम (92/100)" : "HIGH RISK (92/100)",
@@ -171,6 +158,43 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
   };
 
   const verdict = getIntegrityVerdict();
+
+  // Helper for Result Theme Colors based on Verdict Tier (matching the fraud screening module above)
+  const getTierStyles = (tier?: string) => {
+    switch (tier) {
+      case "SAFE":
+        return {
+          bannerBorder: "border-emerald-500/35",
+          bannerBg: "bg-emerald-500/5",
+          iconBg: "bg-emerald-500/10 border-emerald-500/25 text-emerald-600 dark:text-emerald-400",
+          badgeColor: "text-emerald-600 dark:text-emerald-400",
+          titleColor: "text-emerald-600 dark:text-emerald-400",
+          scoreColor: "text-emerald-600 dark:text-emerald-400",
+        };
+      case "SUSPICIOUS":
+        return {
+          bannerBorder: "border-amber-500/35",
+          bannerBg: "bg-amber-500/5",
+          iconBg: "bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-amber-400",
+          badgeColor: "text-amber-600 dark:text-amber-400",
+          titleColor: "text-amber-600 dark:text-amber-400",
+          scoreColor: "text-amber-600 dark:text-amber-400",
+        };
+      case "CRITICAL":
+      case "HIGH_RISK":
+      default:
+        return {
+          bannerBorder: "border-rose-500/35",
+          bannerBg: "bg-rose-500/5",
+          iconBg: "bg-rose-500/10 border-rose-500/25 text-rose-600 dark:text-rose-400",
+          badgeColor: "text-rose-600 dark:text-rose-400",
+          titleColor: "text-rose-600 dark:text-rose-400",
+          scoreColor: "text-rose-600 dark:text-rose-400",
+        };
+    }
+  };
+
+  const tierStyle = getTierStyles(verdict?.tier);
 
   return (
     <div
@@ -195,10 +219,10 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
           </div>
         </div>
 
-        {/* Records Count Badge - matching neutral palette */}
+        {/* Records Count Badge - 3500+ Active Records */}
         <div className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--nav-track)] border border-[var(--border)] text-[var(--text-muted)] text-xs font-mono-tabular font-medium">
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] opacity-60" />
-          <span>{registryStats ? `${registryStats.total.toLocaleString()} Active SEBI Records` : "3,760 Active SEBI Records"}</span>
+          <span>{isHi ? "3500+ सक्रिय रिकॉर्ड" : "3500+ Active Records"}</span>
         </div>
       </div>
 
@@ -311,26 +335,32 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
         </div>
       </form>
 
-      {/* ── VERIFICATION RESULT STATE (Cohesive Neutral VERA Theme) ─────────── */}
+      {/* ── VERIFICATION RESULT STATE (Risk-Tier Colored Theme) ─────────────── */}
       {verificationResult && verdict && (
         <div className="mt-6 pt-6 border-t border-[var(--border)] animate-fade-in space-y-4 text-left">
-          {/* Main Verdict Banner - Neutral Glass Theme */}
-          <div className="rounded-2xl p-5 border border-[var(--border)] bg-[var(--surface-solid)]/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Main Verdict Banner - Colored by Risk Tier matching above module */}
+          <div
+            className={`rounded-2xl p-5 border ${tierStyle.bannerBorder} ${tierStyle.bannerBg} bg-[var(--surface-solid)]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-sm`}
+          >
             <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)] flex items-center justify-center flex-shrink-0 text-[var(--text-primary)] shadow-sm">
+              <div
+                className={`w-12 h-12 rounded-2xl border flex items-center justify-center flex-shrink-0 shadow-sm ${tierStyle.iconBg}`}
+              >
                 {verdict.tier === "SAFE" ? (
-                  <ShieldCheck className="w-5 h-5 text-[var(--text-primary)]" />
+                  <ShieldCheck className="w-6 h-6" />
                 ) : verdict.tier === "CRITICAL" || verdict.tier === "HIGH_RISK" ? (
-                  <ShieldAlert className="w-5 h-5 text-[var(--text-primary)]" />
+                  <ShieldAlert className="w-6 h-6" />
                 ) : (
-                  <AlertTriangle className="w-5 h-5 text-[var(--text-primary)]" />
+                  <AlertTriangle className="w-6 h-6" />
                 )}
               </div>
               <div>
-                <span className="text-[11px] font-mono-tabular font-bold uppercase tracking-wider text-[var(--text-muted)] block">
+                <span
+                  className={`text-[11px] font-mono-tabular font-bold uppercase tracking-wider block ${tierStyle.badgeColor}`}
+                >
                   {verdict.badge}
                 </span>
-                <h3 className="text-base font-bold tracking-tight mt-0.5 text-[var(--text-primary)]">
+                <h3 className={`text-base font-bold tracking-tight mt-0.5 ${tierStyle.titleColor}`}>
                   {verdict.riskLabel}
                 </h3>
                 <p className="text-xs text-[var(--text-muted)] mt-1 max-w-xl leading-relaxed">
@@ -341,7 +371,7 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
 
             {/* Score Pill */}
             <div className="self-end sm:self-center flex flex-col items-end flex-shrink-0">
-              <span className="text-2xl font-extrabold font-mono-tabular text-[var(--text-primary)]">
+              <span className={`text-2xl font-extrabold font-mono-tabular ${tierStyle.scoreColor}`}>
                 {verdict.score}/100
               </span>
               <span className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-wider">
@@ -360,7 +390,11 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
               {verificationResult.records.map((rec, idx) => (
                 <div
                   key={idx}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-solid)]/70 p-4 sm:p-5 space-y-3 shadow-xs"
+                  className={`rounded-2xl border ${
+                    verificationResult.nameMatchStatus === "MISMATCH"
+                      ? "border-rose-500/30 bg-[var(--surface-solid)]/80"
+                      : "border-emerald-500/30 bg-[var(--surface-solid)]/80"
+                  } p-4 sm:p-5 space-y-3 shadow-xs`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
                     <div>
@@ -383,7 +417,7 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
                         title="Copy Registration Number"
                       >
                         {copiedId === rec.registrationNumber ? (
-                          <Check className="w-3.5 h-3.5 text-[var(--text-primary)]" />
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
@@ -415,13 +449,13 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
                         {isHi ? "नाम मिलान स्थिति" : "Identity Verification"}:
                       </span>
                       {verificationResult.nameMatchStatus === "MATCHED" ? (
-                        <span className="text-[var(--text-primary)] font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span className="text-emerald-500 font-bold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                           {isHi ? "नाम सत्यापित" : "Name Matched"}
                         </span>
                       ) : verificationResult.nameMatchStatus === "MISMATCH" ? (
-                        <span className="text-[var(--text-primary)] font-semibold flex items-center gap-1">
-                          <XCircle className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                        <span className="text-rose-500 font-bold flex items-center gap-1">
+                          <XCircle className="w-3.5 h-3.5 text-rose-500" />
                           {isHi ? "नाम बेमेल" : "Name Mismatch"}
                         </span>
                       ) : (
@@ -434,16 +468,28 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
 
                   {/* Impersonation Warning Notice */}
                   {verificationResult.nameMatchStatus === "MISMATCH" && (
-                    <div className="p-3 rounded-xl bg-[var(--nav-track)] border border-[var(--border)] text-xs text-[var(--text-primary)] space-y-1">
-                      <strong className="block font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-[var(--text-muted)]" />
-                        <span>{isHi ? "लाइसेंस चोरी का संदेह!" : "Potential License Number Theft!"}</span>
+                    <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-xs space-y-1">
+                      <strong className="block font-bold text-rose-500 flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                        <span>{isHi ? "लाइसेंस चोरी का गंभीर संदेह!" : "Potential License Number Theft!"}</span>
                       </strong>
-                      <p className="text-[var(--text-muted)] leading-relaxed">
+                      <p className="text-rose-700 dark:text-rose-200/90 leading-relaxed">
                         {isHi
                           ? `आपने "${verificationResult.queriedName}" नाम की जाँच की, लेकिन सेबी के आधिकारिक रिकॉर्ड के अनुसार पंजीकरण संख्या ${rec.registrationNumber} केवल "${rec.entityName}" (संपर्क: ${rec.contactPerson}) के नाम पर है।`
                           : `You searched for "${verificationResult.queriedName}", but SEBI registration ${rec.registrationNumber} is officially issued to "${rec.entityName}" (Principal: ${rec.contactPerson}). Scammers frequently quote legitimate RIA numbers to deceive victims on WhatsApp and Telegram.`}
                       </p>
+                    </div>
+                  )}
+
+                  {/* Authentic Match Notice */}
+                  {verificationResult.nameMatchStatus === "MATCHED" && (
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <span>
+                        {isHi
+                          ? `आधिकारिक सेबी रिकॉर्ड में नाम और पंजीकरण संख्या का पूर्ण मिलान हुआ है।`
+                          : `Active license & identity verified against official SEBI Intermediary Registry records.`}
+                      </span>
                     </div>
                   )}
 
@@ -456,7 +502,7 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
                       href="https://www.sebi.gov.in/sebiweb/other/OtherAction.do?doRecognisedFpi=yes&intmId=13"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[var(--text-primary)] hover:text-[var(--text-muted)] font-semibold inline-flex items-center gap-1 underline underline-offset-2"
+                      className="text-[var(--navy-1)] dark:text-[var(--accent)] font-semibold inline-flex items-center gap-1 hover:underline"
                     >
                       <span>{isHi ? "सेबी पोर्टल पर देखें" : "View on SEBI.gov.in"}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -467,17 +513,17 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
             </div>
           ) : (
             /* Unverified / Not Found Flag List */
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-solid)]/70 p-4 sm:p-5 space-y-3">
-              <h4 className="text-xs font-mono uppercase font-bold text-[var(--text-primary)] tracking-wider flex items-center gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4 sm:p-5 space-y-3">
+              <h4 className="text-xs font-mono uppercase font-bold text-rose-500 tracking-wider flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
                 <span>{isHi ? "नियामक चेतावनी" : "REGULATORY RISK FLAGS"}</span>
               </h4>
 
               <ul className="space-y-2 text-xs text-[var(--text-primary)]">
                 <li className="flex items-start gap-2">
-                  <span className="text-[var(--text-muted)] font-bold">•</span>
+                  <span className="text-rose-500 font-bold">•</span>
                   <span>
-                    <strong>{isHi ? "कोई सक्रिय पंजीकरण नहीं मिला" : "No Active Registration Found"}:</strong>{" "}
+                    <strong className="text-rose-600 dark:text-rose-300">{isHi ? "कोई सक्रिय पंजीकरण नहीं मिला" : "No Active Registration Found"}:</strong>{" "}
                     <span className="text-[var(--text-muted)]">
                       {isHi
                         ? `सेबी मास्टर डेटाबेस में "${inaNumber || personnelName}" के लिए कोई सक्रिय लाइसेंस दर्ज नहीं है।`
@@ -487,9 +533,9 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
                 </li>
 
                 <li className="flex items-start gap-2">
-                  <span className="text-[var(--text-muted)] font-bold">•</span>
+                  <span className="text-rose-500 font-bold">•</span>
                   <span>
-                    <strong>{isHi ? "सेबी अधिनियम की धारा 12 का उल्लंघन" : "Violation of SEBI Act Section 12(1)"}:</strong>{" "}
+                    <strong className="text-rose-600 dark:text-rose-300">{isHi ? "सेबी अधिनियम की धारा 12 का उल्लंघन" : "Violation of SEBI Act Section 12(1)"}:</strong>{" "}
                     <span className="text-[var(--text-muted)]">
                       {isHi
                         ? "बिना सेबी पंजीकरण के किसी भी प्रकार की वित्तीय सलाह या स्टॉक टिप्स देना कानूनी अपराध है।"
@@ -499,9 +545,9 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
                 </li>
 
                 <li className="flex items-start gap-2">
-                  <span className="text-[var(--text-muted)] font-bold">•</span>
+                  <span className="text-rose-500 font-bold">•</span>
                   <span>
-                    <strong>{isHi ? "शून्य निवेशक संरक्षण" : "Zero Statutory Grievance Redressal"}:</strong>{" "}
+                    <strong className="text-rose-600 dark:text-rose-300">{isHi ? "शून्य निवेशक संरक्षण" : "Zero Statutory Grievance Redressal"}:</strong>{" "}
                     <span className="text-[var(--text-muted)]">
                       {isHi
                         ? "अनधिकृत संस्थाओं को दिए गए पैसे सेबी स्कोर्स (SCORES) के दायरे में नहीं आते।"
@@ -511,16 +557,16 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
                 </li>
               </ul>
 
-              <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-[var(--border)] text-xs text-[var(--text-muted)]">
-                <span>
+              <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-rose-500/20 text-xs text-[var(--text-muted)]">
+                <span className="text-rose-600 dark:text-rose-300 font-medium">
                   {isHi ? "अनुशंसा: इस व्यक्ति या संस्था को कोई धनराशि न भेजें।" : "Recommended Action: Do not transfer funds or execute trades via this personnel."}
                 </span>
                 <a
                   href="tel:1930"
-                  className="font-semibold inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--nav-track)] hover:bg-[var(--surface-solid)] border border-[var(--border)] text-[var(--text-primary)] transition-colors self-start sm:self-auto"
+                  className="font-bold inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white transition-all shadow-sm shadow-rose-600/30 self-start sm:self-auto"
                 >
-                  <PhoneCall className="w-3 h-3" />
-                  <span>{isHi ? "हेल्पलाइन 1930" : "Dial Helpline 1930"}</span>
+                  <PhoneCall className="w-3.5 h-3.5" />
+                  <span>{isHi ? "हेल्पलाइन 1930" : "Call 1930 Helpline"}</span>
                 </a>
               </div>
             </div>
