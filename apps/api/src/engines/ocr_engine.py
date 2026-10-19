@@ -6,7 +6,9 @@ Architecture Rule 9: Analyzer failure must never be interpreted as safety.
 Architecture Rule 12: Every model/analyzer exposes version metadata.
 """
 
+import base64
 import hashlib
+import io
 import time
 from datetime import UTC, datetime
 from typing import Any
@@ -59,21 +61,52 @@ class PaddleOCREngine(BaseAnalyzer):
         raw_bytes = getattr(evidence, "content_bytes", None)
         text_payload = getattr(evidence, "content_payload", None)
 
-        # In production if paddleocr is installed:
         try:
+            if raw_bytes is None and isinstance(text_payload, str):
+                encoded_payload = text_payload.split(",", 1)[-1] if text_payload.startswith("data:") else text_payload
+                raw_bytes = base64.b64decode(encoded_payload, validate=True)
+
+            if not isinstance(raw_bytes, bytes) or not raw_bytes:
+                raise ValueError("Image evidence does not contain decodable image bytes.")
+
+            import numpy as np
+            from PIL import Image
+
+            with Image.open(io.BytesIO(raw_bytes)) as image_file:
+                image = np.asarray(image_file.convert("RGB"))[:, :, ::-1].copy()
+
             if self._ocr is None:
                 from paddleocr import PaddleOCR
-                self._ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+                try:
+                    self._ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+                except (TypeError, ValueError):
+                    try:
+                        self._ocr = PaddleOCR(use_angle_cls=True, lang="en")
+                    except (TypeError, ValueError):
+                        self._ocr = PaddleOCR(lang="en")
 
-            # If real image bytes or path provided
-            ocr_output = self._ocr.ocr(raw_bytes or text_payload, cls=True)
+            try:
+                ocr_output = self._ocr.ocr(image, cls=True)
+            except (TypeError, ValueError):
+                ocr_output = self._ocr.ocr(image)
             lines = []
             extracted_text_parts = []
             if ocr_output and ocr_output[0]:
                 for line in ocr_output[0]:
-                    box, (txt, conf) = line
-                    lines.append({"text": txt, "confidence": round(conf, 4), "polygon": box})
-                    extracted_text_parts.append(txt)
+                    if isinstance(line, (list, tuple)) and len(line) == 2:
+                        box, text_info = line
+                        if isinstance(text_info, (list, tuple)) and len(text_info) == 2:
+                            txt, conf = text_info
+                        else:
+                            txt, conf = str(text_info), 0.9
+                        lines.append({"text": str(txt), "confidence": round(float(conf), 4), "polygon": box})
+                        extracted_text_parts.append(str(txt))
+                    elif isinstance(line, dict):
+                        txt = line.get("text", line.get("rec_text", ""))
+                        conf = float(line.get("confidence", line.get("rec_score", 0.9)))
+                        box = line.get("polygon", line.get("dt_polys", []))
+                        lines.append({"text": str(txt), "confidence": round(conf, 4), "polygon": box})
+                        extracted_text_parts.append(str(txt))
 
             full_text = " ".join(extracted_text_parts)
             duration_ms = (time.perf_counter() - start_t) * 1000.0
@@ -82,17 +115,19 @@ class PaddleOCREngine(BaseAnalyzer):
                 "lines": lines,
                 "duration_ms": duration_ms,
                 "engine": "paddleocr-native",
+                "is_fallback": False,
             }, 0.05
-        except Exception:
-            # Deterministic OCR fallback / test harness (handles text simulation, receipts, certificates)
-            fallback_text = str(text_payload or "SEBI CERTIFICATE OF REGISTRATION INA000012345")
+        except Exception as exc:
+            # Never substitute invented OCR text when image decoding or OCR fails.
             duration_ms = (time.perf_counter() - start_t) * 1000.0
             return {
-                "full_text": fallback_text,
-                "lines": [{"text": fallback_text, "confidence": 0.95, "polygon": [[0,0],[100,0],[100,20],[0,20]]}],
+                "full_text": "",
+                "lines": [],
                 "duration_ms": duration_ms,
-                "engine": "paddleocr-simulated",
-            }, 0.1
+                "engine": "unavailable",
+                "is_fallback": True,
+                "error_type": type(exc).__name__,
+            }, 1.0
 
     def normalize_to_evidence(
         self,

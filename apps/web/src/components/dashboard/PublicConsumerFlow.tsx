@@ -54,9 +54,17 @@ interface ScanVerdict {
     claimedRegNumber?: string;
     hasRegistrationClaim: boolean;
     hasNameClaim: boolean;
-    status: "VERIFIED" | "NOT_VERIFIED" | "MISSING_REGISTRATION" | "FICTITIOUS_ID";
+    status: "VERIFIED" | "NOT_VERIFIED" | "MISSING_REGISTRATION" | "FICTITIOUS_ID" | "REGISTRY_UNAVAILABLE" | "REGISTRY_NOT_COVERED" | "REGISTRY_AMBIGUOUS" | "REGISTRY_NAME_NOT_FOUND";
     statusLabel: string;
     details: string;
+    registeredEntityName?: string;
+    registeredContactPerson?: string;
+    registeredRegNumber?: string;
+    intermediaryType?: string;
+    snapshotDate?: string;
+    validityFrom?: string;
+    validityTo?: string;
+    identityCheck?: "MATCHED_REGISTERED_NAME" | "NAME_MISMATCH" | "NAME_NOT_PROVIDED";
     regulatoryCitation: string;
     officialRegistryUrl: string;
   };
@@ -100,6 +108,17 @@ const VERIFIED_SEBI_INTERMEDIARIES: Record<
 function getApiBase(): string {
   // Always use same-origin relative path so requests route through Next.js API route seamlessly
   return "";
+}
+
+function normalizeRegistryName(value: string | undefined): string {
+  return (value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .replace(/^(mr|mrs|ms|miss|dr)\.?\s+/, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 const SAMPLE_SCAM_PROMPTS = [
@@ -172,6 +191,7 @@ function renderHighlightedSpeechTranscript(transcript: string, phrases: string[]
 export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const t = translations[locale];
   const [inputText, setInputText] = useState("");
+  const [claimedIdentityName, setClaimedIdentityName] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [scanningPhase, setScanningPhase] = useState("Analyzing message text...");
   const [verdict, setVerdict] = useState<ScanVerdict | null>(null);
@@ -189,6 +209,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const [copiedTranscript, setCopiedTranscript] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isInconclusive = verdict?.riskTier === "INCONCLUSIVE";
+  const identityUnconfirmed = verdict?.advisorVerification?.identityCheck === "NAME_NOT_PROVIDED";
+  const normalizedScanPhase = scanningPhase.toLowerCase();
+  const activeScanStage = /sebi|advisor|adviser|registration|caution|regulatory/.test(normalizedScanPhase)
+    ? 2
+    : /video|frame|face|audio|speech|transcrib|dialogue/.test(normalizedScanPhase)
+    ? 1
+    : 0;
 
   const handleCopyTranscript = (text: string) => {
     if (!text) return;
@@ -300,6 +328,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedFile(null);
     setUploadedB64(null);
     setInputText("");
+    setClaimedIdentityName("");
     setUserSpokenText("");
     setUploadError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -308,6 +337,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const handleSelectSample = (promptText: string) => {
     if (uploadedB64) clearFile();
     setInputText(promptText);
+    setClaimedIdentityName("");
     setVerdict(null);
   };
 
@@ -594,20 +624,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           verifiedItems: [],
           unverifiedItems: ["Video content", "Facial manipulation status"],
           isDeepfakeResult: true,
-          videoTranscript:
-            locale === "hi"
-              ? "वीडियो विश्लेषण प्रक्रिया में कुछ देरी हो रही है। कृपया सुनिश्चित करें कि वीडियो 50 MB से कम का है और पुनः प्रयास करें।"
-              : "Video analysis service experienced a processing timeout. Audio stream may be silent or encoded in an unusual format.",
-          transcriptSegments: [
-            {
-              start: 0,
-              end: 4.0,
-              text:
-                locale === "hi"
-                  ? "ऑडियो स्ट्रीम से कोई संवाद नहीं निकाला जा सका।"
-                  : "No spoken dialogue could be extracted from audio stream within timeout.",
-            },
-          ],
+          videoTranscript: "",
+          transcriptSegments: [],
           visualManipulationDetected: false,
           visualVerdictLabel: "Inconclusive / Service Timeout",
           advisorySignalsDetected: false,
@@ -643,10 +661,40 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     const textToScan = inputText.trim();
     const lower = textToScan.toLowerCase();
 
-    // 1. SEBI Registration ID Pattern (12 chars: INZ, INA, INH, etc.)
-    const sebiRegPattern = /\b(IN[A-Z]{1,3}\d{6,10})\b/i;
+    // 1. SEBI Registration ID Pattern (matches INA, INH, INP, INZ with 4-10 digits)
+    const sebiRegPattern = /\b(IN[A-Z]{1,3}\d{4,10})\b/i;
     const regIdMatch = textToScan.match(sebiRegPattern);
     const claimedRegId = regIdMatch ? regIdMatch[1].toUpperCase() : null;
+
+    let registryLookup: {
+      state: "FOUND" | "NOT_FOUND" | "OUT_OF_SCOPE" | "UNAVAILABLE" | "AMBIGUOUS" | "NAME_NOT_FOUND";
+      coveredType?: string;
+      asOf?: string;
+      lookupBy?: "EXACT_NAME";
+      records?: Array<{
+        registrationNumber: string;
+        entityName: string;
+        contactPerson: string;
+        intermediaryType: string;
+        validFrom: string;
+        validTo: string;
+      }>;
+    } | null = null;
+    if (claimedRegId) {
+      try {
+        const response = await fetch(
+          `/api/registry/sebi?registrationNumber=${encodeURIComponent(claimedRegId)}`,
+          { cache: "no-store" }
+        );
+        registryLookup = await response.json();
+        if (!response.ok && registryLookup?.state !== "UNAVAILABLE") {
+          registryLookup = { state: "UNAVAILABLE" };
+        }
+      } catch {
+        registryLookup = { state: "UNAVAILABLE" };
+      }
+    }
+    let datasetRecord = registryLookup?.records?.length === 1 ? registryLookup.records[0] : undefined;
 
     // Check for explicit SEBI claims
     const sebiClaimMatch =
@@ -655,15 +703,25 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       /\b(?:sebi|sabi)\s+(?:investment\s+)?(?:advisor|adviser|analyst|broker)\b/i.test(textToScan);
 
     // Extract claimed advisor name or persona
-    let claimedAdvisorName: string | undefined = undefined;
+    let claimedAdvisorName: string | undefined;
     const nameIntroMatch = textToScan.match(
       /(?:my\s+name\s+is|i\s+am|this\s+is)\s+(?:mr\.?|ms\.?|dr\.?)?\s*([A-Za-z]{2,20}(?:\s+[A-Za-z]{2,20}){1,3})/i
     );
+    let extractedMessageName: string | undefined;
     if (nameIntroMatch) {
       const cand = nameIntroMatch[1].trim();
       if (!/^(a\s+|an\s+|the\s+)?(sebi|sabi|registered|advisor|adviser|analyst|broker|trader|financial|certified|official)/i.test(cand)) {
-        claimedAdvisorName = cand;
+        extractedMessageName = cand;
       }
+    }
+    claimedAdvisorName = claimedIdentityName.trim() || extractedMessageName;
+    const manualNameConflictsWithMessage = Boolean(
+      claimedIdentityName.trim() && extractedMessageName &&
+        normalizeRegistryName(claimedIdentityName) !== normalizeRegistryName(extractedMessageName)
+    );
+    if (!claimedAdvisorName) {
+      const recordNames = [datasetRecord?.contactPerson, datasetRecord?.entityName].filter(Boolean) as string[];
+      claimedAdvisorName = recordNames.find((name) => lower.includes(name.toLowerCase()));
     }
     if (!claimedAdvisorName) {
       for (const data of Object.values(VERIFIED_SEBI_INTERMEDIARIES)) {
@@ -673,6 +731,60 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         }
       }
     }
+    if (!claimedAdvisorName && !claimedRegId) {
+      const candidateClean = textToScan
+        .replace(/^(check|verify|is|advisor|adviser|name:?|persona:?)\s+/i, "")
+        .replace(/[,\.\?!]+$/, "")
+        .trim();
+      if (candidateClean.length >= 3 && candidateClean.length <= 60 && !candidateClean.includes("\n")) {
+        claimedAdvisorName = candidateClean;
+      }
+    }
+
+    const claimedRoleText = lower.match(/\b(portfolio\s+manager|research\s+analyst|investment\s+advis(?:e|o)r)\b/);
+    const claimedRole = claimedRoleText?.[1].replace(/\s+/g, " ").replace("advisor", "adviser");
+    if (!claimedRegId && claimedAdvisorName) {
+      try {
+        const params = new URLSearchParams({ name: claimedAdvisorName });
+        const expectedType = /portfolio\s+manager/i.test(textToScan)
+          ? "Portfolio Manager"
+          : /research\s+analyst/i.test(textToScan)
+          ? "Research Analyst"
+          : /investment\s+advis(?:e|o)r/i.test(textToScan)
+          ? "Investment Adviser"
+          : "";
+        if (expectedType) params.set("intermediaryType", expectedType);
+        const response = await fetch(`/api/registry/sebi?${params.toString()}`, { cache: "no-store" });
+        registryLookup = await response.json();
+        if (!response.ok && registryLookup?.state !== "UNAVAILABLE") registryLookup = { state: "UNAVAILABLE" };
+        datasetRecord = registryLookup?.records?.length === 1 ? registryLookup.records[0] : undefined;
+      } catch {
+        registryLookup = { state: "UNAVAILABLE" };
+      }
+    }
+
+    if (datasetRecord && !claimedAdvisorName) {
+      claimedAdvisorName = datasetRecord.contactPerson || datasetRecord.entityName;
+    }
+    const normalizedClaimedName = normalizeRegistryName(claimedAdvisorName);
+
+    const claimedNameMatchesDataset = Boolean(
+      datasetRecord &&
+        normalizedClaimedName &&
+        [datasetRecord.entityName, datasetRecord.contactPerson]
+          .some((name) => {
+            const n = normalizeRegistryName(name);
+            return n === normalizedClaimedName || n.includes(normalizedClaimedName) || normalizedClaimedName.includes(n);
+          })
+    );
+    const roleMatchesDataset = Boolean(
+      !claimedRole || !datasetRecord || normalizeRegistryName(claimedRole) === normalizeRegistryName(datasetRecord.intermediaryType)
+    );
+    const identityCheck: NonNullable<ScanVerdict["advisorVerification"]>["identityCheck"] = !claimedAdvisorName
+      ? "NAME_NOT_PROVIDED"
+      : claimedNameMatchesDataset && roleMatchesDataset
+      ? "MATCHED_REGISTERED_NAME"
+      : "NAME_MISMATCH";
 
     // 2. Assured Returns / Profit Guarantees Detection (CIR/2023/123)
     const percentReturnMatch = textToScan.match(
@@ -722,19 +834,78 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     const hasSebiOrAdvisorMention = Boolean(sebiClaimMatch || claimedRegId || claimedAdvisorName || lower.includes("advisor") || lower.includes("sebi"));
 
     if (hasSebiOrAdvisorMention) {
-      let status: "VERIFIED" | "NOT_VERIFIED" | "MISSING_REGISTRATION" | "FICTITIOUS_ID" = "NOT_VERIFIED";
+      let status: NonNullable<ScanVerdict["advisorVerification"]>["status"] = "NOT_VERIFIED";
       let statusLabel = "";
       let details = "";
-      const regulatoryCitation = "SEBI (Investment Advisers) Regulations, 2013 — Reg 13";
+      const regulatoryCitation = datasetRecord
+        ? `${datasetRecord.intermediaryType} Registry Snapshot — ${registryLookup?.asOf || "date unavailable"}`
+        : claimedRegId
+        ? "SEBI Intermediary Registration Check"
+        : "SEBI (Investment Advisers) Regulations, 2013 — Reg 13";
 
-      if (!claimedRegId && (sebiClaimMatch || lower.includes("sebi registered"))) {
+      if (!claimedRegId && registryLookup?.state === "NAME_NOT_FOUND") {
+        status = "REGISTRY_NAME_NOT_FOUND";
+        statusLabel = locale === "hi" ? "नाम का सटीक मिलान नहीं मिला" : "NO EXACT NAME MATCH IN SNAPSHOT";
+        details = `No exact match for '${claimedAdvisorName}' was found in the supplied ${registryLookup.coveredType || "SEBI"} snapshot dated ${registryLookup.asOf || "unknown date"}. Name-only lookup can miss spelling or formatting differences and is not proof that the person is unregistered; provide the SEBI registration ID for a stronger comparison.`;
+      } else if (!claimedRegId && registryLookup?.state === "AMBIGUOUS") {
+        status = "REGISTRY_AMBIGUOUS";
+        statusLabel = locale === "hi" ? "कई मिलते-जुलते रिकॉर्ड मिले" : "MULTIPLE EXACT NAME MATCHES";
+        details = `The supplied ${registryLookup.coveredType || "SEBI"} snapshot contains multiple exact matches for '${claimedAdvisorName}'. A name alone cannot identify which registration applies; provide the registration ID and confirm it on SEBI's official register.`;
+      } else if (!claimedRegId && registryLookup?.state === "UNAVAILABLE") {
+        status = "REGISTRY_UNAVAILABLE";
+        statusLabel = locale === "hi" ? "रजिस्टर जाँच उपलब्ध नहीं" : "LOCAL REGISTRY CHECK UNAVAILABLE";
+        details = "VERA could not read the local registry snapshot, so it could not compare this name. No identity conclusion can be made.";
+      } else if (!claimedRegId && !datasetRecord && (sebiClaimMatch || lower.includes("sebi registered"))) {
         status = "MISSING_REGISTRATION";
         statusLabel = locale === "hi" ? "लाइसेंस नंबर अनुपस्थित (MISSING ID)" : "MISSING REGISTRATION ID";
         details = locale === "hi"
           ? "संदेश में 'सेबी रजिस्टर्ड एडवाइजर' होने का दावा किया गया है किंतु 12-अंकों का अनिवार्य सेबी रजिस्ट्रेशन नंबर (INA/INH/INZ) नहीं दिया गया। सेबी कानून (विनियम 13) के तहत सभी एडवाइजरों को प्रत्येक संचार में अपना लाइसेंस नंबर प्रदर्शित करना कानूनी रूप से अनिवार्य है।"
           : "Sender claims 'SEBI Registered Advisor' status but omitted the mandatory 12-character SEBI Registration ID (INA/INH/INZ). Under SEBI Regulation 13, all authorized advisors are statutorily required to quote their active registration number in every communication.";
-      } else if (claimedRegId) {
-        if (VERIFIED_SEBI_INTERMEDIARIES[claimedRegId]) {
+      } else if (claimedRegId || datasetRecord) {
+        if (registryLookup?.state === "FOUND" && datasetRecord) {
+          const registryNumber = claimedRegId || datasetRecord.registrationNumber;
+          const nameMismatch = Boolean((claimedAdvisorName && !claimedNameMatchesDataset) || manualNameConflictsWithMessage);
+          const roleMismatch = !roleMatchesDataset;
+          const impersonationSignal = isGuaranteed || isFundSolicitation || nameMismatch || roleMismatch;
+          const entityName = datasetRecord.entityName;
+          const validity = datasetRecord.validTo || "not stated";
+          const snapshotDate = registryLookup.asOf || "unknown date";
+          if (impersonationSignal) {
+            status = "NOT_VERIFIED";
+            statusLabel = locale === "hi" ? "रजिस्ट्रेशन मिला — पहचान की पुष्टि नहीं" : "REGISTRATION FOUND · IDENTITY UNCONFIRMED";
+            details = nameMismatch
+              ? manualNameConflictsWithMessage
+                ? `The message states the name '${extractedMessageName}', but the separate name entered for comparison is '${claimedIdentityName.trim()}'. The supplied register lists ${registryNumber} for '${entityName}'${datasetRecord.contactPerson ? ` (contact person: ${datasetRecord.contactPerson})` : ""}. These conflicting claims need review; the sender's identity is not authenticated.`
+                : `The supplied ${datasetRecord.intermediaryType} snapshot lists ${registryNumber} for '${entityName}'${datasetRecord.contactPerson ? ` (contact person: ${datasetRecord.contactPerson})` : ""}, not the claimed name '${claimedAdvisorName}'. The registration record is dated ${snapshotDate}; the sender's identity is not authenticated.`
+              : roleMismatch
+              ? `The supplied snapshot classifies ${claimedRegId} as ${datasetRecord.intermediaryType}, while the message claims ${claimedRole}. This role mismatch needs review. A registry name match does not authenticate the sender.`
+              : `The supplied ${datasetRecord.intermediaryType} snapshot lists ${claimedRegId} under '${entityName}' (as of ${snapshotDate}). A listed registration does not authenticate this sender; the message also contains a suspicious solicitation or return claim. Validity shown in the file: ${validity}.`;
+          } else {
+            status = "VERIFIED";
+            statusLabel = identityCheck === "MATCHED_REGISTERED_NAME"
+              ? locale === "hi" ? "नाम रजिस्टर रिकॉर्ड से मेल खाता है" : "NAME MATCHES REGISTRY RECORD"
+              : locale === "hi" ? "रजिस्ट्रेशन रिकॉर्ड मिला" : "REGISTRATION RECORD FOUND";
+            details = identityCheck === "MATCHED_REGISTERED_NAME"
+              ? `The claimed name matches the listed ${datasetRecord.intermediaryType} record for ${claimedNameMatchesDataset && normalizeRegistryName(claimedAdvisorName) === normalizeRegistryName(datasetRecord.contactPerson) ? datasetRecord.contactPerson : entityName} (registration ${registryNumber}; snapshot dated ${snapshotDate}; validity shown: ${validity}). This confirms only the name–registration association in the supplied file; it does not authenticate the person who sent this message.`
+              : `The supplied ${datasetRecord.intermediaryType} snapshot lists ${registryNumber} under '${entityName}'${datasetRecord.contactPerson ? ` (contact person: ${datasetRecord.contactPerson})` : ""} (as of ${snapshotDate}). No claimed person or firm name was available to compare. The sender's identity is therefore not verified.`;
+          }
+        } else if (registryLookup?.state === "NOT_FOUND") {
+          status = "FICTITIOUS_ID";
+          statusLabel = locale === "hi" ? "दिए गए रजिस्टर में नहीं मिला" : "NOT FOUND IN PROVIDED REGISTRY";
+          details = `Registration ID '${claimedRegId}' was not found in the supplied ${registryLookup.coveredType || "SEBI"} registry snapshot dated ${registryLookup.asOf || "unknown date"}. This dataset check is not a live SEBI lookup; verify the number on SEBI.gov.in before concluding it is fictitious.`;
+        } else if (registryLookup?.state === "UNAVAILABLE" && !(claimedRegId && VERIFIED_SEBI_INTERMEDIARIES[claimedRegId])) {
+          status = "REGISTRY_UNAVAILABLE";
+          statusLabel = locale === "hi" ? "रजिस्टर उपलब्ध नहीं" : "LOCAL REGISTRY UNAVAILABLE";
+          details = "VERA could not read the local registry snapshot, so this registration could not be checked.";
+        } else if (registryLookup?.state === "AMBIGUOUS") {
+          status = "REGISTRY_AMBIGUOUS";
+          statusLabel = locale === "hi" ? "एक से अधिक रिकॉर्ड मिले" : "MULTIPLE RECORDS FOUND";
+          details = `The supplied ${registryLookup.coveredType || "SEBI"} snapshot has more than one entry for ${claimedRegId}. VERA cannot determine which listed record applies; verify directly with SEBI.`;
+        } else if (registryLookup?.state === "OUT_OF_SCOPE" && !(claimedRegId && VERIFIED_SEBI_INTERMEDIARIES[claimedRegId])) {
+          status = "REGISTRY_NOT_COVERED";
+          statusLabel = locale === "hi" ? "यह श्रेणी शामिल नहीं" : "REGISTRY CATEGORY NOT INCLUDED";
+          details = `The supplied local snapshots cover Investment Advisers, Research Analysts, and Portfolio Managers. They do not cover registration ${claimedRegId}; verify it with the relevant SEBI register.`;
+        } else if (claimedRegId && VERIFIED_SEBI_INTERMEDIARIES[claimedRegId]) {
           const entity = VERIFIED_SEBI_INTERMEDIARIES[claimedRegId];
           if (isGuaranteed || isFundSolicitation) {
             status = "NOT_VERIFIED";
@@ -744,17 +915,17 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
               : `Registration ID matches registered entity '${entity.name}' (${entity.type}). However, legitimate regulated entities NEVER ask for personal fund deposits or guarantee returns. High probability of credential hijacking.`;
           } else {
             status = "VERIFIED";
-            statusLabel = locale === "hi" ? "सत्यापित सेबी मध्यस्थ" : "VERIFIED ACTIVE INTERMEDIARY";
+            statusLabel = locale === "hi" ? "स्थानीय रिकॉर्ड में मिला" : "MATCHED LOCAL DEMO RECORD";
             details = locale === "hi"
-              ? `आधिकारिक सेबी डेटाबेस में सक्रिय रूप से सत्यापित: ${entity.name} (${entity.type})।`
-              : `Positively confirmed in official SEBI intermediary database: ${entity.name} (${entity.type}) — ACTIVE.`;
+              ? `स्थानीय उदाहरण रिकॉर्ड में ${entity.name} (${entity.type}) मिला। इससे संदेश भेजने वाले की पहचान सत्यापित नहीं होती।`
+              : `Registration ID matches the existing local example record '${entity.name}' (${entity.type}). This does not verify the sender's identity.`;
           }
         } else {
           status = "FICTITIOUS_ID";
-          statusLabel = locale === "hi" ? "फर्जी सेबी रजिस्ट्रेशन नंबर" : "FICTITIOUS SEBI ID";
+          statusLabel = locale === "hi" ? "दिए गए रजिस्टर में नहीं मिला" : "NOT FOUND IN PROVIDED REGISTRY";
           details = locale === "hi"
-            ? `पंजीकरण संख्या '${claimedRegId}' आधिकारिक सेबी डेटाबेस में मौजूद नहीं है। मनगढ़ंत सेबी लाइसेंस नंबर उद्धृत करना आपराधिक प्रतिरूपण है।`
-            : `Registration ID '${claimedRegId}' not found in official SEBI Intermediary Registry. Quoting fictitious SEBI numbers is a cognizable criminal offense under IPC Section 419/420.`;
+            ? `पंजीकरण संख्या '${claimedRegId}' दिए गए स्थानीय रजिस्टर में नहीं मिली। यह लाइव सेबी जाँच नहीं है; इसे फर्जी मानने से पहले सेबी की आधिकारिक वेबसाइट पर जाँचें।`
+            : `Registration ID '${claimedRegId}' was not found in the supplied local registry snapshot. This is not a live SEBI lookup; verify it on SEBI.gov.in before concluding it is fictitious.`;
         }
       } else if (claimedAdvisorName) {
         status = "NOT_VERIFIED";
@@ -778,6 +949,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         status,
         statusLabel,
         details,
+        registeredEntityName: datasetRecord?.entityName,
+        registeredContactPerson: datasetRecord?.contactPerson,
+        registeredRegNumber: datasetRecord?.registrationNumber,
+        intermediaryType: datasetRecord?.intermediaryType,
+        snapshotDate: registryLookup?.asOf,
+        validityFrom: datasetRecord?.validFrom,
+        validityTo: datasetRecord?.validTo,
+        identityCheck: datasetRecord ? identityCheck : undefined,
         regulatoryCitation,
         officialRegistryUrl: "https://www.sebi.gov.in/intermediaries.html",
       };
@@ -799,11 +978,11 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       );
       matched.push("sebi registered", "advisor");
     } else if (advisorVerification?.status === "FICTITIOUS_ID") {
-      score += 55;
+      score += 35;
       reasons.push(
         locale === "hi"
-          ? `फर्जी सेबी रजिस्ट्रेशन नंबर ('${claimedRegId}') — दिया गया नंबर आधिकारिक सेबी डेटाबेस में मौजूद नहीं है (IPC 419/420 प्रतिरूपण)।`
-          : `Fictitious SEBI Registration ID ('${claimedRegId}') — Claimed number not found in official SEBI Intermediary Registry (IPC Section 419/420 impersonation).`
+          ? `सेबी रजिस्ट्रेशन नंबर ('${claimedRegId}') साझा किए गए स्थानीय रजिस्टर में नहीं मिला। फर्जी मानने से पहले सेबी के आधिकारिक पोर्टल पर जाँचें।`
+          : `SEBI registration ID '${claimedRegId}' was not found in the supplied local registry snapshot. Confirm on SEBI.gov.in before treating it as fictitious.`
       );
       matched.push(claimedRegId || "sebi id");
     } else if (advisorVerification?.status === "NOT_VERIFIED" && claimedRegId) {
@@ -811,7 +990,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       reasons.push(
         locale === "hi"
           ? `सेबी क्रेडेंशियल का दुरुपयोग ('${claimedRegId}') — पंजीकृत संस्था के नाम पर अनधिकृत फंड मांग या अवैध रिटर्न का वादा किया जा रहा है।`
-          : `Suspected SEBI Credential Hijacking ('${claimedRegId}') — Using legitimate intermediary registration to solicit personal transfers or promise guaranteed profits.`
+          : `SEBI registration claim '${claimedRegId}' needs identity review — the listed entity does not match the claimed name, or the message contains a suspicious solicitation or return claim.`
       );
       matched.push(claimedRegId);
     } else if (advisorVerification && !claimedRegId && sebiClaimMatch) {
@@ -898,6 +1077,20 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     else if (score >= 25) riskTier = "MEDIUM";
     else riskTier = "LOW";
 
+    const registryCheckSummary = registryLookup?.state === "FOUND"
+      ? `${registryLookup.lookupBy === "EXACT_NAME" ? "Exact name match in" : "Matched"} supplied ${registryLookup.coveredType} snapshot (as of ${registryLookup.asOf}); this confirms a register entry, not the sender's identity.`
+      : registryLookup?.state === "NOT_FOUND"
+      ? `Not found in supplied ${registryLookup.coveredType} snapshot (as of ${registryLookup.asOf}).`
+      : registryLookup?.state === "OUT_OF_SCOPE"
+      ? "Registration category is not included in the supplied local snapshots."
+      : registryLookup?.state === "UNAVAILABLE"
+      ? "Local registry snapshot could not be read."
+      : registryLookup?.state === "AMBIGUOUS"
+      ? "Multiple matching records exist in the supplied local snapshot."
+      : registryLookup?.state === "NAME_NOT_FOUND"
+      ? `No exact name match in the supplied ${registryLookup.coveredType || "SEBI"} snapshot (as of ${registryLookup.asOf}); this does not prove the person is unregistered.`
+      : "No registration ID was provided for lookup.";
+
     setVerdict({
       riskTier,
       score,
@@ -914,9 +1107,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         locale === "hi"
           ? "सेबी एडवाइजरी और नियमों का मिलान"
           : "Checked against official SEBI Investor Caution Rules",
-        locale === "hi"
-          ? "सेबी मध्यस्थ रजिस्ट्री (SEBI Intermediary Registry) सत्यापन"
-          : "Cross-referenced with SEBI Authorized Intermediary Registry",
+        locale === "hi" ? `स्थानीय सेबी रजिस्टर: ${registryCheckSummary}` : registryCheckSummary,
         locale === "hi"
           ? "निश्चित लाभ और व्यक्तिगत फंड ट्रांसफर जाँच"
           : "Scanned for illegal assured returns and direct fund solicitation",
@@ -995,7 +1186,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         <button
           type="button"
           onClick={handleSelectSampleVideoPitch}
-          className="vera-sample-chip absolute -left-6 -translate-x-full top-8 -rotate-3 hover:rotate-0"
+          className="vera-sample-chip absolute -left-6 -translate-x-full top-8"
           title="Try Sample Advisor Video Pitch (Illegal Return Guarantees)"
         >
           <Film className="w-4 h-4 text-amber-500" />
@@ -1005,8 +1196,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Left Chip 2: Authentic Video (Clean) */}
         <button
           type="button"
+          id="chip-sample-authentic-video"
           onClick={handleSelectSampleAuthenticVideo}
-          className="vera-sample-chip absolute -left-6 -translate-x-full top-28 rotate-2 hover:rotate-0"
+          className="vera-sample-chip absolute -left-6 -translate-x-full top-28"
           title="Try Sample Authentic Camera Footage (No Deepfake / Safe)"
         >
           <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -1016,8 +1208,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Left Chip 3: WhatsApp VIP Signals */}
         <button
           type="button"
+          id="chip-sample-whatsapp"
           onClick={() => handleSelectSamplePrompt(SAMPLE_SCAM_PROMPTS[0].text)}
-          className="vera-sample-chip absolute -left-6 -translate-x-full top-48 -rotate-2 hover:rotate-0"
+          className="vera-sample-chip absolute -left-6 -translate-x-full top-48"
           title="Try WhatsApp VIP Signals"
         >
           <span>💬</span>
@@ -1027,8 +1220,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Right Chip 1: Deepfake Video Scam */}
         <button
           type="button"
+          id="chip-sample-deepfake-video"
           onClick={handleSelectSampleDeepfakeVideo}
-          className="vera-sample-chip absolute -right-6 translate-x-full top-8 rotate-3 hover:rotate-0"
+          className="vera-sample-chip absolute -right-6 translate-x-full top-8"
           title="Try Deepfake AI Face-Swap Scam"
         >
           <ShieldAlert className="w-4 h-4 text-rose-500" />
@@ -1038,8 +1232,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Right Chip 2: Fake SEBI Advisor */}
         <button
           type="button"
+          id="chip-sample-fake-sebi"
           onClick={() => handleSelectSamplePrompt(SAMPLE_SCAM_PROMPTS[1].text)}
-          className="vera-sample-chip absolute -right-6 translate-x-full top-28 -rotate-2 hover:rotate-0"
+          className="vera-sample-chip absolute -right-6 translate-x-full top-28"
           title="Try Fake SEBI Advisor"
         >
           <ShieldCheck className="w-4 h-4 text-[var(--navy-1)] dark:text-[var(--accent)]" />
@@ -1049,8 +1244,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         {/* Right Chip 3: Phishing Trading Portal */}
         <button
           type="button"
+          id="chip-sample-phishing"
           onClick={() => handleSelectSamplePrompt(SAMPLE_SCAM_PROMPTS[2].text)}
-          className="vera-sample-chip absolute -right-6 translate-x-full top-48 rotate-2 hover:rotate-0"
+          className="vera-sample-chip absolute -right-6 translate-x-full top-48"
           title="Try Phishing Trading Portal"
         >
           <span>🔗</span>
@@ -1081,6 +1277,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         <div className="vera-segmented-track mb-5">
           <button
             type="button"
+            id="tab-composer-text"
             onClick={() => setComposerTab("TEXT")}
             className={`vera-segmented-tab ${composerTab === "TEXT" ? "active" : ""}`}
           >
@@ -1088,6 +1285,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           </button>
           <button
             type="button"
+            id="tab-composer-video"
             onClick={() => setComposerTab("VIDEO")}
             className={`vera-segmented-tab ${composerTab === "VIDEO" ? "active" : ""}`}
           >
@@ -1102,6 +1300,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             <div className="space-y-2">
               <div className="relative">
                 <textarea
+                  id="scam-input-textarea"
                   ref={textareaRef}
                   value={inputText}
                   onChange={handleTextareaInput}
@@ -1118,6 +1317,25 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                     <span>{detectedChip}</span>
                   </div>
                 )}
+              </div>
+
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-solid)]/70 p-3.5">
+                <label htmlFor="claimed-identity-name" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                  {locale === "hi" ? "दावा किया गया व्यक्ति / फर्म का नाम" : "Name claimed by the person or firm (optional)"}
+                </label>
+                <input
+                  id="claimed-identity-name"
+                  type="text"
+                  value={claimedIdentityName}
+                  onChange={(event) => setClaimedIdentityName(event.target.value)}
+                  placeholder={locale === "hi" ? "उदाहरण: कविता मेनन" : "Enter the exact name they claim, e.g. Kavitha Menon"}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-subtle)] bg-[var(--input-bg)] border border-[var(--input-border)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                />
+                <p className="mt-1.5 text-[11px] text-[var(--text-muted)]">
+                  {locale === "hi"
+                    ? "VERA इस नाम को रजिस्टर में दर्ज फर्म और संपर्क व्यक्ति से मिलाएगा।"
+                    : "VERA compares this name with the registered firm and listed contact person."}
+                </p>
               </div>
 
               {/* Examples line */}
@@ -1332,8 +1550,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             {/* Right: Screen for Fraud Button (52px tall, min-width 200, pill) */}
             <button
               type="submit"
+              id="btn-scan-submit"
               disabled={isScanning || (!inputText.trim() && !uploadedB64)}
-              className="vera-btn-primary"
+              className={`vera-btn-primary${isScanning ? " is-scanning" : ""}`}
             >
               {isScanning ? (
                 <span className="flex items-center gap-2">
@@ -1349,9 +1568,41 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
         {/* Active scanning feedback */}
         {isScanning && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)] flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent)] animate-ping" />
-            <span className="text-xs font-medium text-[var(--text-primary)]">{scanningPhase}</span>
+          <div className="vera-scan-console mt-5" role="status" aria-live="polite" data-active-stage={activeScanStage}>
+            <div className="vera-scan-console-top">
+              <span className="vera-scan-live-indicator"><i /></span>
+              <span className="vera-scan-console-brand">VERA <b>/</b> LIVE SCREENING</span>
+              <span className="vera-scan-console-state">{locale === "hi" ? "विश्लेषण जारी" : "ANALYSIS IN PROGRESS"}</span>
+            </div>
+            <div className="vera-scan-console-main">
+              <div className="vera-scan-radar" aria-hidden="true">
+                <span className="vera-scan-radar-ring vera-scan-radar-ring-outer" />
+                <span className="vera-scan-radar-ring vera-scan-radar-ring-middle" />
+                <span className="vera-scan-radar-ring vera-scan-radar-ring-inner" />
+                <span className="vera-scan-radar-sweep" />
+                <ShieldCheck className="vera-scan-radar-icon" />
+              </div>
+              <div className="vera-scan-console-copy">
+                <span className="vera-scan-kicker">{locale === "hi" ? "साक्ष्य विश्लेषण" : "EVIDENCE ANALYSIS"}</span>
+                <p className="vera-scan-phase" key={scanningPhase}>{scanningPhase}</p>
+                <p className="vera-scan-supporting-copy">
+                  {locale === "hi" ? "संदेश, वीडियो और रजिस्टर संकेतों का मिलान किया जा रहा है" : "Cross-checking content, media signals, and registry evidence"}
+                </p>
+                <div className="vera-scan-stages" aria-label={locale === "hi" ? "विश्लेषण चरण" : "Analysis stages"}>
+                  {[
+                    locale === "hi" ? "सिग्नल" : "SIGNALS",
+                    locale === "hi" ? "साक्ष्य" : "EVIDENCE",
+                    locale === "hi" ? "जोखिम" : "RISK PROFILE",
+                  ].map((stage, index) => (
+                    <div className={`vera-scan-stage${index < activeScanStage ? " is-complete" : index === activeScanStage ? " is-active" : ""}`} key={stage}>
+                      <span className="vera-scan-stage-node">{index < activeScanStage ? "✓" : `0${index + 1}`}</span>
+                      <span className="vera-scan-stage-label">{stage}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="vera-scan-progress-track" aria-hidden="true"><span /></div>
           </div>
         )}
       </div>
@@ -1383,7 +1634,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
       {/* ── 5. RESULT STATE (Compact Sticky Bar + 12-col Bento Grid) ──────── */}
       {verdict && (
-        <div className="w-full mt-6">
+        <div id="vera-results" className="vera-result-arrival w-full mt-6">
           {/* COMPACT STICKY BAR (72px: input summary one-line + 'Screen another' button) */}
           <div className="h-[72px] rounded-full vera-glass px-6 sm:px-8 flex items-center justify-between max-w-[760px] mx-auto w-full mb-8 sticky top-24 z-30 shadow-lg border border-[var(--border)]">
             <div className="flex items-center gap-3 min-w-0 pr-4">
@@ -1410,7 +1661,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           </div>
 
           {/* 12-COL BENTO GRID (max 1120, 12 cols, gap 24, padding 28, radius 24) */}
-          <div className="max-w-[1120px] mx-auto w-full grid grid-cols-12 gap-6 text-left">
+          <div className="vera-results-grid max-w-[1120px] mx-auto w-full grid grid-cols-12 gap-6 text-left">
             {/* ROW 0 (HIGH RISK only): Full-width red-tinted helpline banner */}
             {(verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH") && (
               <div className="col-span-12 vera-glass rounded-[24px] p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-rose-500/15 border-rose-500/30 transition-transform duration-200 hover:-translate-y-0.5">
@@ -1447,6 +1698,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                   ? "border-rose-500/30"
                   : verdict.riskTier === "MEDIUM"
                   ? "border-amber-500/30"
+                  : verdict.riskTier === "INCONCLUSIVE"
+                  ? "border-amber-500/30"
                   : "border-emerald-500/30"
               }`}
             >
@@ -1460,11 +1713,15 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         ? "rgba(200, 30, 60, 0.12)"
                         : verdict.riskTier === "MEDIUM"
                         ? "rgba(180, 83, 9, 0.12)"
+                        : verdict.riskTier === "INCONCLUSIVE"
+                        ? "rgba(180, 83, 9, 0.10)"
                         : "rgba(15, 123, 108, 0.12)",
                     borderColor:
                       verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH"
                         ? "rgba(200, 30, 60, 0.25)"
                         : verdict.riskTier === "MEDIUM"
+                        ? "rgba(180, 83, 9, 0.25)"
+                        : verdict.riskTier === "INCONCLUSIVE"
                         ? "rgba(180, 83, 9, 0.25)"
                         : "rgba(15, 123, 108, 0.25)",
                     color:
@@ -1472,10 +1729,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         ? "var(--verdict-high-risk)"
                         : verdict.riskTier === "MEDIUM"
                         ? "var(--verdict-suspicious)"
+                        : verdict.riskTier === "INCONCLUSIVE"
+                        ? "var(--verdict-suspicious)"
                         : "var(--verdict-safe)",
                   }}
                 >
-                  {verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH" ? (
+                  {verdict.riskTier === "INCONCLUSIVE" ? (
+                    <HelpCircle className="w-8 h-8" strokeWidth={1.5} />
+                  ) : verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH" ? (
                     <OctagonX className="w-8 h-8" strokeWidth={1.5} />
                   ) : verdict.riskTier === "MEDIUM" ? (
                     <AlertTriangle className="w-8 h-8" strokeWidth={1.5} />
@@ -1492,11 +1753,15 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         ? "var(--verdict-high-risk)"
                         : verdict.riskTier === "MEDIUM"
                         ? "var(--verdict-suspicious)"
+                      : verdict.riskTier === "INCONCLUSIVE"
+                      ? "var(--verdict-suspicious)"
                         : "var(--verdict-safe)",
                     borderColor: "currentColor",
                   }}
                 >
-                  {verdict.riskTier === "CRITICAL"
+                  {verdict.riskTier === "INCONCLUSIVE"
+                    ? "ANALYSIS INCOMPLETE"
+                    : verdict.riskTier === "CRITICAL"
                     ? "CRITICAL ALERT"
                     : verdict.riskTier === "HIGH"
                     ? "HIGH RISK"
@@ -1516,10 +1781,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         ? "var(--verdict-high-risk)"
                         : verdict.riskTier === "MEDIUM"
                         ? "var(--verdict-suspicious)"
+                      : verdict.riskTier === "INCONCLUSIVE"
+                      ? "var(--verdict-suspicious)"
                         : "var(--verdict-safe)",
                   }}
                 >
-                  {verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH"
+                  {verdict.riskTier === "INCONCLUSIVE"
+                    ? locale === "hi" ? "विश्लेषण अधूरा" : "ANALYSIS INCOMPLETE"
+                    : verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH"
                     ? locale === "hi"
                       ? "अत्यधिक जोखिम"
                       : "HIGH RISK"
@@ -1565,6 +1834,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         ? "var(--verdict-high-risk)"
                         : verdict.riskTier === "MEDIUM"
                         ? "var(--verdict-suspicious)"
+                        : verdict.riskTier === "INCONCLUSIVE"
+                        ? "var(--verdict-suspicious)"
                         : "var(--verdict-safe)"
                     }
                     strokeWidth="12"
@@ -1578,17 +1849,19 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
                 {/* Score Number in Center (Geist Mono / font-mono-tabular) */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="font-mono-tabular font-extrabold text-4xl text-[var(--text-primary)] leading-none">
-                    {verdict.score}
+                  <span className="vera-result-score-pop font-mono-tabular font-extrabold text-4xl text-[var(--text-primary)] leading-none">
+                    {isInconclusive ? "—" : verdict.score}
                   </span>
                   <span className="text-[11px] font-mono-tabular text-[var(--text-muted)] mt-1">
-                    / 100
+                    {isInconclusive ? (locale === "hi" ? "स्कोर उपलब्ध नहीं" : "Score unavailable") : "/ 100"}
                   </span>
                 </div>
               </div>
 
               <span className="text-xs uppercase font-mono-tabular tracking-wider font-semibold text-[var(--text-muted)] mt-3">
-                {locale === "hi" ? "जोखिम स्कोर" : "Risk Score"}
+                {isInconclusive
+                  ? locale === "hi" ? "विश्लेषण उपलब्ध नहीं" : "Risk Score Unavailable"
+                  : locale === "hi" ? "जोखिम स्कोर" : "Risk Score"}
               </span>
             </div>
 
@@ -1598,8 +1871,10 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                 {/* Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[var(--border)]">
                   <div className="flex items-center gap-2.5">
-                    {verdict.advisorVerification.status === "VERIFIED" ? (
+                    {verdict.advisorVerification.status === "VERIFIED" && !identityUnconfirmed ? (
                       <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                    ) : identityUnconfirmed || verdict.advisorVerification.status === "REGISTRY_UNAVAILABLE" || verdict.advisorVerification.status === "REGISTRY_NOT_COVERED" || verdict.advisorVerification.status === "REGISTRY_AMBIGUOUS" || verdict.advisorVerification.status === "REGISTRY_NAME_NOT_FOUND" ? (
+                      <Info className="w-5 h-5 text-amber-500" />
                     ) : (
                       <ShieldAlert className="w-5 h-5 text-rose-500" />
                     )}
@@ -1612,8 +1887,10 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-mono-tabular font-bold border ${
-                      verdict.advisorVerification.status === "VERIFIED"
+                      verdict.advisorVerification.status === "VERIFIED" && !identityUnconfirmed
                         ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                        : identityUnconfirmed || verdict.advisorVerification.status === "REGISTRY_UNAVAILABLE" || verdict.advisorVerification.status === "REGISTRY_NOT_COVERED" || verdict.advisorVerification.status === "REGISTRY_AMBIGUOUS" || verdict.advisorVerification.status === "REGISTRY_NAME_NOT_FOUND"
+                        ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
                         : "bg-rose-500/10 text-rose-500 border-rose-500/30"
                     }`}
                   >
@@ -1625,14 +1902,29 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-4">
                   <div className="p-3.5 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)]">
                     <span className="text-[11px] font-mono-tabular uppercase tracking-wider text-[var(--text-muted)] block mb-1">
-                      {locale === "hi" ? "दावा किया गया एडवाइजर" : "Claimed Advisor / Entity"}
+                      {verdict.advisorVerification.registeredContactPerson || verdict.advisorVerification.registeredEntityName
+                        ? locale === "hi" ? "रजिस्टर में नाम" : "Name in registry"
+                        : locale === "hi" ? "दावा किया गया नाम" : "Claimed Person / Firm"}
                     </span>
                     <span className="font-semibold text-sm text-[var(--text-primary)]">
-                      {verdict.advisorVerification.claimedAdvisorName ||
+                      {verdict.advisorVerification.registeredContactPerson || verdict.advisorVerification.registeredEntityName || verdict.advisorVerification.claimedAdvisorName ||
                         (locale === "hi"
-                          ? "अनिर्दिष्ट (केवल सेबी एडवाइजर का दावा)"
-                          : "Unspecified Advisor (Claims SEBI Status)")}
+                          ? "नाम नहीं दिया गया"
+                          : "Name not provided")}
                     </span>
+                    {verdict.advisorVerification.intermediaryType && (
+                      <div className="mt-1 text-xs text-[var(--text-muted)]">
+                        {locale === "hi" ? "पंजीकृत श्रेणी:" : "Registered as:"} <span className="font-semibold text-[var(--text-primary)]">{verdict.advisorVerification.intermediaryType}</span>
+                      </div>
+                    )}
+                    {verdict.advisorVerification.registeredEntityName && verdict.advisorVerification.registeredEntityName !== verdict.advisorVerification.registeredContactPerson && (
+                      <div className="mt-2 pt-2 border-t border-[var(--border)] text-[11px] leading-relaxed text-[var(--text-muted)]">
+                        <div>{locale === "hi" ? "रजिस्टर की फर्म" : "Registered entity"}: <span className="font-semibold text-[var(--text-primary)]">{verdict.advisorVerification.registeredEntityName}</span></div>
+                        {verdict.advisorVerification.claimedAdvisorName && (
+                          <div>{locale === "hi" ? "दावा किया गया नाम" : "Name claimed in message"}: <span className="font-semibold text-[var(--text-primary)]">{verdict.advisorVerification.claimedAdvisorName}</span></div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-3.5 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)]">
@@ -1641,32 +1933,59 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                     </span>
                     <span
                       className={`font-mono-tabular font-bold text-sm ${
-                        verdict.advisorVerification.claimedRegNumber
+                        verdict.advisorVerification.claimedRegNumber || verdict.advisorVerification.registeredRegNumber
                           ? "text-[var(--text-primary)]"
-                          : "text-rose-500"
+                          : "text-[var(--text-muted)]"
                       }`}
                     >
-                      {verdict.advisorVerification.claimedRegNumber ||
-                        (locale === "hi" ? "अनुपस्थित (कोई नंबर नहीं दिया)" : "None Provided (Missing)")}
+                      {verdict.advisorVerification.claimedRegNumber || verdict.advisorVerification.registeredRegNumber ||
+                        (locale === "hi" ? "अनुपस्थित (कोई नंबर नहीं दिया)" : "None provided")}
                     </span>
+                    {!verdict.advisorVerification.claimedRegNumber && verdict.advisorVerification.registeredRegNumber && (
+                      <div className="mt-1 text-[10px] text-[var(--text-muted)]">
+                        {locale === "hi" ? "नाम से मिले रजिस्टर रिकॉर्ड का आईडी" : "ID from exact name match in snapshot"}
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-3.5 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)]">
                     <span className="text-[11px] font-mono-tabular uppercase tracking-wider text-[var(--text-muted)] block mb-1">
-                      {locale === "hi" ? "आधिकारिक सेबी स्थिति" : "Official Registry Status"}
+                      {locale === "hi" ? "रजिस्टर जाँच" : "Registry Check"}
                     </span>
                     <span
                       className={`font-semibold text-sm ${
-                        verdict.advisorVerification.status === "VERIFIED"
+                        verdict.advisorVerification.status === "VERIFIED" && !identityUnconfirmed
                           ? "text-emerald-500"
+                        : identityUnconfirmed || verdict.advisorVerification.status === "REGISTRY_UNAVAILABLE" || verdict.advisorVerification.status === "REGISTRY_NOT_COVERED" || verdict.advisorVerification.status === "REGISTRY_AMBIGUOUS" || verdict.advisorVerification.status === "REGISTRY_NAME_NOT_FOUND"
+                          ? "text-amber-600"
                           : "text-rose-500"
                       }`}
                     >
                       {verdict.advisorVerification.status === "VERIFIED"
-                        ? "Active Registered Entity"
+                        ? verdict.advisorVerification.identityCheck === "MATCHED_REGISTERED_NAME"
+                          ? "Name matches registry record"
+                          : identityUnconfirmed
+                          ? verdict.advisorVerification.registeredEntityName
+                            ? "Record found"
+                            : "Name not provided · unverified"
+                          : verdict.advisorVerification.registeredEntityName
+                          ? "Registration found"
+                          : "Matched Local Demo Record"
                         : locale === "hi"
-                        ? "अवैध / अपंजीकृत"
-                        : "Failed SEBI Registry Check"}
+                        ? verdict.advisorVerification.status === "REGISTRY_UNAVAILABLE" ? "जाँच उपलब्ध नहीं" : verdict.advisorVerification.status === "REGISTRY_NOT_COVERED" ? "यह श्रेणी शामिल नहीं" : "रजिस्टर में नहीं मिला"
+                        : verdict.advisorVerification.status === "REGISTRY_UNAVAILABLE"
+                        ? "Could Not Check Local Registry"
+                        : verdict.advisorVerification.status === "REGISTRY_AMBIGUOUS"
+                        ? "Multiple Local Records · Verify with SEBI"
+                        : verdict.advisorVerification.status === "REGISTRY_NAME_NOT_FOUND"
+                        ? "No Exact Name Match · Check Spelling / ID"
+                        : verdict.advisorVerification.status === "REGISTRY_NOT_COVERED"
+                        ? "Category Not Included in Local Files"
+                        : verdict.advisorVerification.status === "MISSING_REGISTRATION"
+                        ? "Registration ID Missing"
+                        : verdict.advisorVerification.status === "NOT_VERIFIED"
+                        ? "Identity / Claim Needs Review"
+                        : "Not Found in Supplied Snapshot"}
                     </span>
                   </div>
                 </div>
@@ -1679,7 +1998,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         {verdict.advisorVerification.regulatoryCitation}
                       </span>
                       <span className="text-[10px] text-amber-500 font-semibold px-1.5 py-0.2 rounded bg-amber-500/10">
-                        Statutory Mandate
+                        {verdict.advisorVerification.snapshotDate ? "Snapshot Source" : "Statutory Mandate"}
                       </span>
                     </div>
                     <p className="leading-relaxed text-[var(--text-muted)]">
@@ -1708,7 +2027,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-10 h-10 rounded-2xl flex items-center justify-center border shadow-sm ${
-                        verdict.advisorySignalsDetected
+                        isInconclusive
+                          ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                          : verdict.advisorySignalsDetected
                           ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
                           : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                       }`}
@@ -1722,7 +2043,11 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                           : "Video Speech Transcript & Audio Advisory Forensics"}
                       </h3>
                       <p className="text-xs text-[var(--text-muted)]">
-                        {locale === "hi"
+                        {isInconclusive
+                          ? locale === "hi"
+                            ? "ऑडियो और दृश्य विश्लेषण उपलब्ध नहीं था।"
+                            : "Audio and visual analysis could not be completed."
+                          : locale === "hi"
                           ? "व्हिस्पर एसटीटी द्वारा ऑडियो संवाद निकाला गया • सेबी सलाहकार नियमों से मिलान"
                           : "Acoustic extraction via faster-whisper STT • Screened against SEBI Investor Advisory regulations"}
                       </p>
@@ -1734,12 +2059,16 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                     {/* Visual Media Status */}
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-mono-tabular font-semibold border ${
-                        verdict.visualManipulationDetected
+                        isInconclusive
+                          ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                          : verdict.visualManipulationDetected
                           ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
                           : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                       }`}
                     >
-                      {verdict.visualManipulationDetected
+                      {isInconclusive
+                        ? locale === "hi" ? "⚠ दृश्य विश्लेषण उपलब्ध नहीं" : "⚠ Visual analysis unavailable"
+                        : verdict.visualManipulationDetected
                         ? "🚨 Visual: Facial Manipulation Detected"
                         : "✓ Visual: Authentic Camera Footage"}
                     </span>
@@ -1747,12 +2076,16 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                     {/* Spoken Advice Status */}
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-mono-tabular font-bold border ${
-                        verdict.advisorySignalsDetected
+                        isInconclusive
+                          ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                          : verdict.advisorySignalsDetected
                           ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40"
                           : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40"
                       }`}
                     >
-                      {verdict.advisorySignalsDetected
+                      {isInconclusive
+                        ? locale === "hi" ? "⚠ भाषण विश्लेषण उपलब्ध नहीं" : "⚠ Speech analysis unavailable"
+                        : verdict.advisorySignalsDetected
                         ? locale === "hi"
                           ? "❌ अवैध निवेश सलाह चिन्हित"
                           : "❌ ILLEGAL INVESTMENT ADVISORY FLAGGED"
@@ -1815,7 +2148,13 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                   </div>
 
                   <div className="p-4 sm:p-5 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)] text-sm leading-relaxed text-[var(--text-primary)] font-mono selection:bg-rose-500/20">
-                    {verdict.videoTranscript ? (
+                    {isInconclusive ? (
+                      <span className="text-amber-800 dark:text-amber-200 font-sans">
+                        {locale === "hi"
+                          ? "सेवा समय-सीमा के कारण इस वीडियो का विश्लेषण नहीं हो सका। ऑडियो या दृश्य सामग्री पर कोई निष्कर्ष नहीं निकाला गया।"
+                          : "Analysis timed out. No conclusion was reached about this video’s audio or visual content."}
+                      </span>
+                    ) : verdict.videoTranscript ? (
                       <>
                         “
                         {renderHighlightedSpeechTranscript(
@@ -1850,6 +2189,15 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                ) : isInconclusive ? (
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-200 mb-4">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>
+                      {locale === "hi"
+                        ? "ऑडियो विश्लेषण उपलब्ध नहीं था। इसे अनुपालन या सुरक्षित होने का प्रमाण न मानें।"
+                        : "Audio analysis was unavailable. This is not evidence that the speech is compliant or the video is safe."}
+                    </span>
                   </div>
                 ) : (
                   <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-2.5 text-xs text-emerald-700 dark:text-emerald-300 mb-4">
@@ -1924,6 +2272,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                           ? "var(--verdict-high-risk)"
                           : verdict.riskTier === "MEDIUM"
                           ? "var(--verdict-suspicious)"
+                          : verdict.riskTier === "INCONCLUSIVE"
+                          ? "var(--verdict-suspicious)"
                           : "var(--verdict-safe)",
                     }}
                   />
@@ -1938,6 +2288,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                       verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH"
                         ? "var(--verdict-high-risk)"
                         : verdict.riskTier === "MEDIUM"
+                        ? "var(--verdict-suspicious)"
+                        : verdict.riskTier === "INCONCLUSIVE"
                         ? "var(--verdict-suspicious)"
                         : "var(--verdict-safe)";
 
@@ -2215,7 +2567,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                       : "";
                     const text = `VERA Fraud Screening Summary:
 Verdict: ${verdict.riskTier}
-Risk Score: ${verdict.score}/100
+Risk Score: ${isInconclusive ? "Unavailable (analysis incomplete)" : `${verdict.score}/100`}
 Query: ${inputText}${advisorLine}
 Reasons:
 ${verdict.highlightedReasons.map((r, i) => `${i + 1}. ${r}`).join("\n")}
@@ -2255,11 +2607,13 @@ Source: VERA Fraud Intelligence Platform`;
                         ? "var(--verdict-high-risk)"
                         : verdict.riskTier === "MEDIUM"
                         ? "var(--verdict-suspicious)"
+                        : verdict.riskTier === "INCONCLUSIVE"
+                        ? "var(--verdict-suspicious)"
                         : "var(--verdict-safe)",
                   }}
                 />
                 <span className="text-xs font-mono-tabular font-bold text-[var(--text-primary)] truncate">
-                  {verdict.score}/100 • {verdict.riskTier}
+                  {isInconclusive ? "N/A" : `${verdict.score}/100`} • {verdict.riskTier}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -2289,7 +2643,7 @@ Source: VERA Fraud Intelligence Platform`;
 
             {/* ARIA Live Region for Screen Readers */}
             <div className="sr-only" aria-live="polite" role="status">
-              Fraud screening complete. Verdict: {verdict.riskTier}. Risk Score: {verdict.score} out of 100.{" "}
+              Fraud screening complete. Verdict: {verdict.riskTier}. Risk Score: {isInconclusive ? "unavailable" : `${verdict.score} out of 100`}.{" "}
               {verdict.highlightedReasons[0] || ""}
             </div>
           </div>
@@ -2357,24 +2711,32 @@ Source: VERA Fraud Intelligence Platform`;
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-mono-tabular font-semibold border ${
-                    verdict.visualManipulationDetected
+                    isInconclusive
+                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                      : verdict.visualManipulationDetected
                       ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
                       : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                   }`}
                 >
-                  {verdict.visualManipulationDetected
+                  {isInconclusive
+                    ? locale === "hi" ? "⚠ दृश्य विश्लेषण उपलब्ध नहीं" : "⚠ Visual analysis unavailable"
+                    : verdict.visualManipulationDetected
                     ? "🚨 Visual: Facial Manipulation Detected"
                     : "✓ Visual: Authentic Camera Footage"}
                 </span>
 
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-mono-tabular font-bold border ${
-                    verdict.advisorySignalsDetected
+                    isInconclusive
+                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                      : verdict.advisorySignalsDetected
                       ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40"
                       : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40"
                   }`}
                 >
-                  {verdict.advisorySignalsDetected
+                  {isInconclusive
+                    ? locale === "hi" ? "⚠ भाषण विश्लेषण उपलब्ध नहीं" : "⚠ Speech analysis unavailable"
+                    : verdict.advisorySignalsDetected
                     ? "❌ ILLEGAL INVESTMENT ADVISORY FLAGGED"
                     : "✓ COMPLIANT SPEECH"}
                 </span>

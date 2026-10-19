@@ -10,16 +10,22 @@ import {
   AlertTriangle,
   Info,
   FileText,
+  Home as HomeIcon,
 } from "lucide-react";
 import { VeraNavigation, NavTab } from "@/components/navigation/VeraNavigation";
 import { PublicConsumerFlow } from "@/components/dashboard/PublicConsumerFlow";
 import { SebiGuidancePanel } from "@/components/dashboard/SebiGuidancePanel";
+import { VeraCover } from "@/components/landing/VeraCover";
+import { FinanceBackdrop } from "@/components/shell/FinanceBackdrop";
+import { ScrollEffects } from "@/components/shell/ScrollEffects";
 import { translations, Locale } from "@/lib/i18n";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>("CHECK");
   const [locale, setLocale] = useState<Locale>("en");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [showCover, setShowCover] = useState(true);
+  const t = translations[locale];
 
   useEffect(() => {
     try {
@@ -52,8 +58,76 @@ export default function Home() {
     setLocale((prev) => (prev === "en" ? "hi" : "en"));
   };
 
+  useEffect(() => {
+    const checkAppRoute = () => {
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get("app") === "true" || window.location.hash === "#app") {
+            setShowCover(false);
+          }
+        }
+      } catch (_) {}
+    };
+    checkAppRoute();
+    window.addEventListener("hashchange", checkAppRoute);
+    return () => window.removeEventListener("hashchange", checkAppRoute);
+  }, []);
+
+  useEffect(() => {
+    const handleEnterApp = () => {
+      setShowCover(false);
+      try {
+        window.location.hash = "app";
+      } catch (_) {}
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+    };
+    const handleOpenCover = () => {
+      setShowCover(true);
+      try {
+        if (window.location.hash === "#app") {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      } catch (_) {}
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+    };
+
+    window.addEventListener("vera:enter-app", handleEnterApp);
+    window.addEventListener("vera:open-cover", handleOpenCover);
+    return () => {
+      window.removeEventListener("vera:enter-app", handleEnterApp);
+      window.removeEventListener("vera:open-cover", handleOpenCover);
+    };
+  }, []);
+
+  if (showCover) {
+    return (
+      <div className="vera-cover-wrapper animate-vera-fade-in w-full">
+        <VeraCover
+          locale={locale}
+          theme={theme}
+          onLocaleChange={handleToggleLocale}
+          onThemeToggle={handleToggleTheme}
+          onEnter={() => {
+            setShowCover(false);
+            try {
+              window.location.hash = "app";
+            } catch (_) {}
+            window.scrollTo({ top: 0, behavior: "instant" });
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen text-[var(--text-primary)] antialiased relative z-10 flex flex-col items-center">
+    <div className="vera-investigation-page min-h-screen text-[var(--text-primary)] antialiased relative z-10 flex flex-col items-center animate-vera-fade-in">
+      <FinanceBackdrop />
+      <ScrollEffects />
       {/* ── UNIFIED FLOATING NAVIGATION (Replaces sidebar & topbar) ─────────── */}
       <VeraNavigation
         activeTab={activeTab}
@@ -62,13 +136,32 @@ export default function Home() {
         onLocaleToggle={handleToggleLocale}
         theme={theme}
         onThemeToggle={handleToggleTheme}
+        onOpenCover={() => {
+          setShowCover(true);
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }}
       />
 
       {/* ── MAIN CONTENT AREA (Centered, max 1120px) ────────────────────────── */}
-      <main className="w-full max-w-[1120px] mx-auto px-4 sm:px-6 pt-32 pb-24 flex flex-col items-center text-center">
+      <main className="w-full max-w-[1120px] mx-auto px-4 sm:px-6 pt-20 pb-24 flex flex-col items-center text-center">
         {/* TAB 1: FRAUD CHECK (HOME) */}
         {activeTab === "CHECK" && (
           <div className="w-full flex flex-col items-center">
+            {/* Quick return back-pill */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowCover(true);
+                window.scrollTo({ top: 0, behavior: "instant" });
+              }}
+              className="group inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-solid)] text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs font-semibold shadow-sm transition-all duration-200 active:scale-95 cursor-pointer vera-nav-back-btn"
+              aria-label={t.backToCover}
+              title={t.backToCover}
+            >
+              <HomeIcon className="w-3.5 h-3.5 transition-transform duration-200 ease-out group-hover:scale-110" />
+              <span>{t.backToCover}</span>
+            </button>
+
             {/* H1 Title: white over navy panel in light, text color in dark */}
             <h1 className="text-fluid-h1 text-[var(--hero-h1-color)] max-w-3xl tracking-tight leading-tight">
               {locale === "hi" ? "धोखाधड़ी जाँच" : "Investment Fraud Checker"}

@@ -89,7 +89,7 @@ class ImageAnalyzer(BaseAnalyzer):
         screenshot_analysis = self._analyze_screenshot_structure(image_bytes, metadata)
 
         # 4. OCR Extraction
-        ocr_text, ocr_lines = await self._extract_ocr(image_bytes, evidence)
+        ocr_text, ocr_lines, ocr_uncertainty = await self._extract_ocr(image_bytes, evidence)
 
         is_suspicious = (
             manipulation.get("has_manipulation_indicators", False)
@@ -101,12 +101,13 @@ class ImageAnalyzer(BaseAnalyzer):
             "metadata": metadata,
             "ocr_text": ocr_text,
             "ocr_line_count": len(ocr_lines),
+            "ocr_is_fallback": ocr_uncertainty >= 1.0,
             "manipulation_indicators": manipulation,
             "screenshot_analysis": screenshot_analysis,
             "is_suspicious": is_suspicious,
         }
 
-        uncertainty = 0.15 if is_suspicious else 0.35
+        uncertainty = max(ocr_uncertainty, 0.15 if is_suspicious else 0.35)
         return findings, uncertainty
 
     def _decode_payload(self, payload: str) -> bytes | None:
@@ -254,16 +255,16 @@ class ImageAnalyzer(BaseAnalyzer):
         self,
         image_bytes: bytes,
         evidence: CanonicalEvidenceItem,
-    ) -> tuple[str, list[dict[str, Any]]]:
+    ) -> tuple[str, list[dict[str, Any]], float]:
         """Executes PaddleOCR engine extraction."""
         try:
-            ocr_res, _ = await self._ocr_engine._execute(evidence)
+            ocr_res, uncertainty = await self._ocr_engine._execute(evidence)
             full_text = ocr_res.get("full_text", "")
             lines = ocr_res.get("lines", [])
-            return full_text, lines
+            return full_text, lines, uncertainty
         except Exception as exc:
             logger.warning("OCR sub-engine fallback: %s", str(exc))
-            return "", []
+            return "", [], 1.0
 
     def normalize_to_canonical_evidence(
         self,

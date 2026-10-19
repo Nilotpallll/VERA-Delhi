@@ -25,6 +25,7 @@ build/
 .next/
 out/
 .turbo/
+.vercel/
 
 # Environment and secrets (CRITICAL: Architecture Rule 11)
 .env
@@ -58,3 +59,6 @@ Thumbs.db
 tmp/
 temp/
 scratch/
+
+# User-supplied SEBI registry snapshot; keep local and out of Git
+apps/web/data/sebi-registry.local.json

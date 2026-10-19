@@ -170,12 +170,12 @@ class RateLimiter:
 
 
 def _get_client_ip(request: Request) -> str:
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    real_ip = request.headers.get("X-Real-IP")
-    if real_ip:
-        return real_ip
+    """Return the socket peer address, which callers cannot spoof with HTTP headers.
+
+    Proxy headers must only be honored after validating the peer against an explicit
+    trusted-proxy list. Until that configuration exists, using them here would let
+    any client rotate its rate-limit identity on every request.
+    """
     if request.client:
         return request.client.host
     return "unknown"

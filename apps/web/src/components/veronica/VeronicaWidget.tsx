@@ -182,6 +182,33 @@ export const VeronicaWidget: React.FC = () => {
     }
   };
 
+  const sendMsgRef = React.useRef(handleSendMessage);
+  sendMsgRef.current = handleSendMessage;
+
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      setIsOpen(true);
+      const custom = e as CustomEvent<{ query?: string; language?: "en" | "hi" }>;
+      if (custom.detail?.language) {
+        setLanguage(custom.detail.language);
+      }
+      if (custom.detail?.query) {
+        sendMsgRef.current(custom.detail.query);
+      }
+    };
+    const handleToggle = () => setIsOpen((prev) => !prev);
+    const handleClose = () => setIsOpen(false);
+
+    window.addEventListener("vera:open-veronica", handleOpen);
+    window.addEventListener("vera:toggle-veronica", handleToggle);
+    window.addEventListener("vera:close-veronica", handleClose);
+    return () => {
+      window.removeEventListener("vera:open-veronica", handleOpen);
+      window.removeEventListener("vera:toggle-veronica", handleToggle);
+      window.removeEventListener("vera:close-veronica", handleClose);
+    };
+  }, []);
+
   if (!mounted) return null;
   if (process.env.NEXT_PUBLIC_VERONICA_ENABLED === "false") return null;
 
