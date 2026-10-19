@@ -2,11 +2,11 @@
 -- Implements all 12 tables with full constraint enforcement
 -- Architecture Rules: 5, 8, 9, 10, 12, 13
 
--- ── Extensions ────────────────────────────────────────────────────────────────
+-- -- Extensions ----------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- ── Users ─────────────────────────────────────────────────────────────────────
+-- -- Users ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id          VARCHAR(64) PRIMARY KEY,
     email       VARCHAR(320) UNIQUE,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- ── Investigations ────────────────────────────────────────────────────────────
+-- -- Investigations ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS investigations (
     id                  VARCHAR(64) PRIMARY KEY,
     status              VARCHAR(32) NOT NULL DEFAULT 'QUEUED',
@@ -48,7 +48,7 @@ ALTER TABLE investigations ADD COLUMN IF NOT EXISTS risk_summary TEXT;
 CREATE INDEX IF NOT EXISTS ix_investigations_status ON investigations(status);
 CREATE INDEX IF NOT EXISTS ix_investigations_submitted_by ON investigations(submitted_by);
 
--- ── Inputs ────────────────────────────────────────────────────────────────────
+-- -- Inputs --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS inputs (
     id                VARCHAR(64) PRIMARY KEY,
     investigation_id  VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS inputs (
 );
 CREATE INDEX IF NOT EXISTS ix_inputs_investigation ON inputs(investigation_id);
 
--- ── Evidence (canonical, append-only, Rule 5 & Rule 9) ───────────────────────
--- No updated_at column — evidence is immutable
+-- -- Evidence (canonical, append-only, Rule 5 & Rule 9) -----------------------
+-- No updated_at column - evidence is immutable
 CREATE TABLE IF NOT EXISTS evidence (
     id                VARCHAR(64) PRIMARY KEY,
     investigation_id  VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -98,7 +98,7 @@ CREATE INDEX IF NOT EXISTS ix_evidence_severity ON evidence(severity);
 CREATE INDEX IF NOT EXISTS ix_evidence_source_type ON evidence(source_type);
 CREATE INDEX IF NOT EXISTS ix_evidence_inv_type ON evidence(investigation_id, type);
 
--- ── Entities ──────────────────────────────────────────────────────────────────
+-- -- Entities ------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS entities (
     id                    VARCHAR(64) PRIMARY KEY,
     investigation_id      VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS entities (
 CREATE INDEX IF NOT EXISTS ix_entities_investigation ON entities(investigation_id);
 CREATE INDEX IF NOT EXISTS ix_entities_type ON entities(type);
 
--- ── Relationships ─────────────────────────────────────────────────────────────
+-- -- Relationships -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS relationships (
     id                  VARCHAR(64) PRIMARY KEY,
     investigation_id    VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -144,7 +144,7 @@ CREATE INDEX IF NOT EXISTS ix_relationships_investigation ON relationships(inves
 CREATE INDEX IF NOT EXISTS ix_relationships_source ON relationships(source_entity_id);
 CREATE INDEX IF NOT EXISTS ix_relationships_target ON relationships(target_entity_id);
 
--- ── Claims ────────────────────────────────────────────────────────────────────
+-- -- Claims --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS claims (
     id                      VARCHAR(64) PRIMARY KEY,
     investigation_id        VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS claims (
 CREATE INDEX IF NOT EXISTS ix_claims_investigation ON claims(investigation_id);
 CREATE INDEX IF NOT EXISTS ix_claims_status ON claims(status);
 
--- ── Verification Results (Rule 8 tri-state) ───────────────────────────────────
+-- -- Verification Results (Rule 8 tri-state) -----------------------------------
 CREATE TABLE IF NOT EXISTS verification_results (
     id                   VARCHAR(64) PRIMARY KEY,
     investigation_id     VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS verification_results (
 CREATE INDEX IF NOT EXISTS ix_vr_investigation ON verification_results(investigation_id);
 CREATE INDEX IF NOT EXISTS ix_vr_state ON verification_results(verification_state);
 
--- ── Risk Signals (deterministic, Rules 6 & 7) ─────────────────────────────────
+-- -- Risk Signals (deterministic, Rules 6 & 7) ---------------------------------
 CREATE TABLE IF NOT EXISTS risk_signals (
     id                    VARCHAR(64) PRIMARY KEY,
     investigation_id      VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS risk_signals (
 CREATE INDEX IF NOT EXISTS ix_risk_signals_investigation ON risk_signals(investigation_id);
 CREATE INDEX IF NOT EXISTS ix_risk_signals_severity ON risk_signals(severity);
 
--- ── Model Runs (Rules 12 & 13) ────────────────────────────────────────────────
+-- -- Model Runs (Rules 12 & 13) ------------------------------------------------
 CREATE TABLE IF NOT EXISTS model_runs (
     id                    VARCHAR(64) PRIMARY KEY,
     investigation_id      VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -235,7 +235,7 @@ CREATE TABLE IF NOT EXISTS model_runs (
 );
 CREATE INDEX IF NOT EXISTS ix_model_runs_investigation ON model_runs(investigation_id);
 
--- ── Analyzer Runs (Rules 4, 9, 12) ───────────────────────────────────────────
+-- -- Analyzer Runs (Rules 4, 9, 12) -------------------------------------------
 CREATE TABLE IF NOT EXISTS analyzer_runs (
     id                   VARCHAR(64) PRIMARY KEY,
     investigation_id     VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS analyzer_runs (
 CREATE INDEX IF NOT EXISTS ix_analyzer_runs_investigation ON analyzer_runs(investigation_id);
 CREATE INDEX IF NOT EXISTS ix_analyzer_runs_status ON analyzer_runs(status);
 
--- ── Reports (Rule 13 — reproducible) ─────────────────────────────────────────
+-- -- Reports (Rule 13 - reproducible) -----------------------------------------
 CREATE TABLE IF NOT EXISTS reports (
     id                         VARCHAR(64) PRIMARY KEY,
     investigation_id           VARCHAR(64) NOT NULL REFERENCES investigations(id) ON DELETE CASCADE,
@@ -289,7 +289,7 @@ CREATE TABLE IF NOT EXISTS reports (
 );
 CREATE INDEX IF NOT EXISTS ix_reports_investigation ON reports(investigation_id);
 
--- ── Audit Logs (immutable) ────────────────────────────────────────────────────
+-- -- Audit Logs (immutable) ----------------------------------------------------
 CREATE TABLE IF NOT EXISTS audit_logs (
     id               VARCHAR(64) PRIMARY KEY,
     investigation_id VARCHAR(64) REFERENCES investigations(id) ON DELETE SET NULL,

@@ -182,19 +182,6 @@ def detect_face_in_frame(frame: Any) -> tuple[Any | None, bool]:
     return None, False
 
 
-def locate_face_crop(frame: Any, fallback_to_center: bool = False) -> Any | None:
-    """Locates face in video frame. Returns face crop if found, or None/fallback."""
-    crop, found = detect_face_in_frame(frame)
-    if found:
-        return crop
-
-    if fallback_to_center and hasattr(frame, "shape") and len(frame.shape) >= 2:
-        h, w = frame.shape[:2]
-        return frame[int(h * 0.10) : int(h * 0.78), int(w * 0.20) : int(w * 0.80)]
-
-    return None
-
-
 def compute_fft_frequency_anomaly(face_crop: Any) -> float:
     """Calculates 2D FFT azimuthal directional spectral power anomaly.
 
@@ -318,7 +305,7 @@ def infer_single_crop(crop: Any, model: Meso4Net | None = None) -> float:
     return float(np.clip(ensemble_score, 0.05, 0.95))
 
 
-def locate_face_crop(frame: Any) -> Any | None:
+def locate_face_crop(frame: Any, fallback_to_center: bool = False) -> Any | None:
     """Locate and crop the primary human face region in a video frame.
 
     Uses skin-chroma clustering in YCrCb color space with morphological filtering,
@@ -352,6 +339,8 @@ def locate_face_crop(frame: Any) -> Any | None:
                 candidates.append((area, x, y, cw, ch))
 
         if not candidates:
+            if fallback_to_center and hasattr(frame, "shape") and len(frame.shape) >= 2:
+                return frame[int(h * 0.10) : int(h * 0.78), int(w * 0.20) : int(w * 0.80)]
             return None
 
         # Select the most prominent face candidate
@@ -363,5 +352,8 @@ def locate_face_crop(frame: Any) -> Any | None:
         return frame[y1:y2, x1:x2]
     except Exception as exc:
         logger.debug("locate_face_crop error: %s", exc)
+        if fallback_to_center and frame is not None and hasattr(frame, "shape") and len(frame.shape) >= 2:
+            h, w = frame.shape[:2]
+            return frame[int(h * 0.10) : int(h * 0.78), int(w * 0.20) : int(w * 0.80)]
         return None
 

@@ -1,20 +1,20 @@
 """Tests for Phase 8 Block A: Infrastructure Hardening."""
 
-import pytest
-from unittest.mock import patch, MagicMock
-from fastapi import HTTPException
+from unittest.mock import patch
 
+import pytest
 from apps.api.src.core.evidence_cache import (
     compute_evidence_hash,
     get_cached_evidence_analysis,
     store_cached_evidence_analysis,
 )
 from apps.api.src.core.quota_tracker import (
-    track_upstash_command_usage,
-    check_quota_or_fail,
     DAILY_COMMAND_CAP,
     MONTHLY_COMMAND_CAP,
+    check_quota_or_fail,
+    track_upstash_command_usage,
 )
+from fastapi import HTTPException
 
 
 def test_evidence_hash_determinism():

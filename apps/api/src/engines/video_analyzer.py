@@ -783,8 +783,6 @@ class VideoAnalyzer(BaseAnalyzer):
 
     def _screen_speech_advisory(self, transcript: str, translated_transcript: str = "") -> dict[str, Any]:
         """Screens transcribed dialogue against statutory SEBI regulations (multilingual: EN/HI/Hinglish)."""
-        import re
-
         advisory_violations: list[str] = []
         flagged_phrases: list[str] = []
 

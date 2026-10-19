@@ -1,13 +1,11 @@
 """Tests for Phase 8 Block B: Scale, Throttling, and Provider Chain."""
 
-import pytest
-from unittest.mock import patch, AsyncMock
-from httpx import Response
+from unittest.mock import AsyncMock, patch
 
+import pytest
 from apps.api.src.ai.chain import (
     ChainedLLMProvider,
     CircuitBreaker,
-    DeterministicRuleEngineLLMProvider,
 )
 from apps.api.src.services.worker_client import MLWorkerClient
 from apps.ml_worker.src.main import app as worker_app

@@ -58,12 +58,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r apps/api/requirements.txt
-          pip install ruff pytest pytest-asyncio httpx
+          pip install ruff==0.17.1 pytest pytest-asyncio httpx
 
       - name: Run Ruff Lint Check
         run: ruff check apps/api
 
       - name: Run Pytest Suite (Unit & Functional)
+        env:
+          PYTHONPATH: .
         run: pytest apps/api/tests -v
 
   database-and-migrations:
@@ -98,28 +100,30 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r apps/api/requirements.txt
-          pip install ruff pytest pytest-asyncio httpx alembic psycopg2-binary asyncpg
+          pip install ruff==0.17.1 pytest pytest-asyncio httpx alembic psycopg2-binary asyncpg
 
       - name: Run Alembic Upgrade Head
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/vera_test
+          DATABASE_URL: postgresql://postgres:postgrespassword@127.0.0.1:5432/vera_test
         run: alembic upgrade head
 
       - name: Run Alembic Downgrade -1
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/vera_test
+          DATABASE_URL: postgresql://postgres:postgrespassword@127.0.0.1:5432/vera_test
         run: alembic downgrade -1
 
       - name: Run Alembic Upgrade Head (Re-apply)
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/vera_test
+          DATABASE_URL: postgresql://postgres:postgrespassword@127.0.0.1:5432/vera_test
         run: alembic upgrade head
 
       - name: Run Full Pytest Suite against Live Postgres
         env:
           ENVIRONMENT: test
-          DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@localhost:5432/vera_test
+          DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@127.0.0.1:5432/vera_test
+          PYTHONPATH: .
         run: pytest apps/api/tests -v
+
 
   secret-detection:
     name: Secret & Credential Scanning

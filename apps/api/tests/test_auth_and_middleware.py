@@ -54,6 +54,15 @@ async def test_cors_allows_configured_origin():
     assert res.headers["access-control-allow-origin"] == "http://localhost:3000"
 
 
+@pytest.mark.asyncio
+async def test_cors_allows_vercel_origin():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        res = await ac.get("/", headers={"Origin": "https://vera-delhi.vercel.app"})
+
+    assert res.status_code == 200
+    assert res.headers["access-control-allow-origin"] == "https://vera-delhi.vercel.app"
+
+
 def test_rate_limit_client_ip_ignores_spoofed_forwarding_headers():
     scope = {
         "type": "http",

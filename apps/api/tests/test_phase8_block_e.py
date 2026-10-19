@@ -13,13 +13,10 @@ Covers:
 
 from __future__ import annotations
 
-import asyncio
-import io
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-
 
 # ─── Security Headers ────────────────────────────────────────────────────────
 
@@ -74,7 +71,7 @@ class TestPromptInjection:
     """
     Verify that hostile input in evidence text cannot:
     - Override system prompts (role injection)
-    - Extract system prompts (prompt leakage)  
+    - Extract system prompts (prompt leakage)
     - Assign risk scores directly via LLM output manipulation
     - Bypass guardrails via instruction injection
     """
@@ -105,8 +102,8 @@ class TestPromptInjection:
     @pytest.mark.parametrize("payload", INJECTION_PAYLOADS)
     async def test_entity_extraction_does_not_leak_system_prompt(self, payload):
         """LLM entity extraction must not echo system prompts or accept risk overrides."""
-        from apps.api.src.ai.tasks import LLMTaskExecutor
         from apps.api.src.ai.base import LLMGenerationResult
+        from apps.api.src.ai.tasks import LLMTaskExecutor
 
         mock_provider = AsyncMock()
         # Return a response that would be suspicious if taken literally
@@ -131,8 +128,8 @@ class TestPromptInjection:
     @pytest.mark.parametrize("payload", INJECTION_PAYLOADS[:4])  # subset for speed
     async def test_claim_extraction_sanitizes_injected_claims(self, payload):
         """Claim extraction must not produce claims with score_override or risk fields."""
-        from apps.api.src.ai.tasks import LLMTaskExecutor
         from apps.api.src.ai.base import LLMGenerationResult
+        from apps.api.src.ai.tasks import LLMTaskExecutor
 
         mock_provider = AsyncMock()
         mock_provider.generate = AsyncMock(return_value=LLMGenerationResult(
@@ -153,8 +150,8 @@ class TestPromptInjection:
         Even if LLM returns a response containing 'risk_score' or 'verified',
         the task executor must NOT pass those fields through — only typed schemas.
         """
-        from apps.api.src.ai.tasks import LLMTaskExecutor
         from apps.api.src.ai.base import LLMGenerationResult
+        from apps.api.src.ai.tasks import LLMTaskExecutor
 
         mock_provider = AsyncMock()
         # Adversarial LLM response trying to inject risk
@@ -186,8 +183,8 @@ class TestPromptInjection:
         LLM claiming 'urgency_detected=false' via injected payload must not
         cause the field to be silently swapped.
         """
-        from apps.api.src.ai.tasks import LLMTaskExecutor
         from apps.api.src.ai.base import LLMGenerationResult
+        from apps.api.src.ai.tasks import LLMTaskExecutor
 
         mock_provider = AsyncMock()
         # LLM honestly says urgency=true, but injection attempts to suppress it
@@ -381,8 +378,6 @@ class TestHomoglyphDomains:
     def test_homoglyph_detection_logic_exists(self):
         """URL analyzer or security module must have homoglyph detection."""
         # Check that the concept is at least represented in the codebase
-        import importlib.util
-        import os
 
         # Look for homoglyph or lookalike detection in url or domain analysis
         candidates = [
@@ -460,6 +455,7 @@ class TestPrivacyEndpoints:
     async def test_data_deletion_logs_no_user_id(self):
         """delete_user_data must not log the user_id (PII)."""
         import logging
+
         from apps.api.src.services.data_retention import DataRetentionService
 
         service = DataRetentionService()
@@ -529,7 +525,6 @@ class TestObservabilityPIIExclusion:
 
     def test_sentry_before_send_exists_in_observability(self):
         """Sentry integration must have a before_send hook."""
-        import inspect
         import apps.api.src.core.observability as obs_module
 
         # Check that there's a PII scrubber function

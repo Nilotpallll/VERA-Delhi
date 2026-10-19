@@ -27,18 +27,27 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     tables = [
-        "audit_events",
-        "report_manifests",
-        "analyzer_execution_records",
-        "artifacts",
-        "graph_edges",
-        "entities",
-        "verification_results",
+        "audit_logs",
+        "reports",
+        "analyzer_runs",
+        "model_runs",
         "risk_signals",
+        "verification_results",
+        "claims",
+        "relationships",
+        "entities",
         "evidence",
         "inputs",
-        "investigations",
         "users",
     ]
     for table in tables:
         op.execute(sa.text(f"DROP TABLE IF EXISTS {table} CASCADE;"))
+
+    op.execute(sa.text("DROP INDEX IF EXISTS ix_investigations_submitted_by;"))
+    op.execute(sa.text("DROP INDEX IF EXISTS ix_investigations_status;"))
+    op.execute(sa.text("ALTER TABLE investigations DROP COLUMN IF EXISTS risk_summary;"))
+    op.execute(sa.text("ALTER TABLE investigations DROP COLUMN IF EXISTS risk_tier;"))
+    op.execute(sa.text("ALTER TABLE investigations DROP COLUMN IF EXISTS risk_score;"))
+    op.execute(sa.text("ALTER TABLE investigations DROP COLUMN IF EXISTS submitted_by;"))
+    op.execute(sa.text("ALTER TABLE investigations DROP COLUMN IF EXISTS summary_note;"))
+

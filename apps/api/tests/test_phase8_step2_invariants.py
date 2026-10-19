@@ -7,13 +7,13 @@ Validates the strict production requirements:
 4. Rate limiter fails CLOSED (HTTP 503) on expensive routes when Redis is down in production.
 """
 
-import pytest
-from httpx import AsyncClient
-from unittest.mock import patch, MagicMock
-from fastapi import HTTPException
+from unittest.mock import MagicMock, patch
 
+import pytest
 from apps.api.src.core.config import Settings
-from apps.api.src.core.rate_limit import RateLimiter, EXPENSIVE_ROUTES, is_expensive_route
+from apps.api.src.core.rate_limit import RateLimiter
+from fastapi import HTTPException
+from httpx import AsyncClient
 
 
 def test_production_config_rejects_missing_credentials():
@@ -56,13 +56,13 @@ async def test_ready_endpoint_returns_503_when_dependencies_down(client: AsyncCl
 async def test_expensive_routes_fail_closed_when_redis_down():
     """In production, expensive routes must fail CLOSED (HTTP 503) when Redis is unreachable."""
     limiter = RateLimiter(limit=10, window=60, scope="expensive")
-    
+
     mock_request = MagicMock()
     mock_request.url.path = "/api/v1/investigations/inv_123/run-agent"
     mock_request.headers = {}
     mock_request.client.host = "192.168.1.1"
     mock_request.state = MagicMock()
-    
+
     # Simulate Redis connection failure in production environment
     with patch("apps.api.src.core.config.settings.ENVIRONMENT", "production"), \
          patch("apps.api.src.core.rate_limit.get_redis_client", side_effect=ConnectionError("Redis down")):

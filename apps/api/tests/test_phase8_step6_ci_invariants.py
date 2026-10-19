@@ -10,13 +10,12 @@ Note: The real Postgres pgvector CI job is in .github/workflows/ci.yml.
       Alembic migration up/down test requires real credentials and is documented in ci.yml.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from fastapi import HTTPException
+from unittest.mock import MagicMock, patch
 
+import pytest
 from apps.api.src.core.config import Settings
 from apps.api.src.core.rate_limit import RateLimiter, is_expensive_route
-
+from fastapi import HTTPException
 
 # ── (b) ENVIRONMENT=test allows in-memory fallback ───────────────────────────
 
@@ -80,9 +79,10 @@ async def test_production_db_exception_returns_503_not_silent_success(client):
     Simulates the case where db session exists but the actual DB call throws
     (e.g. network partition mid-request). Uses generic OSError to avoid asyncpg dep.
     """
+    from unittest.mock import AsyncMock
+
     from apps.api.src.api.deps import get_db_session
     from apps.api.src.main import app
-    from unittest.mock import AsyncMock
 
     mock_db = AsyncMock()
     app.dependency_overrides[get_db_session] = lambda: mock_db

@@ -1,12 +1,12 @@
 """Tests for Phase 8 Block C: Detection Quality, Evaluation Harness, and Registry Invariants."""
 
-import pytest
-from unittest.mock import patch, AsyncMock
-import httpx
+from unittest.mock import patch
 
+import httpx
+import pytest
+from apps.api.src.contracts.verification import VerificationState
 from apps.api.src.evaluation.benchmark import run_benchmark, verify_thresholds_or_fail
 from apps.api.src.services.registry_verification import registry_service
-from apps.api.src.contracts.verification import VerificationState
 
 
 def test_benchmark_evaluation_harness_thresholds():
