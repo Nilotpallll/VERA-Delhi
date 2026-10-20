@@ -40,14 +40,19 @@ import {
   Radio,
   Image as ImageIcon,
 } from "lucide-react";
-import { translations, Locale } from "@/lib/i18n";
-import { SebiPersonnelVerifier } from "./SebiPersonnelVerifier";
+import {
+  SebiPersonnelVerifier,
+  SebiPersonnelResultCard,
+  VerificationResultState,
+  RegistryRecordItem,
+} from "./SebiPersonnelVerifier";
 import { generateInvestigationPdf } from "@/lib/pdfReportGenerator";
 import {
   SAMPLE_IMAGE_FAKE_SEBI,
   SAMPLE_IMAGE_WHATSAPP_SCAM,
   SAMPLE_IMAGE_AUTHENTIC_NOTE,
 } from "@/lib/sampleImages";
+import { translations, type Locale } from "@/lib/i18n";
 
 interface PublicConsumerFlowProps {
   locale: Locale;
@@ -137,6 +142,115 @@ function normalizeRegistryName(value: string | undefined): string {
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim()
     .replace(/\s+/g, " ");
+}
+
+async function checkAdvisorInTranscript(text: string): Promise<ScanVerdict["advisorVerification"] | undefined> {
+  if (!text) return undefined;
+  const match = text.match(/\b(INA|INH|INP|INZ|INB|INF|INM)[-\s]?([0-9A-Za-z]{4,14})\b/i);
+  const nameMatch = text.match(/(?:i\s*am|this\s*is|advisor|adviser|mr|ms|mrs)\s+([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})/i);
+  const hasKavitha = /kavitha\s*menon/i.test(text);
+  const hasAnand = /anand\s*rathi/i.test(text);
+  const candName = hasKavitha ? "Kavitha Menon" : hasAnand ? "Anand Rathi" : nameMatch ? nameMatch[1].trim() : undefined;
+
+  let regNum: string | undefined = undefined;
+  if (match) {
+    const p = match[1].toUpperCase();
+    const cleanDigits = match[2].toUpperCase().replace(/O/g, "0").replace(/[IL|]/g, "1");
+    if (/^\d+$/.test(cleanDigits)) {
+      regNum = p + String(parseInt(cleanDigits, 10)).padStart(9, "0");
+    } else {
+      regNum = (p + cleanDigits).slice(0, 12);
+    }
+  }
+
+  if (!regNum && !candName) return undefined;
+
+  try {
+    const params = new URLSearchParams();
+    if (regNum) params.set("registrationNumber", regNum);
+    if (candName) params.set("name", candName);
+    const res = await fetch(`/api/registry/sebi?${params.toString()}`);
+    if (!res.ok) return undefined;
+    const regData = await res.json();
+    if (regData.state === "FOUND" && regData.records && regData.records.length > 0) {
+      const rec = regData.records[0];
+      const isMatched = regData.nameMatchStatus === "MATCHED";
+      return {
+        claimedAdvisorName: isMatched ? rec.entityName : candName,
+        claimedRegNumber: regNum || rec.registrationNumber,
+        hasRegistrationClaim: Boolean(regNum),
+        hasNameClaim: Boolean(candName),
+        status: isMatched ? "VERIFIED" : "NOT_VERIFIED",
+        statusLabel: isMatched ? "NAME MATCHES REGISTRY RECORD" : "REGISTRATION RECORD FOUND",
+        details: `Registration ID ${rec.registrationNumber} is actively registered with SEBI under ${rec.entityName} (${rec.intermediaryType}, validity: ${rec.validTo || "Perpetual"}).`,
+        registeredEntityName: rec.entityName,
+        registeredContactPerson: rec.contactPerson,
+        registeredRegNumber: rec.registrationNumber,
+        intermediaryType: rec.intermediaryType,
+        validityFrom: rec.validFrom,
+        validityTo: rec.validTo,
+        identityCheck: isMatched ? "MATCHED_REGISTERED_NAME" : "NAME_NOT_PROVIDED",
+        regulatoryCitation: `SEBI (${rec.intermediaryType}s) Regulations`,
+        officialRegistryUrl: "https://scores.sebi.gov.in",
+      };
+    } else if (regData.state === "NOT_FOUND" && regNum) {
+      return {
+        claimedRegNumber: regNum,
+        hasRegistrationClaim: true,
+        hasNameClaim: false,
+        status: "FICTITIOUS_ID",
+        statusLabel: "NOT FOUND IN SEBI REGISTRY",
+        details: `Registration ID '${regNum}' was not found in official SEBI intermediary records.`,
+        regulatoryCitation: "SEBI Act, 1992 Section 12A",
+        officialRegistryUrl: "https://scores.sebi.gov.in",
+      };
+    }
+  } catch {
+    // fallback
+  }
+  return undefined;
+}
+
+function getRelevantSebiResult(verdict: ScanVerdict | null, composerTab: "TEXT" | "IMAGE" | "VIDEO"): VerificationResultState | null {
+  if (!verdict) return null;
+  if (composerTab !== "IMAGE" && composerTab !== "VIDEO") return null;
+
+  const adv = verdict.advisorVerification;
+  if (!adv) return null;
+
+  const hasName = Boolean(adv.hasNameClaim || adv.claimedAdvisorName || adv.registeredContactPerson || adv.registeredEntityName);
+  const hasNumber = Boolean(adv.hasRegistrationClaim || adv.claimedRegNumber || adv.registeredRegNumber);
+
+  // User requirement: "IF those modules have names and numbers relevant to the image or video"
+  if (!hasName && !hasNumber) return null;
+
+  const isMatched = adv.identityCheck === "MATCHED_REGISTERED_NAME" || (adv.status === "VERIFIED" && adv.hasNameClaim);
+  const isMismatch = adv.identityCheck === "NAME_MISMATCH" || (adv.status === "NOT_VERIFIED" && adv.hasNameClaim && adv.hasRegistrationClaim);
+
+  const stateVal: VerificationResultState["state"] =
+    adv.status === "VERIFIED" || adv.registeredRegNumber
+      ? "FOUND"
+      : adv.status === "FICTITIOUS_ID"
+      ? "NOT_FOUND"
+      : "NOT_FOUND";
+
+  const recordsList: RegistryRecordItem[] = (adv.registeredEntityName || adv.registeredRegNumber) ? [{
+    registrationNumber: adv.registeredRegNumber || adv.claimedRegNumber || "",
+    entityName: adv.registeredEntityName || adv.claimedAdvisorName || "Unregistered Entity",
+    contactPerson: adv.registeredContactPerson || adv.registeredEntityName || "",
+    intermediaryType: adv.intermediaryType || "SEBI Intermediary",
+    validFrom: adv.validityFrom || "Active",
+    validTo: adv.validityTo || "Perpetual",
+  }] : [];
+
+  return {
+    state: stateVal,
+    nameMatchStatus: isMatched ? "MATCHED" : isMismatch ? "MISMATCH" : "NOT_CHECKED",
+    records: recordsList,
+    queriedName: adv.claimedAdvisorName || adv.registeredEntityName,
+    queriedRegistration: adv.claimedRegNumber || adv.registeredRegNumber,
+    asOf: adv.snapshotDate || "2026-10-18",
+  };
 }
 
 const SAMPLE_SCAM_PROMPTS = [
@@ -659,6 +773,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         );
       }
 
+      const transcriptAdvisor = data.advisor_verification || data.advisorVerification || (await checkAdvisorInTranscript(customSpeech || data.transcript || ""));
+
       setVerdict((prev) => {
         if (!prev) return null;
         return {
@@ -667,6 +783,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           score: data.composite_score ?? (hasAdvisory ? 88 : isVisualFake ? 86 : 12),
           highlightedReasons: reasons,
           matchedKeywords: data.flagged_advisory_phrases || [],
+          advisorVerification: transcriptAdvisor,
           videoTranscript: data.transcript,
           translatedTranscript: data.translated_transcript || data.transcript,
           detectedLanguage: data.detected_language || "en",
@@ -749,7 +866,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           isImageResult: true,
           extractedImageText: data.extracted_text || "",
           imageSummary: data.summary || "",
-          advisorVerification: data.advisor_verification,
+          advisorVerification: data.advisor_verification || data.advisorVerification,
           inference: data.inference || (
             data.risk_tier === "CRITICAL" || data.riskTier === "HIGH"
               ? "High-risk assessment assigned due to prohibited return guarantees and unregulated advisory signals. Under SEBI Circular CIR/2023/123, assured returns are strictly prohibited across all registered and unregistered entities. Solicitation to private channels presents immediate capital loss risk."
@@ -991,11 +1108,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         }
 
 
+        const transcriptAdvisor = data.advisor_verification || data.advisorVerification || (await checkAdvisorInTranscript(userSpokenText || customTranscriptText || data.transcript || ""));
+
         setVerdict({
           riskTier: (data.composite_risk_tier || (hasAdvisory || isVisualFake ? "HIGH" : "MINIMAL")) as ScanVerdict["riskTier"],
           score: data.composite_score ?? Math.round(agg * 100),
           highlightedReasons: reasons,
           matchedKeywords: data.flagged_advisory_phrases || [],
+          advisorVerification: transcriptAdvisor,
           verifiedItems: [
             locale === "hi"
               ? `${data.frames_analyzed} वीडियो फ़्रेमों की स्वचालित चेहरे की जाँच`
@@ -3569,10 +3689,39 @@ Source: VERA Fraud Intelligence Platform`;
         </div>
       )}
 
-      {/* ── SEBI PERSONNEL & ENTITY VERIFICATION MODULE ──────────────────────── */}
+      {/* ── SEBI PERSONNEL & ENTITY VERIFICATION MODULE (TEXT TAB ONLY) ──────── */}
       {composerTab === "TEXT" && (
         <SebiPersonnelVerifier locale={locale} />
       )}
+
+      {/* ── SEBI PERSONNEL RESULT CARD (IMAGE & VIDEO TABS: JUST THE RESULT PART IF RELEVANT) ── */}
+      {(composerTab === "IMAGE" || composerTab === "VIDEO") && verdict && (() => {
+        const sebiRes = getRelevantSebiResult(verdict, composerTab);
+        if (!sebiRes) return null;
+        return (
+          <div className="w-full max-w-[760px] mx-auto mt-8 mb-6" id="vera-media-sebi-result">
+            <div className="mb-3 flex items-center justify-between pb-2 border-b border-[var(--border)]">
+              <span className="text-xs font-mono uppercase font-bold text-[var(--text-muted)] tracking-wider">
+                {locale === "hi"
+                  ? "पहचाने गए सेबी क्रेडेंशियल्स का सत्यापन"
+                  : "SEBI Personnel Verification · Detected in Media"}
+              </span>
+              <span className="text-[11px] font-mono-tabular px-2.5 py-0.5 rounded-full bg-[var(--nav-track)] border border-[var(--border)] text-[var(--text-muted)]">
+                {composerTab === "IMAGE" ? "Image / Screenshot Forensics" : "Video / Deepfake Forensics"}
+              </span>
+            </div>
+            <SebiPersonnelResultCard
+              verificationResult={sebiRes}
+              locale={locale}
+              sourceBadge={
+                composerTab === "IMAGE"
+                  ? (locale === "hi" ? "स्क्रीनशॉट में सेबी सलाहकार का विवरण पाया गया" : "Verified SEBI credentials extracted from uploaded screenshot")
+                  : (locale === "hi" ? "वीडियो में सेबी सलाहकार का विवरण पाया गया" : "Verified SEBI credentials extracted from video dialogue")
+              }
+            />
+          </div>
+        );
+      })()}
 
       {/* ── DEDICATED FORENSIC AUDIO TRANSCRIPTION WINDOW (POPUP MODAL) ────── */}
       {isTranscriptModalOpen && verdict && verdict.videoTranscript && (

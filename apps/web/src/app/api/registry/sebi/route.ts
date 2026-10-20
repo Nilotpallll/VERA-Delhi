@@ -160,9 +160,18 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const registrationNumber = rawRegistration.toUpperCase().replace(/[\s-]/g, "");
+  let registrationNumber = rawRegistration.toUpperCase().replace(/[\s-]/g, "");
+  const pMatch = registrationNumber.match(/^(INA|INH|INP|INZ|INB|INF|INM)/);
+  if (pMatch) {
+    const p = pMatch[1];
+    let numPart = registrationNumber.slice(p.length).replace(/[O]/g, "0").replace(/[IL|]/g, "1");
+    if (/^\d+$/.test(numPart)) {
+      registrationNumber = p + String(parseInt(numPart, 10)).padStart(9, "0");
+    }
+  }
+
   const requestedType = request.nextUrl.searchParams.get("intermediaryType") ?? "";
-  const match = registrationNumber.match(/^(INA|INH|INP|INZ)[0-9A-Z]{4,10}$/);
+  const match = registrationNumber.match(/^(INA|INH|INP|INZ)[0-9A-Z]{4,14}$/);
 
   if (!match && !rawName && action !== "roles") {
     return NextResponse.json({ state: "OUT_OF_SCOPE" }, { headers: { "Cache-Control": "no-store" } });

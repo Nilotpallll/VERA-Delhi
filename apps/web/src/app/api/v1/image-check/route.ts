@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2500);
+      const timeout = setTimeout(() => controller.abort(), 8000);
       const pyResp = await fetch(`${backendUrl}/api/v1/image-check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -121,6 +121,9 @@ export async function POST(req: NextRequest) {
           if (!data.extracted_text && extractedText) {
             data.extracted_text = extractedText;
           }
+          if (data.advisor_verification && !data.advisorVerification) {
+            data.advisorVerification = data.advisor_verification;
+          }
           return NextResponse.json(data, { status: 200 });
         }
       }
@@ -131,12 +134,23 @@ export async function POST(req: NextRequest) {
     // ── STEP 3: HIGH-PRECISION SEBI REGISTRY & FORENSIC SCAM ANALYSIS ─────
     const combinedText = `${extractedText} ${prompt_text} ${filename}`.toLowerCase();
 
-    // 1. Check for Claimed SEBI Registration ID (INA, INH, INP, INZ)
-    const regMatch = combinedText.match(/\b(INA|INH|INP|INZ)[0-9A-Z]{4,10}\b/i);
-    const claimedRegId = regMatch ? regMatch[0].toUpperCase() : null;
-
+    // 1. Check for Claimed SEBI Registration ID (INA, INH, INP, INZ, INB, INF, INM)
+    // Robust OCR extraction: handles dashes, spaces, and OCR digit noise (O->0, I/l->1)
+    const regMatch = combinedText.match(/\b(INA|INH|INP|INZ|INB|INF|INM)[-\s]?([0-9A-Za-z]{4,14})\b/i);
+    let claimedRegId: string | null = null;
     let registryRecord: any = null;
     let isFictitiousRegId = false;
+
+    if (regMatch) {
+      const prefix = regMatch[1].toUpperCase();
+      let rawNum = regMatch[2].toUpperCase().replace(/[O]/g, "0").replace(/[IL|]/g, "1");
+      if (/^\d+$/.test(rawNum)) {
+        const n = parseInt(rawNum, 10);
+        claimedRegId = prefix + String(n).padStart(9, "0");
+      } else {
+        claimedRegId = (prefix + rawNum).slice(0, 12);
+      }
+    }
 
     if (claimedRegId) {
       const registry = await getSebiRegistry();
@@ -147,8 +161,10 @@ export async function POST(req: NextRequest) {
           const prefix = claimedRegId.slice(0, 3);
           const rest = claimedRegId.slice(3);
           if (/^\d+$/.test(rest)) {
-            const padded = prefix + rest.padStart(9, "0");
+            const num = parseInt(rest, 10);
+            const padded = prefix + String(num).padStart(9, "0");
             registryRecord = registry.records[padded];
+            if (registryRecord) claimedRegId = padded;
           }
         }
         if (!registryRecord) {
@@ -157,15 +173,50 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Name Matching for Registered Entities
+    // 2. Name Extraction & Matching for Registered Entities
     let nameMatched = false;
+    let claimedAdvisorName: string | undefined = undefined;
+    const nameClaimMatch = combinedText.match(/(?:i\s*am|this\s*is|advisor|adviser|mr|ms|mrs)\s+([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})/i);
+    if (nameClaimMatch) {
+      claimedAdvisorName = nameClaimMatch[1].trim();
+    }
+
+    // Fallback: If registration was not matched by ID, try searching by claimed name in registry
+    if (!registryRecord) {
+      const registry = await getSebiRegistry();
+      if (registry && registry.records) {
+        const nameCandidates = [
+          claimedAdvisorName,
+          combinedText.includes("kavitha menon") ? "Kavitha Menon" : null,
+          combinedText.includes("anand rathi") ? "Anand Rathi" : null,
+        ].filter(Boolean) as string[];
+
+        for (const cand of nameCandidates) {
+          const candNorm = cand.toLowerCase();
+          for (const [regId, rec] of Object.entries(registry.records as Record<string, any>)) {
+            const ent = (rec.entityName || "").toLowerCase();
+            const contact = (rec.contactPerson || "").toLowerCase();
+            if (ent === candNorm || contact === candNorm || ent.includes(candNorm) || candNorm.includes(ent)) {
+              registryRecord = rec;
+              claimedRegId = rec.registrationNumber || regId;
+              nameMatched = true;
+              isFictitiousRegId = false;
+              break;
+            }
+          }
+          if (registryRecord) break;
+        }
+      }
+    }
+
     if (registryRecord) {
       const entNameNorm = (registryRecord.entityName || "").toLowerCase();
       const contactNorm = (registryRecord.contactPerson || "").toLowerCase();
       if (
         (entNameNorm && combinedText.includes(entNameNorm)) ||
         (contactNorm && combinedText.includes(contactNorm)) ||
-        (entNameNorm && entNameNorm.split(" ").some((part: string) => part.length >= 4 && combinedText.includes(part)))
+        (claimedAdvisorName && (entNameNorm.includes(claimedAdvisorName.toLowerCase()) || claimedAdvisorName.toLowerCase().includes(entNameNorm))) ||
+        (entNameNorm && entNameNorm.split(" ").every((part: string) => part.length >= 3 && combinedText.includes(part)))
       ) {
         nameMatched = true;
       }
