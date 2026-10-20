@@ -4,7 +4,6 @@ import { ArrowDown, ArrowRight, Check, Moon, ShieldAlert, Sparkles, Sun } from "
 import { Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Locale, translations } from "@/lib/i18n";
-import { FinanceBackdrop } from "@/components/shell/FinanceBackdrop";
 import { ScrollEffects } from "@/components/shell/ScrollEffects";
 import { VeraLogo } from "@/components/brand/VeraLogo";
 
@@ -133,7 +132,6 @@ export function VeraCover({
   return (
     <div className="vera-cover">
       <ScrollEffects />
-      <FinanceBackdrop />
       <header className="vera-cover-nav">
         <a className="vera-cover-brand" href="#cover-top" aria-label="VERA home">
           <span className="vera-cover-monogram"><VeraLogo className="vera-logo-symbol" /></span>

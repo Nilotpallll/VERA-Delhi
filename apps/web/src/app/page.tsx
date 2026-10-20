@@ -16,7 +16,6 @@ import { VeraNavigation, NavTab } from "@/components/navigation/VeraNavigation";
 import { PublicConsumerFlow } from "@/components/dashboard/PublicConsumerFlow";
 import { SebiGuidancePanel } from "@/components/dashboard/SebiGuidancePanel";
 import { VeraCover } from "@/components/landing/VeraCover";
-import { FinanceBackdrop } from "@/components/shell/FinanceBackdrop";
 import { ScrollEffects } from "@/components/shell/ScrollEffects";
 import { translations, Locale } from "@/lib/i18n";
 
@@ -98,7 +97,6 @@ export default function Home() {
 
   return (
     <div className="vera-investigation-page min-h-screen text-[var(--text-primary)] antialiased relative z-10 flex flex-col items-center animate-vera-fade-in">
-      <FinanceBackdrop />
       <ScrollEffects />
       {/* ── UNIFIED FLOATING NAVIGATION (Replaces sidebar & topbar) ─────────── */}
       <VeraNavigation

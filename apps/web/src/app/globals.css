@@ -1218,19 +1218,25 @@ body::after { background: radial-gradient(ellipse 800px 420px at 50% 480px, rgba
 .vera-cover-veronica-hero-logo { width: 24px !important; height: 24px !important; border-radius: 50% !important; flex-shrink: 0; }
 [data-theme="dark"] .vera-logo-symbol { background: #303030; box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); }
 [data-theme="dark"] .vera-logo-image { filter: none; }
-.vera-finance-backdrop { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; opacity: .3; }
+.vera-finance-backdrop { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; opacity: .48; }
 .vera-finance-backdrop svg { display: block; width: 100%; height: 100%; }
 .vera-market-grid { fill: none; stroke: rgba(89,132,151,.12); stroke-width: 1; }
 .vera-market-line { fill: none; stroke: rgba(76,132,155,.32); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 900; stroke-dashoffset: 900; animation: vera-market-draw 2.4s .25s cubic-bezier(.2,.7,.2,1) forwards; }
+.vera-market-line-live { fill: none; stroke: rgba(76,132,155,.42); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 42 858; stroke-dashoffset: 900; filter: drop-shadow(0 0 4px rgba(76,132,155,.28)); animation: vera-market-trace 11s 2.7s linear infinite; }
 .vera-market-points { fill: #6f9eaf; opacity: .62; animation: vera-market-pulse 4.8s 2.6s ease-in-out infinite; }
+.vera-market-ticker { fill: #6f9eaf; filter: drop-shadow(0 0 6px rgba(76,132,155,.72)); }
+.vera-market-ticker-secondary { opacity: .62; }
 .vera-market-scan { fill: none; stroke: rgba(91,153,175,.58); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 34 426; stroke-dashoffset: 460; opacity: .44; filter: drop-shadow(0 0 4px rgba(91,153,175,.3)); animation: vera-market-scan 12s ease-in-out infinite; }
 .vera-market-baseline { fill: none; stroke: rgba(89,132,151,.08); stroke-width: 1; }
-[data-theme="dark"] .vera-finance-backdrop { opacity: .18; }
+[data-theme="dark"] .vera-finance-backdrop { opacity: .36; }
 [data-theme="dark"] .vera-market-grid { stroke: rgba(153,195,207,.12); }
 [data-theme="dark"] .vera-market-line { stroke: rgba(153,195,207,.34); }
+[data-theme="dark"] .vera-market-line-live { stroke: rgba(169,208,223,.7); filter: drop-shadow(0 0 5px rgba(169,208,223,.5)); }
 [data-theme="dark"] .vera-market-points { fill: #a9d0df; }
+[data-theme="dark"] .vera-market-ticker { fill: #b7dce8; filter: drop-shadow(0 0 7px rgba(169,208,223,.8)); }
 [data-theme="dark"] .vera-market-scan { stroke: rgba(169,208,223,.66); filter: drop-shadow(0 0 5px rgba(169,208,223,.35)); }
 @keyframes vera-market-draw { to { stroke-dashoffset: 0; } }
+@keyframes vera-market-trace { from { stroke-dashoffset: 900; opacity: .22; } 12% { opacity: .76; } 88% { opacity: .76; } to { stroke-dashoffset: 0; opacity: .22; } }
 @keyframes vera-market-pulse { 0%,100% { opacity: .38; } 50% { opacity: .82; } }
 @keyframes vera-market-scan { 0%,8% { stroke-dashoffset: 460; opacity: 0; } 20% { opacity: .44; } 82% { stroke-dashoffset: 0; opacity: .44; } 94%,100% { stroke-dashoffset: 0; opacity: 0; } }
 .vera-investigation-page { isolation: isolate; }
@@ -1316,7 +1322,11 @@ body::after { background: radial-gradient(ellipse 800px 420px at 50% 480px, rgba
 @keyframes vera-result-detail-arrive { from { opacity: 0; transform: translate3d(0,11px,0) scale(.985); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   .vera-investigation-page *, .vera-investigation-page *::before, .vera-investigation-page *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
-  .vera-finance-backdrop, .vera-finance-backdrop::before, .vera-finance-backdrop::after { animation: none !important; }
+  .vera-finance-backdrop, .vera-finance-backdrop::before, .vera-finance-backdrop::after,
+  .vera-finance-backdrop svg, .vera-market-line, .vera-market-line-live, .vera-market-points,
+  .vera-market-scan { animation: none !important; }
+  .vera-market-line { stroke-dashoffset: 0; }
+  .vera-market-line-live, .vera-market-ticker { display: none; }
 }
 @media (max-width: 560px) { .vera-scan-console { padding: 13px 13px 11px; } .vera-scan-console-main { grid-template-columns: 72px minmax(0,1fr); gap: 11px; } .vera-scan-radar { width: 68px; height: 68px; } .vera-scan-stages { gap: 3px; } .vera-scan-stage { gap: 3px; } .vera-scan-stage-node { width: 17px; height: 17px; } .vera-scan-stage-label { font-size: 7px; } }
 .vera-cover > :not(.vera-finance-backdrop) { position: relative; z-index: 1; }
