@@ -198,14 +198,36 @@ export const VeronicaWidget: React.FC = () => {
     };
     const handleToggle = () => setIsOpen((prev) => !prev);
     const handleClose = () => setIsOpen(false);
+    const handleShortcut = (event: KeyboardEvent) => {
+      const isVKey = event.code === "KeyV" || event.key.toLowerCase() === "v";
+      if (
+        !event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.getModifierState("AltGraph") ||
+        !isVKey ||
+        event.repeat ||
+        event.isComposing
+      ) return;
+
+      const target = event.target;
+      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true']")) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      setIsOpen((prev) => !prev);
+    };
 
     window.addEventListener("vera:open-veronica", handleOpen);
     window.addEventListener("vera:toggle-veronica", handleToggle);
     window.addEventListener("vera:close-veronica", handleClose);
+    // Capture the shortcut before app-level handlers or browser integrations can consume it.
+    document.addEventListener("keydown", handleShortcut, true);
     return () => {
       window.removeEventListener("vera:open-veronica", handleOpen);
       window.removeEventListener("vera:toggle-veronica", handleToggle);
       window.removeEventListener("vera:close-veronica", handleClose);
+      document.removeEventListener("keydown", handleShortcut, true);
     };
   }, []);
 

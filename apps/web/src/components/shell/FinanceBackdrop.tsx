@@ -24,6 +24,19 @@ export function FinanceBackdrop() {
         <circle className="vera-market-ticker vera-market-ticker-secondary" r="3">
           <animateMotion dur="13s" begin="-6.5s" repeatCount="indefinite" path={marketPath} />
         </circle>
+        <g className="vera-evidence-thread">
+          <path className="vera-evidence-thread-base" d="M115 590C160 548 190 510 238 514S302 458 342 445S405 370 472 350" />
+          <path className="vera-evidence-thread-live" d="M115 590C160 548 190 510 238 514S302 458 342 445S405 370 472 350" pathLength="400" />
+          <g className="vera-evidence-thread-points">
+            <circle cx="115" cy="590" r="3" />
+            <circle cx="238" cy="514" r="3.5" />
+            <circle cx="342" cy="445" r="3" />
+            <circle cx="472" cy="350" r="4" />
+          </g>
+          <circle className="vera-evidence-thread-ticker" r="3.5">
+            <animateMotion dur="20s" repeatCount="indefinite" path="M115 590C160 548 190 510 238 514S302 458 342 445S405 370 472 350" />
+          </circle>
+        </g>
         <path className="vera-market-baseline" d="M0 760H1440" />
       </svg>
     </div>

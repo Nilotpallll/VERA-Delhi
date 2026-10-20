@@ -64,11 +64,11 @@ export function VeraNavigation({
               type="button"
               onClick={onOpenCover}
               className="vera-nav-back-btn group h-9 px-3 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold hover:border-[var(--text-muted)] hover:bg-[var(--surface-solid)] transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
-              title={t.backToCover || "Back to Cover"}
-              aria-label={t.backToCover || "Back to Cover"}
+              title={t.backToCover || "Back to Home"}
+              aria-label={t.backToCover || "Back to Home"}
             >
               <ArrowLeft className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-200 ease-out group-hover:-translate-x-1" />
-              <span className="font-semibold tracking-tight">{locale === "hi" ? "कवर" : "Cover"}</span>
+              <span className="font-semibold tracking-tight">{locale === "hi" ? "होम" : "Home"}</span>
             </button>
           )}
 
@@ -104,7 +104,7 @@ export function VeraNavigation({
                 className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline group cursor-pointer"
               >
                 <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                <span>{locale === "hi" ? "कवर पेज पर वापस जाएं" : "Return to Cover Page"}</span>
+                <span>{locale === "hi" ? "होम पेज पर वापस जाएं" : "Return to Home Page"}</span>
               </button>
             )}
           </div>
@@ -118,6 +118,7 @@ export function VeraNavigation({
               <button
                 key={id}
                 onClick={() => { setIsBrandExpanded(false); onTabChange(id); }}
+                aria-pressed={isActive}
                 className={`h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 select-none ${
                   isActive
                     ? "bg-[var(--nav-active-pill)] text-[var(--nav-active-text)] font-semibold shadow-sm"
@@ -141,7 +142,7 @@ export function VeraNavigation({
               }
             }}
             className="h-9 pl-2 pr-3.5 rounded-full border border-amber-500/35 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-semibold hover:bg-amber-500/20 transition-colors shadow-sm flex items-center gap-2 overflow-hidden"
-            title="Veronica AI Forensic Assistant"
+            title="Veronica AI Forensic Assistant (Alt + V)"
             aria-label="Veronica AI Forensic Assistant"
           >
             <VeraLogo className="vera-nav-veronica-logo" />
@@ -154,6 +155,7 @@ export function VeraNavigation({
             className="h-9 px-3.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold hover:border-[var(--text-muted)] transition-colors shadow-sm"
             title="Toggle language"
             aria-label="Toggle language"
+            aria-pressed={locale === "hi"}
           >
             {locale === "en" ? "हिंदी" : "EN"}
           </button>
@@ -164,6 +166,7 @@ export function VeraNavigation({
             className="w-9 h-9 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] flex items-center justify-center hover:border-[var(--text-muted)] transition-colors shadow-sm"
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             aria-label="Toggle theme"
+            aria-pressed={theme === "dark"}
           >
             {theme === "dark" ? (
               <Sun className="w-4 h-4 text-[#a9d0df]" />
@@ -177,17 +180,17 @@ export function VeraNavigation({
 
       {/* ── MOBILE CONTROLS (< 768px) ─────────────────────────────────────── */}
       <div className="md:hidden">
-        {/* Top-Left: Back to Cover Button */}
+        {/* Top-Left: Back to Home Button */}
         {onOpenCover && (
           <button
             type="button"
             onClick={onOpenCover}
             className="vera-nav-back-btn fixed top-3 left-3 z-50 h-11 px-3.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-semibold flex items-center gap-1.5 backdrop-blur-xl shadow-md group active:scale-95 transition-all"
-            title={t.backToCover || "Back to Cover"}
-            aria-label={t.backToCover || "Back to Cover"}
+            title={t.backToCover || "Back to Home"}
+            aria-label={t.backToCover || "Back to Home"}
           >
             <ArrowLeft className="w-4 h-4 transition-transform duration-200 ease-out group-hover:-translate-x-1" />
-            <span>{locale === "hi" ? "कवर" : "Cover"}</span>
+            <span>{locale === "hi" ? "होम" : "Home"}</span>
           </button>
         )}
 
@@ -211,6 +214,7 @@ export function VeraNavigation({
             className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] text-xs font-bold flex items-center justify-center backdrop-blur-xl shadow-md"
             title="Toggle language"
             aria-label="Toggle language"
+            aria-pressed={locale === "hi"}
           >
             {locale === "en" ? "हिंदी" : "EN"}
           </button>
@@ -219,6 +223,7 @@ export function VeraNavigation({
             className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] flex items-center justify-center backdrop-blur-xl shadow-md"
             title="Toggle theme"
             aria-label="Toggle theme"
+            aria-pressed={theme === "dark"}
           >
             {theme === "dark" ? (
               <Sun className="w-4 h-4 text-[#a9d0df]" />
@@ -240,6 +245,7 @@ export function VeraNavigation({
                 <button
                   key={id}
                   onClick={() => onTabChange(id)}
+                  aria-pressed={isActive}
                   className={`flex-1 h-12 rounded-full flex flex-col items-center justify-center transition-all ${
                     isActive
                       ? "bg-[var(--nav-active-pill)] text-[var(--nav-active-text)] font-semibold shadow-sm"

@@ -31,7 +31,7 @@ export const VeronicaLauncher: React.FC<VeronicaLauncherProps> = ({
       onClick={onToggle}
       aria-label={label}
       aria-expanded={isOpen}
-      title={label}
+      title={`${label} (Alt + V)`}
     >
       {!isOpen && <span className={styles.vrnLauncherLabel}>Talk with VERONICA</span>}
       <span className={styles.vrnLauncherIcon}>

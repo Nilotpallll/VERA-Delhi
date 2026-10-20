@@ -125,22 +125,22 @@ export default function Home() {
                 window.scrollTo({ top: 0, behavior: "instant" });
               }}
               className="group inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-solid)] text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs font-semibold shadow-sm transition-all duration-200 active:scale-95 cursor-pointer vera-nav-back-btn"
-              aria-label={locale === "hi" ? "मुख्य कवर पेज पर वापस जाएं" : "Back to Cover"}
+              aria-label={locale === "hi" ? "होम पेज पर वापस जाएं" : "Back to Home"}
             >
               <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-200 ease-out group-hover:-translate-x-1" />
-              <span>{locale === "hi" ? "मुख्य कवर पर वापस जाएं" : "Back to Cover Overview"}</span>
+              <span>{locale === "hi" ? "होम पर वापस जाएं" : "Back to Home"}</span>
             </button>
 
             {/* H1 Title: white over navy panel in light, text color in dark */}
             <h1 className="text-fluid-h1 text-[var(--hero-h1-color)] max-w-3xl tracking-tight leading-tight">
-              {locale === "hi" ? "धोखाधड़ी जाँच" : "Investment Fraud Checker"}
+              {locale === "hi" ? "कुछ ठीक नहीं लग रहा? जाँचें।" : "Something feels off? Check it here."}
             </h1>
 
             {/* Subtitle: 18px, max 560px, 70% opacity (light: white 85%) */}
             <p className="mt-3 text-lg max-w-[560px] text-[var(--hero-subtitle-color)] leading-relaxed">
               {locale === "hi"
-                ? "संदिग्ध संदेश, लिंक या वीडियो को SEBI नियमों के विरुद्ध जाँचें।"
-                : "Check suspicious messages, links, or videos against SEBI regulations instantly."}
+                ? "संदेश, लिंक, स्क्रीनशॉट या वीडियो जोड़ें। VERA चेतावनी के संकेत और आगे जाँचने वाली बातें दिखाएगा।"
+                : "Paste a message or link, or add a screenshot or video. VERA checks for warning signs and shows what to verify next."}
             </p>
 
             {/* Composer Card with Segmented Tabs, Auto-Growing Textarea, Dropzone & Floating Chips */}
@@ -153,12 +153,12 @@ export default function Home() {
           <div className="w-full max-w-[1120px] text-left pt-2 animate-fade-in">
             <div className="text-center mb-10">
               <h2 className="text-fluid-h2 text-[var(--hero-h1-color)] tracking-tight">
-                {locale === "hi" ? "सेबी निवेशक मार्गदर्शन" : "SEBI Investor Guidance"}
+                {locale === "hi" ? "निवेश के दावों के नियम समझें" : "Know the rules behind investment claims"}
               </h2>
               <p className="mt-2 text-base text-[var(--hero-subtitle-color)] max-w-xl mx-auto leading-relaxed">
                 {locale === "hi"
-                  ? "जानें कौन-से वादे अवैध हैं और अपने अधिकारों की रक्षा कैसे करें।"
-                  : "Learn which investment promises are illegal and how to protect your rights under official regulations."}
+                  ? "आसान भाषा में मार्गदर्शन पढ़ें और मूल सेबी परिपत्र देखें।"
+                  : "Get plain-language guidance on common investment claims, with links to the original SEBI circulars."}
               </p>
             </div>
             <SebiGuidancePanel />
@@ -171,26 +171,26 @@ export default function Home() {
             {/* Header */}
             <div className="text-center mb-10">
               <h2 className="text-fluid-h2 text-[var(--hero-h1-color)] tracking-tight">
-                {locale === "hi" ? "रिपोर्ट करें और सहायता पाएं" : "Report Fraud & Get Help"}
+                {locale === "hi" ? "धोखाधड़ी की रिपोर्ट करनी है?" : "Need help reporting a scam?"}
               </h2>
               <p className="mt-2 text-base text-[var(--hero-subtitle-color)] max-w-xl mx-auto leading-relaxed">
                 {locale === "hi"
-                  ? "धोखाधड़ी की शिकायत करने के लिए नीचे दिए गए आधिकारिक चैनलों का उपयोग करें।"
-                  : "Official statutory channels to report investment fraud, freeze illicit transfers, and trigger SEBI investigations."}
+                  ? "पैसे भेजे हैं या अपनी जानकारी साझा की है? सही जगह रिपोर्ट करने और पंजीकरण जाँचने के लिए ये आधिकारिक लिंक इस्तेमाल करें।"
+                  : "If you’ve sent money or shared personal details, use these official channels to report it and check a firm’s registration."}
               </p>
             </div>
 
             {/* 12-Column Bento Grid */}
             <div className="grid grid-cols-12 gap-6 w-full">
               {/* CARD 1: Large Helpline 1930 Card (span 6, red-tinted, mono 56px number, tel link) */}
-              <div className="col-span-12 lg:col-span-6 vera-glass rounded-[24px] p-7 sm:p-8 flex flex-col justify-between bg-rose-500/10 border-rose-500/25 transition-transform duration-200 hover:-translate-y-0.5">
+              <div className="vera-helpline-card col-span-12 lg:col-span-6 vera-glass rounded-[24px] p-7 sm:p-8 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
                 <div>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-rose-600/30">
+                    <div className="vera-helpline-icon w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0">
                       <PhoneCall className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-xs uppercase font-mono-tabular tracking-wider font-bold text-rose-700 dark:text-rose-400 block">
+                      <span className="vera-helpline-copy text-xs uppercase font-mono-tabular tracking-wider font-bold block">
                         {locale === "hi" ? "आपातकालीन वित्तीय हेल्पलाइन" : "Emergency Financial Helpline"}
                       </span>
                       <h3 className="text-base font-bold text-[var(--text-primary)]">
@@ -201,7 +201,7 @@ export default function Home() {
 
                   {/* Mono 56px Number */}
                   <div className="my-5">
-                    <span className="font-mono-tabular font-extrabold text-[56px] sm:text-[64px] text-rose-600 dark:text-rose-400 tracking-tight leading-none block">
+                    <span className="vera-helpline-copy font-mono-tabular font-extrabold text-[56px] sm:text-[64px] tracking-tight leading-none block">
                       1930
                     </span>
                     <span className="text-xs font-mono-tabular text-[var(--text-muted)] mt-1.5 block">
@@ -219,7 +219,7 @@ export default function Home() {
                 <div>
                   <a
                     href="tel:1930"
-                    className="w-full sm:w-auto px-8 h-12 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm inline-flex items-center justify-center gap-2.5 shadow-md shadow-rose-600/30 transition-transform hover:scale-[1.02]"
+                    className="vera-helpline-action w-full sm:w-auto px-8 h-12 rounded-full font-bold text-sm inline-flex items-center justify-center gap-2.5 transition-transform hover:scale-[1.02]"
                   >
                     <Phone className="w-4 h-4" />
                     <span>{locale === "hi" ? "1930 पर कॉल करें" : "Dial 1930 Helpline"}</span>

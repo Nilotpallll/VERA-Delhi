@@ -209,12 +209,12 @@ export function SebiPersonnelVerifier({ locale = "en", className = "" }: SebiPer
           </div>
           <div>
             <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
-              {isHi ? "सेबी कार्मिक एवं मध्यस्थ सत्यापन" : "SEBI Personnel & Entity Verification"}
+              {isHi ? "सेबी पंजीकरण किसके नाम पर है?" : "Who does this SEBI registration belong to?"}
             </h2>
             <p className="text-sm text-[var(--text-muted)] font-normal mt-0.5 leading-relaxed">
               {isHi
-                ? "जाँचें कि क्या कोई व्यक्ति या संस्था सेबी पंजीकृत सलाहकार (INA) या मध्यस्थ है।"
-                : "Verify whether an individual advisor or firm holds a genuine SEBI license before trusting advice or transferring capital."}
+                ? "पंजीकरण संख्या डालें और जानें कि यह किस व्यक्ति या संस्था की है। नाम भी जोड़ें, ताकि रिकॉर्ड से उसका मिलान किया जा सके।"
+                : "Enter a registration number to see the person or firm and their SEBI category. Add the claimed name to check whether it matches the record."}
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   ShieldAlert,
   AlertTriangle,
@@ -29,6 +29,8 @@ import {
   Copy,
   Phone,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   FileAudio,
   AlertCircle,
   Maximize2,
@@ -190,7 +192,7 @@ function renderHighlightedSpeechTranscript(transcript: string, phrases: string[]
           return (
             <mark
               key={i}
-              className="bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold px-1.5 py-0.5 rounded border border-rose-500/40 inline-block mx-0.5 shadow-sm"
+              className="vera-flag-mark font-bold px-1.5 py-0.5 rounded inline-block mx-0.5 shadow-sm"
               title="SEBI Violation / Fraud Advisory Signal"
             >
               {part}
@@ -226,6 +228,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const quickSamplesRef = useRef<HTMLDivElement>(null);
+  const [quickSamplesCanScroll, setQuickSamplesCanScroll] = useState({ left: false, right: false });
   const [uploadedImageFile, setUploadedImageFile] = useState<{ name: string; sizeMB: string } | null>(null);
   const [uploadedImageB64, setUploadedImageB64] = useState<string | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -240,6 +244,30 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     : /video|frame|face|audio|speech|transcrib|dialogue/.test(normalizedScanPhase)
     ? 1
     : 0;
+
+  useEffect(() => {
+    const strip = quickSamplesRef.current;
+    if (!strip) return;
+
+    const updateScrollEdges = () => {
+      setQuickSamplesCanScroll({
+        left: strip.scrollLeft > 1,
+        right: strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1,
+      });
+    };
+
+    updateScrollEdges();
+    strip.addEventListener("scroll", updateScrollEdges, { passive: true });
+    window.addEventListener("resize", updateScrollEdges);
+    const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateScrollEdges);
+    resizeObserver?.observe(strip);
+
+    return () => {
+      strip.removeEventListener("scroll", updateScrollEdges);
+      window.removeEventListener("resize", updateScrollEdges);
+      resizeObserver?.disconnect();
+    };
+  }, []);
 
   const handleCopyTranscript = (text: string) => {
     if (!text) return;
@@ -1624,8 +1652,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
   return (
     <div className="w-full max-w-[760px] mx-auto mt-10 relative">
-      {/* ── DESKTOP FLOATING QUICK SAMPLES (>= 1280px) ───────────────────────── */}
-      <div className="hidden min-[1280px]:block pointer-events-auto">
+      {/* ── WIDESCREEN FLOATING QUICK SAMPLES (>= 1600px) ────────────────────── */}
+      <div className="hidden min-[1600px]:block pointer-events-auto">
         {/* Left Chip 1: Advisor Pitch (Illegal Advice) */}
         <button
           type="button"
@@ -1696,19 +1724,17 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       {/* ── COMPOSER CARD (760w, radius 28, glass, padding 24) ──────────────── */}
       <div className="vera-composer text-left relative z-10">
         {/* Header Row: Shield Tile 40px + VERA Fraud Screening 16px w600 */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-          <div className="flex items-start gap-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex min-w-0 items-center gap-3.5">
             <div className="w-10 h-10 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)] flex items-center justify-center text-[var(--navy-1)] dark:text-[var(--accent)] flex-shrink-0 shadow-sm">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
-                {locale === "hi" ? t.title : "VERA Fraud Screening"}
+              <h2 className="text-base font-semibold leading-6 text-[var(--text-primary)] tracking-tight">
+                {t.title}
               </h2>
-              <p className="text-sm text-[var(--text-muted)] font-normal mt-0.5 leading-relaxed">
-                {locale === "hi"
-                  ? t.subtitle
-                  : "Verify investment solicitations, suspicious trading links, and unverified brokers against SEBI regulations."}
+              <p className="mt-1 max-w-[60ch] text-sm leading-5 text-[var(--text-muted)] font-normal">
+                {t.subtitle}
               </p>
             </div>
           </div>
@@ -2167,7 +2193,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                   <span>{locale === "hi" ? "जाँच जारी है..." : "Scanning..."}</span>
                 </span>
               ) : (
-                <span>{locale === "hi" ? t.checkButton : "Screen for Fraud"} &rarr;</span>
+                <span>{t.checkButton} &rarr;</span>
               )}
             </button>
           </div>
@@ -2214,36 +2240,64 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         )}
       </div>
 
-      {/* ── MOBILE HORIZONTAL SCROLL CHIPS (< 1280px) ───────────────────────── */}
-      <div className="min-[1280px]:hidden mt-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none px-1">
+      {/* ── RESPONSIVE QUICK SAMPLES (< 1600px) ───────────────────────────────── */}
+      <div className="min-[1600px]:hidden mt-6 flex flex-col gap-2 px-1 sm:flex-row sm:items-center">
         <span className="text-fluid-micro text-[var(--text-muted)] flex-shrink-0">
           {t.tryQuickSample}
         </span>
-        <button
-          type="button"
-          onClick={handleSelectSampleVideoPitch}
-          className="vera-sample-chip flex-shrink-0"
-        >
-          <Film className="w-3.5 h-3.5 text-[var(--navy-1)] dark:text-[var(--accent)]" />
-          <span>Sample Video Pitch</span>
-        </button>
-        {SAMPLE_SCAM_PROMPTS.map((sample, idx) => (
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
-            key={idx}
             type="button"
-            onClick={() => handleSelectSamplePrompt(sample.text)}
-            className="vera-sample-chip flex-shrink-0"
+            disabled={!quickSamplesCanScroll.left}
+            aria-label="Scroll sample buttons left"
+            aria-controls="vera-quick-samples"
+            onClick={() => quickSamplesRef.current?.scrollBy({ left: -280, behavior: "smooth" })}
+            className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border border-[var(--chip-border)] bg-[var(--chip-bg)] text-[var(--chip-text)] transition-transform enabled:hover:-translate-x-0.5 enabled:active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
           >
-            <span>{sample.label}</span>
+            <ChevronLeft className="h-4 w-4" />
           </button>
-        ))}
+          <div
+            id="vera-quick-samples"
+            ref={quickSamplesRef}
+            className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-2 scrollbar-none"
+          >
+            <button
+              type="button"
+              onClick={handleSelectSampleVideoPitch}
+              className="vera-sample-chip flex-shrink-0"
+            >
+              <Film className="w-3.5 h-3.5 text-[var(--navy-1)] dark:text-[var(--accent)]" />
+              <span>Sample Video Pitch</span>
+            </button>
+            {SAMPLE_SCAM_PROMPTS.map((sample, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleSelectSamplePrompt(sample.text)}
+                className="vera-sample-chip flex-shrink-0"
+              >
+                <span>{sample.label}</span>
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            disabled={!quickSamplesCanScroll.right}
+            aria-label="Scroll sample buttons right"
+            aria-controls="vera-quick-samples"
+            onClick={() => quickSamplesRef.current?.scrollBy({ left: 280, behavior: "smooth" })}
+            className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border border-[var(--chip-border)] bg-[var(--chip-bg)] text-[var(--chip-text)] transition-transform enabled:hover:translate-x-0.5 enabled:active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* ── 5. RESULT STATE (Compact Sticky Bar + 12-col Bento Grid) ──────── */}
       {verdict && (
         <div id="vera-results" className="vera-result-arrival w-full mt-6">
           {/* COMPACT STICKY BAR (72px: input summary one-line + 'Screen another' button) */}
-          <div className="h-[72px] rounded-full vera-glass px-6 sm:px-8 flex items-center justify-between max-w-[760px] mx-auto w-full mb-8 sticky top-24 z-30 shadow-lg border border-[var(--border)]">
+          <div className="min-h-[72px] rounded-full vera-glass px-4 sm:px-8 py-3 flex items-center justify-between gap-3 max-w-[760px] mx-auto w-full mb-8 sticky top-24 z-30 shadow-lg border border-[var(--border)]">
             <div className="flex items-center gap-3 min-w-0 pr-4">
               <div className="w-8 h-8 rounded-full bg-[var(--nav-track)] flex items-center justify-center text-[var(--navy-1)] dark:text-[var(--accent)] flex-shrink-0">
                 {uploadedFile ? <Film className="w-4 h-4" /> : <Search className="w-4 h-4" />}
@@ -2271,13 +2325,13 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           <div className="vera-results-grid max-w-[1120px] mx-auto w-full grid grid-cols-12 gap-6 text-left">
             {/* ROW 0 (HIGH RISK only): Full-width red-tinted helpline banner */}
             {(verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH") && (
-              <div className="col-span-12 vera-glass rounded-[24px] p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-rose-500/15 border-rose-500/30 transition-transform duration-200 hover:-translate-y-0.5">
+              <div className="vera-helpline-card col-span-12 vera-glass rounded-[24px] p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-transform duration-200 hover:-translate-y-0.5">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-rose-600/30">
+                  <div className="vera-helpline-icon w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
                     <PhoneCall className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-rose-700 dark:text-rose-300">
+                    <h3 className="text-base font-bold vera-helpline-copy">
                       {locale === "hi" ? "राष्ट्रीय साइबर अपराध हेल्पलाइन 1930" : "Cyber Crime Helpline 1930"}
                     </h3>
                     <p className="text-xs text-[var(--text-muted)] mt-0.5 max-w-xl">
@@ -2288,19 +2342,12 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                   </div>
                 </div>
 
-                <a
-                  href="tel:1930"
-                  className="px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm sm:text-base inline-flex items-center gap-2 flex-shrink-0 shadow-md shadow-rose-600/30 transition-transform hover:scale-105"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span className="font-mono-tabular">1930</span>
-                </a>
               </div>
             )}
 
             {/* ROW 1 - LEFT: Verdict Card (span 8, 280 tall) */}
             <div
-              className={`col-span-12 lg:col-span-8 min-h-[280px] vera-glass rounded-[24px] p-7 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 ${
+              className={`col-span-12 lg:col-span-8 min-h-[240px] lg:min-h-[280px] vera-glass rounded-[24px] p-7 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 ${
                 verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH"
                   ? "border-rose-500/30"
                   : verdict.riskTier === "MEDIUM"
@@ -2381,7 +2428,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
               {/* Center: Verdict Label H1-size in Verdict Color */}
               <div className="my-3">
                 <h2
-                  className="text-fluid-h1 tracking-tight"
+                  className="text-[clamp(2rem,4.2vw,3.25rem)] leading-[0.98] tracking-tight break-words"
                   style={{
                     color:
                       verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH"
@@ -2419,7 +2466,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             </div>
 
             {/* ROW 1 - RIGHT: Gauge Card (span 4, 280 tall) */}
-            <div className="col-span-12 lg:col-span-4 min-h-[280px] vera-glass rounded-[24px] p-7 flex flex-col items-center justify-center text-center transition-transform duration-200 hover:-translate-y-0.5">
+            <div className="col-span-12 lg:col-span-4 min-h-[240px] lg:min-h-[280px] vera-glass rounded-[24px] p-7 flex flex-col items-center justify-center text-center transition-transform duration-200 hover:-translate-y-0.5">
               <div className="relative w-[160px] h-[160px] flex items-center justify-center">
                 <svg width="160" height="160" viewBox="0 0 160 160" className="transform -rotate-90">
                   {/* Background Track Circle */}
@@ -2504,13 +2551,13 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                   <div>
                     <h3 className="text-base font-bold text-[var(--text-primary)]">
                       {locale === "hi"
-                        ? "फोरेंसिक जोखिम निष्कर्ष एवं कारण (Inference)"
-                        : "Forensic Risk Inference & Assessment Rationale"}
+                        ? "यह नतीजा क्यों आया"
+                        : "Why VERA reached this result"}
                     </h3>
                     <p className="text-xs text-[var(--text-muted)] mt-0.5">
                       {locale === "hi"
-                        ? "यह परिणाम क्यों आया: सेबी नियमों एवं फोरेंसिक साक्ष्यों का विस्तृत विश्लेषण"
-                        : "Why this verdict was assigned: Detailed regulatory compliance analysis & threat evaluation"}
+                        ? "इस आकलन के पीछे के संकेत और जाँच देखें।"
+                        : "Review the signals and checks behind this assessment."}
                     </p>
                   </div>
                 </div>
@@ -2731,7 +2778,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         isInconclusive
                           ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
                           : verdict.score >= 50
-                          ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                          ? "vera-flag-badge"
                           : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                       }`}
                     >
@@ -2756,7 +2803,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-mono-tabular font-semibold border ${
                         verdict.manipulationIndicators?.has_manipulation_indicators
-                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                          ? "vera-flag-badge"
                           : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                       }`}
                     >
@@ -2857,6 +2904,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                     </p>
                   </div>
                 </div>
+
+                <a
+                  href="tel:1930"
+                  className="vera-helpline-action px-6 py-3 rounded-full font-extrabold text-sm sm:text-base inline-flex items-center gap-2 flex-shrink-0 transition-transform hover:scale-105"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span className="font-mono-tabular">1930</span>
+                </a>
               </div>
             )}
 
@@ -2871,7 +2926,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         isInconclusive
                           ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
                           : verdict.advisorySignalsDetected
-                          ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                          ? "vera-flag-badge"
                           : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                       }`}
                     >
@@ -2903,7 +2958,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         isInconclusive
                           ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
                           : verdict.visualManipulationDetected
-                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                          ? "vera-flag-badge"
                           : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                       }`}
                     >
@@ -2920,7 +2975,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         isInconclusive
                           ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
                           : verdict.advisorySignalsDetected
-                          ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40"
+                          ? "vera-flag-badge"
                           : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40"
                       }`}
                     >
@@ -2982,7 +3037,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                       )}
                     </div>
                     {verdict.flaggedAdvisoryPhrases && verdict.flaggedAdvisoryPhrases.length > 0 && (
-                      <span className="text-[11px] font-mono-tabular font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/25">
+                      <span className="vera-flag-badge text-[11px] font-mono-tabular font-semibold px-2 py-0.5 rounded-full border">
                         {verdict.flaggedAdvisoryPhrases.length} illegal advisory term{verdict.flaggedAdvisoryPhrases.length > 1 ? "s" : ""} flagged
                       </span>
                     )}
@@ -3017,15 +3072,15 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
                 {/* Violations or Reassurance Card */}
                 {verdict.advisorySignalsDetected && verdict.advisoryViolations && verdict.advisoryViolations.length > 0 ? (
-                  <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 mb-4">
-                    <div className="flex items-center gap-2 mb-2 text-rose-600 dark:text-rose-400 font-semibold text-xs uppercase tracking-wider font-mono-tabular">
+                  <div className="vera-flag-panel p-4 rounded-2xl mb-4">
+                    <div className="flex items-center gap-2 mb-2 vera-flag-text font-semibold text-xs uppercase tracking-wider font-mono-tabular">
                       <ShieldAlert className="w-4 h-4" />
                       <span>{locale === "hi" ? "भाषण में पाए गए सेबी नियम उल्लंघन:" : "Statutory SEBI Violations Identified in Video Speech:"}</span>
                     </div>
                     <ul className="space-y-1.5">
                       {verdict.advisoryViolations.map((viol, vIdx) => (
                         <li key={vIdx} className="text-xs text-[var(--text-primary)] flex items-start gap-2">
-                          <span className="text-rose-500 font-bold">•</span>
+                          <span className="vera-flag-text font-bold">•</span>
                           <span className="font-medium">{viol}</span>
                         </li>
                       ))}
@@ -3187,7 +3242,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                           verdict.deepfakeDetails.facesDetected === 0
                             ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
                             : verdict.visualManipulationDetected
-                            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                            ? "vera-flag-badge"
                             : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                         }`}
                       >
@@ -3218,8 +3273,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                           className={`font-mono-tabular font-bold text-sm ${
                             verdict.deepfakeDetails.facesDetected === 0
                               ? "text-[var(--text-muted)]"
-                              : verdict.deepfakeDetails.temporalAggregate >= 0.6
-                              ? "text-rose-600 dark:text-rose-400"
+                          : verdict.deepfakeDetails.temporalAggregate >= 0.6
+                              ? "vera-flag-text"
                               : "text-emerald-600 dark:text-emerald-400"
                           }`}
                         >
@@ -3236,7 +3291,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                               ? "text-[var(--text-muted)]"
                               : verdict.deepfakeDetails.flickerScore < 0.15
                               ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
+                              : "vera-flag-text"
                           }`}
                         >
                           {verdict.deepfakeDetails.facesDetected === 0
@@ -3370,7 +3425,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                 {(verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH" || verdict.riskTier === "MEDIUM") && (
                   <a
                     href="tel:1930"
-                    className="h-10 px-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold inline-flex items-center gap-2 shadow-sm transition-transform hover:scale-105"
+                    className="vera-helpline-action h-10 px-5 rounded-full text-xs font-bold inline-flex items-center gap-2 shadow-sm transition-transform hover:scale-105"
                   >
                     <Phone className="w-3.5 h-3.5" />
                     <span>Call 1930 Helpline</span>
@@ -3483,7 +3538,7 @@ Source: VERA Fraud Intelligence Platform`;
                 {(verdict.riskTier === "CRITICAL" || verdict.riskTier === "HIGH" || verdict.riskTier === "MEDIUM") && (
                   <a
                     href="tel:1930"
-                    className="h-8 px-3 rounded-full bg-rose-600 text-white text-[11px] font-bold inline-flex items-center gap-1 shadow-sm"
+                    className="vera-helpline-action h-8 px-3 rounded-full text-[11px] font-bold inline-flex items-center gap-1 shadow-sm"
                   >
                     <Phone className="w-3 h-3" />
                     <span>1930</span>
@@ -3538,7 +3593,7 @@ Source: VERA Fraud Intelligence Platform`;
                 <div
                   className={`w-11 h-11 rounded-2xl flex items-center justify-center border shadow-sm flex-shrink-0 ${
                     verdict.advisorySignalsDetected
-                      ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                      ? "vera-flag-badge"
                       : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                   }`}
                 >
@@ -3583,7 +3638,7 @@ Source: VERA Fraud Intelligence Platform`;
                     isInconclusive
                       ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
                       : verdict.visualManipulationDetected
-                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                      ? "vera-flag-badge"
                       : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                   }`}
                 >
@@ -3599,7 +3654,7 @@ Source: VERA Fraud Intelligence Platform`;
                     isInconclusive
                       ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
                       : verdict.advisorySignalsDetected
-                      ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40"
+                      ? "vera-flag-badge"
                       : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40"
                   }`}
                 >
@@ -3611,7 +3666,7 @@ Source: VERA Fraud Intelligence Platform`;
                 </span>
 
                 {verdict.flaggedAdvisoryPhrases && verdict.flaggedAdvisoryPhrases.length > 0 && (
-                  <span className="text-xs font-mono-tabular font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/25">
+                  <span className="vera-flag-badge text-xs font-mono-tabular font-semibold px-2.5 py-0.5 rounded-full border">
                     {verdict.flaggedAdvisoryPhrases.length} phrase{verdict.flaggedAdvisoryPhrases.length > 1 ? "s" : ""} flagged
                   </span>
                 )}
@@ -3754,7 +3809,7 @@ Source: VERA Fraud Intelligence Platform`;
                         key={idx}
                         className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 ${
                           isSegFlagged
-                            ? "bg-rose-500/5 border-rose-500/30 text-rose-950 dark:text-rose-100"
+                            ? "vera-flag-segment"
                             : "bg-[var(--nav-track)] border-[var(--border)] text-[var(--text-primary)]"
                         }`}
                       >
@@ -3765,7 +3820,7 @@ Source: VERA Fraud Intelligence Platform`;
                           {renderHighlightedSpeechTranscript(seg.text, verdict.flaggedAdvisoryPhrases || [])}
                         </div>
                         {isSegFlagged && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 shrink-0">
+                          <span className="vera-flag-badge px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border shrink-0">
                             Violation
                           </span>
                         )}
@@ -3777,8 +3832,8 @@ Source: VERA Fraud Intelligence Platform`;
 
               {/* Statutory SEBI Violations Box */}
               {verdict.advisorySignalsDetected && verdict.advisoryViolations && verdict.advisoryViolations.length > 0 ? (
-                <div className="p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/25">
-                  <div className="flex items-center gap-2 mb-2.5 text-rose-600 dark:text-rose-400 font-semibold text-xs uppercase tracking-wider font-mono-tabular">
+                <div className="vera-flag-panel p-4 sm:p-5 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2.5 vera-flag-text font-semibold text-xs uppercase tracking-wider font-mono-tabular">
                     <ShieldAlert className="w-4 h-4" />
                     <span>
                       {locale === "hi"
@@ -3789,7 +3844,7 @@ Source: VERA Fraud Intelligence Platform`;
                   <ul className="space-y-2">
                     {verdict.advisoryViolations.map((viol, vIdx) => (
                       <li key={vIdx} className="text-xs sm:text-sm text-[var(--text-primary)] flex items-start gap-2">
-                        <span className="text-rose-500 font-bold">•</span>
+                        <span className="vera-flag-text font-bold">•</span>
                         <span className="font-medium">{viol}</span>
                       </li>
                     ))}

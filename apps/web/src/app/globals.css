@@ -272,13 +272,17 @@ body::after {
 
 .vera-segmented-tab {
   flex: 1;
+  min-width: 0;
   height: 38px;
+  padding: 0 6px;
   border-radius: 9999px;
-  font-size: 13px;
+  font-size: clamp(10px, 2.8vw, 13px);
   font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  white-space: nowrap;
   color: var(--text-muted);
   transition: all 180ms ease;
   user-select: none;
@@ -525,7 +529,7 @@ body::after {
   background: transparent;
   font-family: var(--font-ui);
 }
-.vera-cover-nav { display: flex; width: min(100% - 64px, 1440px); min-height: 90px; margin: 0 auto; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid rgba(119, 99, 62, .18); }
+.vera-cover-nav { display: flex; width: min(100% - 64px, 1440px); min-height: 112px; margin: 0 auto; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid rgba(119, 99, 62, .18); }
 .vera-cover-brand { display: inline-flex; align-items: center; gap: 15px; color: #171612; text-decoration: none; }
 .vera-cover-monogram { display: grid; width: 88px; height: 88px; place-items: center; border: 1px solid #d3c39f; border-radius: 50%; color: #80683b; background: linear-gradient(145deg, #fffefa, #eee6d5); font: 500 25px/1 var(--font-display); box-shadow: inset 0 0 0 3px #f7f3ea, 0 5px 18px rgba(83, 68, 42, .08); }
 .vera-cover-wordmark { font: 500 24px/1 var(--font-display); letter-spacing: .22em; }
@@ -537,13 +541,14 @@ body::after {
 .vera-cover-control { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: 7px; padding: 0 13px; border: 1px solid #ddd5c6; border-radius: 999px; color: #373229; background: rgba(255, 254, 250, .72); font: 600 11px/1 var(--font-ui); letter-spacing: .04em; }
 .vera-cover-control svg { width: 15px; height: 15px; }
 .vera-cover-control:hover { background: #eee5d2; border-color: #c9b88f; }
-.vera-cover-hero { position: relative; display: grid; width: min(100% - 64px, 1440px); min-height: min(760px, calc(100svh - 90px)); margin: 0 auto; padding: clamp(60px, 8vw, 120px) 0 85px; grid-template-columns: minmax(380px, .82fr) minmax(450px, 1.18fr); align-items: center; gap: clamp(24px, 4vw, 72px); }
+.vera-cover-hero { position: relative; display: grid; width: min(100% - 64px, 1440px); min-height: min(680px, calc(100svh - 160px)); margin: 0 auto; padding: clamp(28px, 4vw, 58px) 0 72px; grid-template-columns: minmax(380px, .82fr) minmax(450px, 1.18fr); align-items: center; gap: clamp(24px, 4vw, 72px); }
+@media (min-width: 861px) { .vera-cover-hero { margin-top: -44px; } }
 .vera-cover-copy { position: relative; z-index: 2; max-width: 670px; animation: vera-rise-in 850ms cubic-bezier(.2,.7,.2,1) both; }
 .vera-cover-eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 25px; color: #80683b; font-size: 10px; font-weight: 700; letter-spacing: .2em; line-height: 1.4; text-transform: uppercase; }
 .vera-cover-eyebrow-mark { width: 24px; height: 1px; background: #b99c62; }
-.vera-cover-title { margin: 0; color: #171612; font: 600 clamp(3.2rem, 6.1vw, 6.3rem)/.96 var(--font-display); letter-spacing: -.045em; }
+.vera-cover-title { margin: 0; color: #171612; font: 700 clamp(3.2rem, 6.1vw, 6.3rem)/.96 var(--font-display); letter-spacing: -.045em; }
 .vera-cover-title span, .vera-cover-title em { display: block; }
-.vera-cover-title em { margin-top: .09em; color: #8c7141; font-weight: 600; }
+.vera-cover-title em { margin-top: .09em; color: #8c7141; font-weight: 700; }
 .vera-cover-description { max-width: 490px; margin: 27px 0 0; color: #4f4b43; font-size: clamp(15px, 1.4vw, 17px); line-height: 1.75; letter-spacing: .012em; }
 .vera-cover-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 25px; margin-top: 32px; }
 .vera-cover-cta { display: inline-flex; min-height: 54px; align-items: center; justify-content: center; gap: 22px; padding: 0 21px; border: 1px solid #b9a273; border-radius: 4px; color: #1c1a15; background: linear-gradient(135deg, #e7d9b9, #d8c394); box-shadow: 0 5px 0 #c0ad80, 0 13px 30px rgba(93, 72, 32, .12); font: 700 12px/1 var(--font-ui); letter-spacing: .12em; text-transform: uppercase; transition: transform 240ms ease, box-shadow 240ms ease, background 240ms ease; }
@@ -551,10 +556,12 @@ body::after {
 .vera-cover-cta:hover { transform: translateY(-2px); background: linear-gradient(135deg, #eddfc1, #dfcda7); box-shadow: 0 7px 0 #bba575, 0 18px 34px rgba(93, 72, 32, .16); }
 .vera-cover-cta:hover svg { transform: translateX(3px); }
 .vera-cover-enter-cta { position: relative; isolation: isolate; overflow: hidden; animation: vera-enter-impact 3.6s 1s ease-in-out infinite; }
+.vera-cover-footer .vera-cover-enter-cta { animation: vera-footer-cta-float 2.8s ease-in-out infinite; }
 .vera-cover-enter-cta::before { position: absolute; z-index: 0; top: -60%; bottom: -60%; left: -42%; width: 28%; content: ""; transform: translateX(-180%) skewX(-18deg); pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255,255,255,.76), rgba(255,255,255,.18), transparent); animation: vera-enter-sheen 3.6s 1.6s ease-in-out infinite; }
 .vera-cover-enter-cta > * { position: relative; z-index: 1; }
 .vera-cover-enter-cta svg { animation: vera-enter-arrow 1.1s ease-in-out infinite; }
 .vera-cover-enter-cta:is(:hover, :focus-visible) { animation: none; transform: translateY(-3px) scale(1.045); box-shadow: 0 8px 0 #bba575, 0 20px 40px rgba(93,72,32,.24), 0 0 0 7px rgba(185,162,115,.14); }
+.vera-cover-footer .vera-cover-enter-cta:is(:hover, :focus-visible) { animation: none; }
 .vera-cover-enter-cta:is(:hover, :focus-visible)::before { animation: none; }
 .vera-cover-enter-cta:is(:hover, :focus-visible) svg { animation: none; transform: translateX(5px); }
 .vera-cover-explore { text-decoration: none; }
@@ -744,7 +751,7 @@ video::cue {
 .vera-cover-story { padding: 90px 0 105px; border-top: 1px solid rgba(119, 99, 62, .18); }
 .vera-cover-section-intro { display: grid; grid-template-columns: .72fr 1fr; column-gap: 7vw; align-items: start; }
 .vera-cover-section-intro .vera-cover-eyebrow { grid-column: 1 / -1; margin-bottom: 18px; }
-.vera-cover-section-intro h2, .vera-cover-limits h2, .vera-cover-footer h2 { margin: 0; color: #171612; font: 400 clamp(2.4rem, 4vw, 4rem)/1.04 var(--font-display); letter-spacing: -.035em; }
+.vera-cover-section-intro h2, .vera-cover-limits h2, .vera-cover-footer h2 { margin: 0; color: #171612; font: 500 clamp(2.4rem, 4vw, 4rem)/1.04 var(--font-display); letter-spacing: -.035em; }
 .vera-cover-section-intro h2 { align-self: center; transform: translateY(22px); }
 .vera-cover-story-aside { align-self: start; }
 .vera-cover-story-aside > p { max-width: 465px; margin: 0 0 22px; color: #5e584e; font-size: 15px; line-height: 1.8; }
@@ -785,7 +792,7 @@ video::cue {
 .vera-cover-feature:nth-child(3) { animation-delay: 240ms; }
 .vera-cover-feature:nth-child(4) { animation-delay: 360ms; }
 .vera-cover-feature-number { color: #a1844e; font: 500 12px/1 var(--font-display); letter-spacing: .1em; }
-.vera-cover-feature h3 { margin: 24px 0 9px; color: #211f1b; font: 500 20px/1.2 var(--font-display); letter-spacing: -.01em; }
+.vera-cover-feature h3 { margin: 24px 0 9px; color: #211f1b; font: 600 20px/1.2 var(--font-display); letter-spacing: -.01em; }
 .vera-cover-feature p { max-width: 330px; margin: 0; color: #625d53; font-size: 13px; line-height: 1.65; }
 .vera-cover-feature-rule { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; transform: scaleX(.12); transform-origin: left; background: linear-gradient(90deg, #a78951, #e5d7b8); transition: transform 450ms ease; }
 .vera-cover-feature:hover .vera-cover-feature-rule { transform: scaleX(1); }
@@ -987,11 +994,12 @@ video::cue {
 @keyframes vera-demo-card-enter { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes vera-demo-check-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes vera-enter-impact { 0%, 76%, 100% { transform: translateY(0) scale(1); box-shadow: 0 5px 0 #c0ad80, 0 13px 30px rgba(93,72,32,.12); } 81% { transform: translateY(-5px) scale(1.045); box-shadow: 0 10px 0 #bba575, 0 24px 44px rgba(93,72,32,.26), 0 0 0 8px rgba(185,162,115,.16); } 85% { transform: translateY(1px) scale(.985); box-shadow: 0 3px 0 #c0ad80, 0 8px 20px rgba(93,72,32,.12); } 90% { transform: translateY(-2px) scale(1.018); box-shadow: 0 7px 0 #bba575, 0 18px 36px rgba(93,72,32,.2), 0 0 0 4px rgba(185,162,115,.1); } }
+@keyframes vera-footer-cta-float { 0%, 100% { transform: translateY(0); box-shadow: 0 5px 0 #c0ad80, 0 13px 30px rgba(93,72,32,.12); } 50% { transform: translateY(-4px); box-shadow: 0 9px 0 #bba575, 0 19px 34px rgba(93,72,32,.2); } }
 @keyframes vera-enter-sheen { 0%, 34% { transform: translateX(-180%) skewX(-18deg); opacity: 0; } 40% { opacity: .85; } 65%, 100% { transform: translateX(600%) skewX(-18deg); opacity: 0; } }
 @keyframes vera-enter-arrow { 0%, 100% { transform: translateX(0); } 45% { transform: translateX(5px); } 65% { transform: translateX(1px); } }
 @keyframes vera-chart-draw { to { stroke-dashoffset: 0; } }
 @keyframes vera-signal-pulse { 0%, 100% { opacity: .72; } 50% { opacity: 1; } }
-:root[data-theme="dark"] .vera-cover { color: #f2eee5; background: #211f1a; }
+:root[data-theme="dark"] .vera-cover { color: #f2eee5; background: transparent; }
 :root[data-theme="dark"] .vera-cover-nav { border-color: #4c463a; }
 :root[data-theme="dark"] .vera-cover-brand, :root[data-theme="dark"] .vera-cover-wordmark, :root[data-theme="dark"] .vera-cover-title, :root[data-theme="dark"] .vera-cover-section-intro h2, :root[data-theme="dark"] .vera-cover-limits h2, :root[data-theme="dark"] .vera-cover-footer h2 { color: #f2eee5; }
 :root[data-theme="dark"] .vera-cover-monogram { color: #ead9b5; background: linear-gradient(145deg, #3e392e, #302d26); border-color: #776744; box-shadow: inset 0 0 0 3px #302d26; }
@@ -1045,6 +1053,11 @@ video::cue {
   .vera-cover-hero { min-height: auto; grid-template-columns: minmax(0, .95fr) minmax(340px, 1.05fr); gap: 25px; }
   .vera-cover-title { font-size: clamp(3rem, 6.2vw, 5rem); }
   .vera-cover-video-frame { min-height: 0; }
+}
+@media (max-width: 860px) {
+  .vera-cover-hero { grid-template-columns: minmax(0, 1fr); gap: 34px; padding-top: clamp(54px, 8vw, 84px); }
+  .vera-cover-copy { max-width: 760px; }
+  .vera-cover-video-frame { width: min(100%, 900px); margin: 0 0 0 auto; }
 }
 @media (max-width: 760px) {
   .vera-cover-nav, .vera-cover-hero, .vera-cover-story, .vera-cover-limits, .vera-cover-footer { width: calc(100% - 40px); }
@@ -1127,6 +1140,69 @@ video::cue {
 
 
 /* VERA visual system carried forward from the approved local UI. */
+:root {
+  /* VERA's alert treatment: warm mineral red-brown instead of default alarm red. */
+  --vera-flag-ink: #87503d;
+  --vera-flag-bg: #f3e8e0;
+  --vera-flag-border: #d7b5a4;
+  --vera-flag-solid: #704034;
+  --vera-flag-solid-hover: #5e332a;
+  --vera-flag-shadow: rgba(91, 53, 39, .18);
+}
+:root[data-theme="dark"] {
+  --vera-flag-ink: #e2b39a;
+  --vera-flag-bg: rgba(142, 81, 58, .2);
+  --vera-flag-border: rgba(226, 179, 154, .38);
+  --vera-flag-solid: #a35b46;
+  --vera-flag-solid-hover: #b66b54;
+  --vera-flag-shadow: rgba(0, 0, 0, .26);
+}
+.vera-flag-badge {
+  color: var(--vera-flag-ink) !important;
+  background: var(--vera-flag-bg) !important;
+  border-color: var(--vera-flag-border) !important;
+}
+.vera-flag-mark {
+  color: var(--vera-flag-ink);
+  background: var(--vera-flag-bg);
+  border: 1px solid var(--vera-flag-border);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.vera-flag-segment {
+  color: var(--vera-flag-ink) !important;
+  background: var(--vera-flag-bg) !important;
+  border-color: var(--vera-flag-border) !important;
+}
+.vera-flag-panel {
+  color: var(--text-primary);
+  background: var(--vera-flag-bg);
+  border: 1px solid var(--vera-flag-border);
+  border-left-width: 3px;
+}
+.vera-flag-text { color: var(--vera-flag-ink) !important; }
+.vera-helpline-card {
+  background: var(--vera-flag-bg) !important;
+  border-color: var(--vera-flag-border) !important;
+}
+.vera-helpline-icon {
+  color: #fffaf4 !important;
+  background: var(--vera-flag-solid) !important;
+  box-shadow: 0 7px 18px var(--vera-flag-shadow);
+}
+.vera-helpline-copy { color: var(--vera-flag-ink) !important; }
+.vera-helpline-action {
+  color: #fffaf4 !important;
+  background: var(--vera-flag-solid) !important;
+  box-shadow: 0 8px 20px var(--vera-flag-shadow);
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.vera-helpline-action:hover {
+  background: var(--vera-flag-solid-hover) !important;
+  box-shadow: 0 11px 24px var(--vera-flag-shadow);
+}
+:root[data-theme="dark"] .vera-helpline-action { color: #fffaf4 !important; }
+
 :root {
   --bg-page: #f7f5ef;
   --navy-1: #27363b;
@@ -1228,6 +1304,11 @@ body::after { background: radial-gradient(ellipse 800px 420px at 50% 480px, rgba
 .vera-market-ticker-secondary { opacity: .62; }
 .vera-market-scan { fill: none; stroke: rgba(91,153,175,.58); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 34 426; stroke-dashoffset: 460; opacity: .44; filter: drop-shadow(0 0 4px rgba(91,153,175,.3)); animation: vera-market-scan 12s ease-in-out infinite; }
 .vera-market-baseline { fill: none; stroke: rgba(89,132,151,.08); stroke-width: 1; }
+.vera-evidence-thread { opacity: .58; animation: vera-evidence-breathe 12s ease-in-out infinite alternate; }
+.vera-evidence-thread-base { fill: none; stroke: rgba(153,125,81,.22); stroke-width: 1.25; stroke-linecap: round; stroke-dasharray: 1 8; }
+.vera-evidence-thread-live { fill: none; stroke: rgba(111,158,175,.4); stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 30 370; stroke-dashoffset: 400; animation: vera-evidence-drift 18s linear infinite; }
+.vera-evidence-thread-points { fill: #b39a69; opacity: .55; animation: vera-market-pulse 6s ease-in-out infinite; }
+.vera-evidence-thread-ticker { fill: #6f9eaf; filter: drop-shadow(0 0 4px rgba(76,132,155,.28)); }
 [data-theme="dark"] .vera-finance-backdrop { opacity: .36; }
 [data-theme="dark"] .vera-market-grid { stroke: rgba(153,195,207,.12); }
 [data-theme="dark"] .vera-market-line { stroke: rgba(153,195,207,.34); }
@@ -1235,10 +1316,27 @@ body::after { background: radial-gradient(ellipse 800px 420px at 50% 480px, rgba
 [data-theme="dark"] .vera-market-points { fill: #a9d0df; }
 [data-theme="dark"] .vera-market-ticker { fill: #b7dce8; filter: drop-shadow(0 0 7px rgba(169,208,223,.8)); }
 [data-theme="dark"] .vera-market-scan { stroke: rgba(169,208,223,.66); filter: drop-shadow(0 0 5px rgba(169,208,223,.35)); }
+[data-theme="dark"]:has(.vera-cover) .vera-finance-backdrop { opacity: .58; }
+[data-theme="dark"]:has(.vera-cover) .vera-market-grid { stroke: rgba(169,208,223,.18); }
+[data-theme="dark"]:has(.vera-cover) .vera-market-line { stroke: rgba(169,208,223,.48); }
+[data-theme="dark"]:has(.vera-cover) .vera-market-line-live { stroke: rgba(190,224,235,.82); filter: drop-shadow(0 0 5px rgba(169,208,223,.52)); }
+[data-theme="dark"]:has(.vera-cover) .vera-market-points { fill: #c2e0e9; opacity: .76; }
+[data-theme="dark"]:has(.vera-cover) .vera-market-ticker { fill: #d0e9ef; filter: drop-shadow(0 0 7px rgba(190,224,235,.84)); }
+[data-theme="dark"]:has(.vera-cover) .vera-market-scan { stroke: rgba(190,224,235,.8); filter: drop-shadow(0 0 5px rgba(169,208,223,.44)); }
+[data-theme="dark"]:has(.vera-cover) .vera-evidence-thread-base { stroke: rgba(190,174,135,.28); }
+[data-theme="dark"]:has(.vera-cover) .vera-evidence-thread-live { stroke: rgba(190,224,235,.58); }
+[data-theme="dark"]:has(.vera-cover) .vera-evidence-thread-points { fill: #d5bd88; opacity: .7; }
+[data-theme="dark"]:has(.vera-cover) .vera-evidence-thread-ticker { fill: #d0e9ef; filter: drop-shadow(0 0 5px rgba(190,224,235,.58)); }
+[data-theme="dark"] .vera-evidence-thread-base { stroke: rgba(190,174,135,.2); }
+[data-theme="dark"] .vera-evidence-thread-live { stroke: rgba(169,208,223,.44); }
+[data-theme="dark"] .vera-evidence-thread-points { fill: #a9d0df; }
+[data-theme="dark"] .vera-evidence-thread-ticker { fill: #b7dce8; filter: drop-shadow(0 0 5px rgba(169,208,223,.48)); }
 @keyframes vera-market-draw { to { stroke-dashoffset: 0; } }
 @keyframes vera-market-trace { from { stroke-dashoffset: 900; opacity: .22; } 12% { opacity: .76; } 88% { opacity: .76; } to { stroke-dashoffset: 0; opacity: .22; } }
 @keyframes vera-market-pulse { 0%,100% { opacity: .38; } 50% { opacity: .82; } }
 @keyframes vera-market-scan { 0%,8% { stroke-dashoffset: 460; opacity: 0; } 20% { opacity: .44; } 82% { stroke-dashoffset: 0; opacity: .44; } 94%,100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes vera-evidence-drift { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+@keyframes vera-evidence-breathe { from { opacity: .38; } to { opacity: .66; } }
 .vera-investigation-page { isolation: isolate; }
 .vera-investigation-page > :not(.vera-finance-backdrop) { position: relative; z-index: 1; }
 .vera-finance-backdrop::before, .vera-finance-backdrop::after { content: ""; position: absolute; pointer-events: none; }
@@ -1327,16 +1425,23 @@ body::after { background: radial-gradient(ellipse 800px 420px at 50% 480px, rgba
   .vera-market-scan { animation: none !important; }
   .vera-market-line { stroke-dashoffset: 0; }
   .vera-market-line-live, .vera-market-ticker { display: none; }
+  .vera-evidence-thread-live, .vera-evidence-thread-ticker { display: none; }
+  .vera-evidence-thread { animation: none; opacity: .5; }
 }
 @media (max-width: 560px) { .vera-scan-console { padding: 13px 13px 11px; } .vera-scan-console-main { grid-template-columns: 72px minmax(0,1fr); gap: 11px; } .vera-scan-radar { width: 68px; height: 68px; } .vera-scan-stages { gap: 3px; } .vera-scan-stage { gap: 3px; } .vera-scan-stage-node { width: 17px; height: 17px; } .vera-scan-stage-label { font-size: 7px; } }
 .vera-cover > :not(.vera-finance-backdrop) { position: relative; z-index: 1; }
-[data-vera-scroll-reveal] { opacity: 0; transform: translate3d(0,22px,0) scale(.99); filter: blur(3px); transition: opacity 820ms cubic-bezier(.16,1,.3,1) var(--vera-reveal-delay,0ms), transform 900ms cubic-bezier(.16,1,.3,1) var(--vera-reveal-delay,0ms), filter 700ms ease var(--vera-reveal-delay,0ms); }
-[data-vera-reveal-style="slide-left"] { transform: perspective(900px) translate3d(-60px,20px,0) rotateY(3deg) scale(.98); }
-[data-vera-reveal-style="slide-right"] { transform: perspective(900px) translate3d(60px,20px,0) rotateY(-3deg) scale(.98); }
-[data-vera-reveal-style="merge-left"], [data-vera-reveal-style="merge-right"] { transform: translate3d(0,22px,0) scale(.94); }
+[data-vera-cover-reveal] { opacity: 0; transform: translate3d(0,22px,0) scale(.99); filter: blur(3px); transition: opacity 820ms cubic-bezier(.16,1,.3,1) var(--vera-reveal-delay,0ms), transform 900ms cubic-bezier(.16,1,.3,1) var(--vera-reveal-delay,0ms), filter 700ms ease var(--vera-reveal-delay,0ms); }
+.vera-cover [data-vera-reveal-style="slide-left"] { transform: perspective(900px) translate3d(-60px,20px,0) rotateY(3deg) scale(.98); }
+.vera-cover [data-vera-reveal-style="slide-right"] { transform: perspective(900px) translate3d(60px,20px,0) rotateY(-3deg) scale(.98); }
+.vera-cover [data-vera-reveal-style="merge-left"], .vera-cover [data-vera-reveal-style="merge-right"] { transform: translate3d(0,22px,0) scale(.94); }
+.vera-cover [data-vera-cover-reveal].vera-scroll-visible { opacity: 1; transform: none; filter: none; }
+.vera-cover-feature[data-vera-cover-reveal] { animation: none; }
+[data-vera-scroll-reveal] { opacity: 0; transform: translate3d(0,14px,0); transition: opacity 420ms cubic-bezier(.2,.7,.2,1) var(--vera-reveal-delay,0ms), transform 460ms cubic-bezier(.2,.7,.2,1) var(--vera-reveal-delay,0ms); }
+[data-vera-reveal-style="slide-left"] { transform: translate3d(-18px,12px,0); }
+[data-vera-reveal-style="slide-right"] { transform: translate3d(18px,12px,0); }
+[data-vera-reveal-style="merge-left"], [data-vera-reveal-style="merge-right"] { transform: translate3d(0,14px,0); }
 [data-vera-scroll-reveal].vera-scroll-visible { opacity: 1; transform: none; filter: none; }
-.vera-cover-feature[data-vera-scroll-reveal] { animation: none; }
-@media (prefers-reduced-motion: reduce) { [data-vera-scroll-reveal], [data-vera-scroll-reveal].vera-scroll-visible { opacity: 1; transform: none; filter: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { [data-vera-cover-reveal], [data-vera-cover-reveal].vera-scroll-visible, [data-vera-scroll-reveal], [data-vera-scroll-reveal].vera-scroll-visible { opacity: 1; transform: none; filter: none; transition: none; } }
 
 /* ── 15. VIEW SWITCH & BACK BUTTON MICRO-ANIMATIONS ─────────── */
 @keyframes vera-view-switch {
@@ -1385,5 +1490,16 @@ body::after { background: radial-gradient(ellipse 800px 420px at 50% 480px, rgba
 
 .vera-nav-back-btn:active {
   transform: scale(0.93) !important;
+}
+
+/* Keep keyboard navigation easy to follow without changing the established palette. */
+.vera-cover :is(a, button, [role="button"]):focus-visible,
+.vera-investigation-page :is(a, button, [role="button"]):focus-visible {
+  outline: 3px solid #6f9eaf;
+  outline-offset: 3px;
+}
+:root[data-theme="dark"] .vera-cover :is(a, button, [role="button"]):focus-visible,
+:root[data-theme="dark"] .vera-investigation-page :is(a, button, [role="button"]):focus-visible {
+  outline-color: #a9d0df;
 }
 

@@ -89,7 +89,7 @@ export function SebiGuidancePanel({
                       {item.circularNo}
                     </span>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono-tabular font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <span className="vera-flag-badge px-2.5 py-0.5 rounded-full text-[11px] font-mono-tabular font-semibold border">
                     {item.violationType}
                   </span>
                 </div>

@@ -215,9 +215,6 @@ export function VeraCover({
               <VeraLogo className="vera-cover-veronica-hero-logo" />
               <span>{t.coverVeronicaHeroCta}</span>
             </button>
-            <a className="vera-cover-cta vera-cover-explore" href="#cover-story">
-              {t.coverExplore}<ArrowDown aria-hidden="true" />
-            </a>
           </div>
           <p className="vera-cover-footnote">{t.brandTagline}</p>
         </div>
