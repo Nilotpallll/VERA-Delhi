@@ -164,7 +164,12 @@ export async function GET(request: NextRequest) {
   const pMatch = registrationNumber.match(/^(INA|INH|INP|INZ|INB|INF|INM)/);
   if (pMatch) {
     const p = pMatch[1];
-    let numPart = registrationNumber.slice(p.length).replace(/[O]/g, "0").replace(/[IL|]/g, "1");
+    let numPart = registrationNumber
+      .slice(p.length)
+      .replace(/[ODQo]/g, "0")
+      .replace(/[IL|l]/g, "1")
+      .replace(/[S]/g, "5")
+      .replace(/[B]/g, "8");
     if (/^\d+$/.test(numPart)) {
       registrationNumber = p + String(parseInt(numPart, 10)).padStart(9, "0");
     }

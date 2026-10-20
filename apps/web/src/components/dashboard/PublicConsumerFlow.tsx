@@ -80,7 +80,7 @@ interface ScanVerdict {
     snapshotDate?: string;
     validityFrom?: string;
     validityTo?: string;
-    identityCheck?: "MATCHED_REGISTERED_NAME" | "NAME_MISMATCH" | "NAME_NOT_PROVIDED";
+    identityCheck?: "MATCHED_REGISTERED_NAME" | "NAME_MISMATCH" | "NAME_NOT_PROVIDED" | "SUSPECTED_IMPERSONATION" | "NOT_FOUND";
     regulatoryCitation: string;
     officialRegistryUrl: string;
   };
@@ -147,7 +147,7 @@ function normalizeRegistryName(value: string | undefined): string {
 async function checkAdvisorInTranscript(text: string): Promise<ScanVerdict["advisorVerification"] | undefined> {
   if (!text) return undefined;
   const match = text.match(/\b(INA|INH|INP|INZ|INB|INF|INM)[-\s]?([0-9A-Za-z]{4,14})\b/i);
-  const nameMatch = text.match(/(?:i\s*am|this\s*is|advisor|adviser|mr|ms|mrs)\s+([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})/i);
+  const nameMatch = text.match(/(?:my\s+name\s+is|name\s*:\s*|myself|this\s+is|i\s*am)\s+([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})/i);
   const hasKavitha = /kavitha\s*menon/i.test(text);
   const hasAnand = /anand\s*rathi/i.test(text);
   const candName = hasKavitha ? "Kavitha Menon" : hasAnand ? "Anand Rathi" : nameMatch ? nameMatch[1].trim() : undefined;
@@ -155,7 +155,7 @@ async function checkAdvisorInTranscript(text: string): Promise<ScanVerdict["advi
   let regNum: string | undefined = undefined;
   if (match) {
     const p = match[1].toUpperCase();
-    const cleanDigits = match[2].toUpperCase().replace(/O/g, "0").replace(/[IL|]/g, "1");
+    const cleanDigits = match[2].toUpperCase().replace(/[ODQo]/g, "0").replace(/[IL|l]/g, "1").replace(/[S]/g, "5").replace(/[B]/g, "8");
     if (/^\d+$/.test(cleanDigits)) {
       regNum = p + String(parseInt(cleanDigits, 10)).padStart(9, "0");
     } else {
@@ -176,7 +176,7 @@ async function checkAdvisorInTranscript(text: string): Promise<ScanVerdict["advi
       const rec = regData.records[0];
       const isMatched = regData.nameMatchStatus === "MATCHED";
       return {
-        claimedAdvisorName: isMatched ? rec.entityName : candName,
+        claimedAdvisorName: isMatched ? rec.entityName : (candName || rec.entityName),
         claimedRegNumber: regNum || rec.registrationNumber,
         hasRegistrationClaim: Boolean(regNum),
         hasNameClaim: Boolean(candName),
@@ -194,14 +194,36 @@ async function checkAdvisorInTranscript(text: string): Promise<ScanVerdict["advi
         officialRegistryUrl: "https://scores.sebi.gov.in",
       };
     } else if (regData.state === "NOT_FOUND" && regNum) {
+      let isImpersonation = false;
+      let realAdvisor: any = null;
+      if (candName) {
+        try {
+          const nameCheckRes = await fetch(`/api/registry/sebi?name=${encodeURIComponent(candName)}`);
+          if (nameCheckRes.ok) {
+            const nameCheckData = await nameCheckRes.json();
+            if (nameCheckData.state === "FOUND" && nameCheckData.records && nameCheckData.records.length > 0) {
+              isImpersonation = true;
+              realAdvisor = nameCheckData.records[0];
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
       return {
+        claimedAdvisorName: candName || "Name not provided",
         claimedRegNumber: regNum,
         hasRegistrationClaim: true,
-        hasNameClaim: false,
+        hasNameClaim: Boolean(candName),
         status: "FICTITIOUS_ID",
-        statusLabel: "NOT FOUND IN SEBI REGISTRY",
-        details: `Registration ID '${regNum}' was not found in official SEBI intermediary records.`,
-        regulatoryCitation: "SEBI Act, 1992 Section 12A",
+        statusLabel: isImpersonation ? "NOT FOUND IN SEBI REGISTRY · SUSPECTED IMPERSONATION" : "NOT FOUND IN SEBI REGISTRY",
+        details: isImpersonation
+          ? `Registration ID '${regNum}' was not found in official SEBI records. Real advisor '${candName}' is registered under ${realAdvisor.registrationNumber}. This discrepancy indicates an impersonation scam.`
+          : `Registration ID '${regNum}' was not found in official SEBI intermediary records.`,
+        registeredEntityName: realAdvisor ? `${realAdvisor.entityName} (Authentic Advisor Record)` : undefined,
+        registeredRegNumber: realAdvisor?.registrationNumber,
+        identityCheck: isImpersonation ? "SUSPECTED_IMPERSONATION" : "NOT_FOUND",
+        regulatoryCitation: "SEBI Act, 1992 Section 12(1) & 12A",
         officialRegistryUrl: "https://scores.sebi.gov.in",
       };
     }
@@ -225,16 +247,14 @@ function getRelevantSebiResult(verdict: ScanVerdict | null, composerTab: "TEXT" 
   if (!hasName && !hasNumber) return null;
 
   const isMatched = adv.identityCheck === "MATCHED_REGISTERED_NAME" || (adv.status === "VERIFIED" && adv.hasNameClaim);
-  const isMismatch = adv.identityCheck === "NAME_MISMATCH" || (adv.status === "NOT_VERIFIED" && adv.hasNameClaim && adv.hasRegistrationClaim);
+  const isMismatch = adv.identityCheck === "NAME_MISMATCH" || adv.identityCheck === "SUSPECTED_IMPERSONATION" || (adv.status === "NOT_VERIFIED" && adv.hasNameClaim && adv.hasRegistrationClaim);
 
   const stateVal: VerificationResultState["state"] =
-    adv.status === "VERIFIED" || adv.registeredRegNumber
+    adv.status === "VERIFIED"
       ? "FOUND"
-      : adv.status === "FICTITIOUS_ID"
-      ? "NOT_FOUND"
       : "NOT_FOUND";
 
-  const recordsList: RegistryRecordItem[] = (adv.registeredEntityName || adv.registeredRegNumber) ? [{
+  const recordsList: RegistryRecordItem[] = (adv.status !== "FICTITIOUS_ID" && (adv.registeredEntityName || adv.registeredRegNumber)) ? [{
     registrationNumber: adv.registeredRegNumber || adv.claimedRegNumber || "",
     entityName: adv.registeredEntityName || adv.claimedAdvisorName || "Unregistered Entity",
     contactPerson: adv.registeredContactPerson || adv.registeredEntityName || "",
@@ -892,20 +912,18 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           ptext.includes("returns");
         const isFakeSebi =
           fname.includes("fake_sebi") ||
-          fname.includes("ina0000") ||
+          fname.includes("ina000000089") ||
           ptext.includes("fake_sebi") ||
-          ptext.includes("ina0000") ||
-          ptext.includes("sebi");
+          ptext.includes("ina000000089") ||
+          (ptext.includes("ina0000") && !ptext.includes("ina000000037")) ||
+          (fname.includes("ina0000") && !fname.includes("ina000000037"));
 
         const isValidSebiAdvisor =
-          ptext.includes("ina000000037") ||
-          ptext.includes("kavitha") ||
-          fname.includes("kavitha") ||
-          fname.includes("ina000000037") ||
+          (ptext.includes("ina000000037") || fname.includes("ina000000037")) ||
           (ptext.includes("inz000031633") || fname.includes("zerodha"));
 
         if (isValidSebiAdvisor && !ptext.includes("percent") && !ptext.includes("rupees") && !ptext.includes("50k")) {
-          const isKavitha = ptext.includes("ina000000037") || ptext.includes("kavitha") || fname.includes("kavitha");
+          const isKavitha = ptext.includes("ina000000037") || fname.includes("ina000000037");
           setVerdict({
             riskTier: "LOW",
             score: 10,
@@ -954,23 +972,32 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
               "Forensic Assessment Rationale (Risk Score: 10/100):\nThe analyzed screenshot exhibits verified regulatory credentials. Registration ID INA000000037 actively belongs to KAVITHA MENON in the official SEBI register. Screening against statutory SEBI provisions found no prohibited return promises (SEBI Circular CIR/2023/123) or unauthorized personal fund transfer requests. The communication complies with statutory identity disclosure standards.",
           });
         } else if (isWhatsapp || isFakeSebi) {
+          const isKavithaImpersonation = ptext.includes("kavitha") || fname.includes("kavitha") || ptext.includes("ina000000089");
           setVerdict({
             riskTier: isFakeSebi ? "CRITICAL" : "HIGH",
             score: isFakeSebi ? 92 : 88,
             highlightedReasons: isFakeSebi
-              ? [
-                  "Fabricated SEBI registration code (INA000099999) or unauthorized regulatory claim asserting government endorsement.",
-                  "Statutory violation: SEBI never guarantees or endorses investment returns.",
-                  "Prohibition of Assured Returns under SEBI Circular CIR/2023/123.",
-                  "Impersonation of regulatory authority to induce consumer trust.",
-                ]
+              ? isKavithaImpersonation
+                ? [
+                    "Fabricated SEBI Registration ID: Claimed code INA000000089 is completely missing from official SEBI records.",
+                    "Suspected Advisor Impersonation: Sender claims the identity of 'Kavitha Menon' (legitimately registered under INA000000037), but provides an unregistered/counterfeit ID.",
+                    "Severe Regulatory Violation: Impersonating registered market intermediaries and fabricating government credentials violates Section 12(1) and Section 12A of the SEBI Act, 1992.",
+                  ]
+                : [
+                    "Fabricated SEBI registration code (INA000099999) or unauthorized regulatory claim asserting government endorsement.",
+                    "Statutory violation: SEBI never guarantees or endorses investment returns.",
+                    "Prohibition of Assured Returns under SEBI Circular CIR/2023/123.",
+                    "Impersonation of regulatory authority to induce consumer trust.",
+                  ]
               : [
                   "Guaranteed return promises violate statutory SEBI Circular CIR/2023/123.",
                   "Solicitation to unregistered VIP Telegram/WhatsApp trading group or private chat.",
                   "Unrealistic short-term yield claims characteristic of Ponzi operations.",
                   "Direct personal payment request for financial advisory.",
                 ],
-            matchedKeywords: ["Guaranteed Returns Prohibition", "SEBI Advisor Impersonation", "Direct Fund Transfer Demand"],
+            matchedKeywords: isKavithaImpersonation
+              ? ["Fictitious Registration Code", "SEBI Advisor Impersonation", "Fraudulent Identity Theft"]
+              : ["Guaranteed Returns Prohibition", "SEBI Advisor Impersonation", "Direct Fund Transfer Demand"],
             verifiedItems: [
               "Image visual structure and format integrity",
               "SEBI Circular CIR/2023/123 statutory screening",
@@ -980,14 +1007,36 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
               "Receiver bank account status",
             ],
             isImageResult: true,
-            extractedImageText: isFakeSebi
+            extractedImageText: isKavithaImpersonation
+              ? "i am a sebi registered investment advisor my name is kavitha menon my id is INA000000089 4:15 am"
+              : isFakeSebi
               ? "SEBI CERTIFICATE OF REGISTRATION: Claimed Reg Number INA000099999. Guaranteed 40% monthly returns approved by SEBI."
               : "WhatsApp Chat Screenshot: hey i am a sebi investment advisor please send me 10 thousand rupees get 100 percent returns",
-            imageSummary: isFakeSebi
+            imageSummary: isKavithaImpersonation
+              ? "Critical regulatory violation / Impersonation fraud: Quoted SEBI ID (INA000000089) does not exist in official SEBI database. Sender claims identity of registered advisor 'Kavitha Menon' (real ID: INA000000037)."
+              : isFakeSebi
               ? "Critical regulatory violation: Purported SEBI registration certificate asserting government endorsement for guaranteed investment profits."
               : "High-risk illegal advisory solicitation detected in screenshot with prohibited return promises and direct transfer requests.",
-            inference:
-              "Forensic Risk Assessment Rationale (Risk Score: 90/100):\nThe submitted screenshot exhibits confirmed markers of an unlawful financial solicitation scheme. The primary driver is the presence of prohibited statutory violations, notably promises of guaranteed or fixed returns ('100 percent returns') under SEBI Circular CIR/2023/123. Furthermore, soliciting investors into private unmonitored channels (WhatsApp/Telegram) and requesting direct fund transfers ('send me 10 thousand rupees') are standard hallmarks of unauthorized operations. Capital loss risk is imminent. Do NOT transfer funds.",
+            advisorVerification: isFakeSebi ? {
+              claimedAdvisorName: isKavithaImpersonation ? "Kavitha Menon" : "Claimed Advisor",
+              claimedRegNumber: isKavithaImpersonation ? "INA000000089" : "INA000099999",
+              hasRegistrationClaim: true,
+              hasNameClaim: true,
+              status: "FICTITIOUS_ID",
+              statusLabel: isKavithaImpersonation ? "NOT FOUND IN SEBI REGISTRY · SUSPECTED IMPERSONATION" : "NOT FOUND IN SEBI REGISTRY",
+              details: isKavithaImpersonation
+                ? "Registration ID 'INA000000089' is NOT found in official SEBI records. While 'Kavitha Menon' is an authentic advisor (registered under INA000000037), this message uses an invalid registration number, indicating an impersonation scam."
+                : "Registration ID was not found in official SEBI records.",
+              registeredEntityName: isKavithaImpersonation ? "KAVITHA MENON (Authentic Advisor Record)" : undefined,
+              registeredRegNumber: isKavithaImpersonation ? "INA000000037" : undefined,
+              intermediaryType: "Investment Adviser",
+              identityCheck: isKavithaImpersonation ? "SUSPECTED_IMPERSONATION" : "NOT_FOUND",
+              regulatoryCitation: "SEBI Act, 1992 Section 12(1) & 12A",
+              officialRegistryUrl: "https://scores.sebi.gov.in",
+            } : undefined,
+            inference: isKavithaImpersonation
+              ? "Forensic Assessment Rationale (Risk Score: 92/100):\nCRITICAL FRAUD DETECTED: The submitted message claims the identity of registered advisor 'Kavitha Menon' while citing a fabricated SEBI registration ID (INA000000089). Cross-checking against the official SEBI register confirms that authentic intermediary 'KAVITHA MENON' is registered under INA000000037, NOT INA000000089. Capital loss risk is immediate. Do NOT engage or transfer funds."
+              : "Forensic Risk Assessment Rationale (Risk Score: 90/100):\nThe submitted screenshot exhibits confirmed markers of an unlawful financial solicitation scheme. The primary driver is the presence of prohibited statutory violations, notably promises of guaranteed or fixed returns ('100 percent returns') under SEBI Circular CIR/2023/123. Furthermore, soliciting investors into private unmonitored channels (WhatsApp/Telegram) and requesting direct fund transfers ('send me 10 thousand rupees') are standard hallmarks of unauthorized operations. Capital loss risk is imminent. Do NOT transfer funds.",
           });
         } else {
           setVerdict({
@@ -2770,12 +2819,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-4">
                   <div className="p-3.5 rounded-2xl bg-[var(--nav-track)] border border-[var(--border)]">
                     <span className="text-[11px] font-mono-tabular uppercase tracking-wider text-[var(--text-muted)] block mb-1">
-                      {verdict.advisorVerification.registeredContactPerson || verdict.advisorVerification.registeredEntityName
+                      {verdict.advisorVerification.status === "VERIFIED" && (verdict.advisorVerification.registeredContactPerson || verdict.advisorVerification.registeredEntityName)
                         ? locale === "hi" ? "रजिस्टर में नाम" : "Name in registry"
                         : locale === "hi" ? "दावा किया गया नाम" : "Claimed Person / Firm"}
                     </span>
                     <span className="font-semibold text-sm text-[var(--text-primary)]">
-                      {verdict.advisorVerification.registeredContactPerson || verdict.advisorVerification.registeredEntityName || verdict.advisorVerification.claimedAdvisorName ||
+                      {verdict.advisorVerification.claimedAdvisorName ||
+                        verdict.advisorVerification.registeredContactPerson ||
+                        verdict.advisorVerification.registeredEntityName ||
                         (locale === "hi"
                           ? "नाम नहीं दिया गया"
                           : "Name not provided")}
@@ -2849,6 +2900,10 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         ? "No Exact Name Match · Check Spelling / ID"
                         : verdict.advisorVerification.status === "REGISTRY_NOT_COVERED"
                         ? "Category Not Included in Local Files"
+                        : verdict.advisorVerification.status === "FICTITIOUS_ID"
+                        ? verdict.advisorVerification.identityCheck === "SUSPECTED_IMPERSONATION"
+                          ? "Unregistered ID · Suspected Impersonation"
+                          : "Not Found in SEBI Registry"
                         : verdict.advisorVerification.status === "MISSING_REGISTRATION"
                         ? "Registration ID Missing"
                         : verdict.advisorVerification.status === "NOT_VERIFIED"

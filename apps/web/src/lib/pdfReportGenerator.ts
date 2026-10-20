@@ -287,7 +287,7 @@ export function buildInvestigationPdfDoc(data: InvestigationReportData): jsPDF {
     }
 
     // ── 6. SEBI ADVISOR VERIFICATION (IF AVAILABLE) ───────────────────────
-    if (data.advisorVerification && data.advisorVerification.claimedAdvisorName) {
+    if (data.advisorVerification && (data.advisorVerification.claimedAdvisorName || data.advisorVerification.claimedRegNumber)) {
       checkPageBreak(60);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);

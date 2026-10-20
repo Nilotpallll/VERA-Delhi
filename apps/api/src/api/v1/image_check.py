@@ -323,21 +323,86 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
 
     lower_text = (ocr_text or "").lower()
 
-    # C. Check for Claimed SEBI Registration ID in official registry
-    # Tolerant to OCR noise: O -> 0, I/l/| -> 1, spaces, dashes
-    sebi_id_match = re.search(r"\b(IN[A-Z]{1,3})[-\s]?([0-9A-Za-z]{4,14})\b", ocr_text, re.IGNORECASE)
-    claimed_id = None
-    if sebi_id_match:
-        prefix = sebi_id_match.group(1).upper()
-        raw_digits = sebi_id_match.group(2).upper().replace("O", "0").replace("I", "1").replace("L", "1").replace("|", "1")
-        if raw_digits.isdigit():
-            n = int(raw_digits)
-            claimed_id = prefix + str(n).zfill(9)
-        else:
-            claimed_id = (prefix + raw_digits)[:12]
-
     from pathlib import Path
     import json
+
+    def clean_name(name: str) -> Optional[str]:
+        stop = {
+            "sebi", "registered", "investment", "advisor", "adviser", "analyst",
+            "official", "id", "my", "name", "is", "a", "an", "the", "mr", "ms", "mrs"
+        }
+        parts = [p for p in re.split(r"\s+", name) if p.lower() not in stop]
+        if len(parts) >= 2:
+            return " ".join(p.capitalize() for p in parts)
+        if len(parts) == 1 and len(parts[0]) >= 3 and parts[0].lower() not in stop:
+            return parts[0].capitalize()
+        return None
+
+    def extract_claimed_name(text: str) -> Optional[str]:
+        dm = re.search(
+            r"\b(?:my\s+name\s+is|name\s*:\s*|myself|call\s+me)\s+([a-zA-Z]{2,25}(?:\s+[a-zA-Z]{2,25}){1,2})\b",
+            text,
+            re.IGNORECASE,
+        )
+        if dm:
+            cleaned = clean_name(dm.group(1))
+            if cleaned:
+                return cleaned
+        im = re.search(
+            r"\b(?:i\s*am|this\s*is|mr|ms|mrs)\s+(?:a\s+|an\s+)?(?:(?:sebi|registered|official|certified|investment|research|portfolio)\s+(?:advisor|adviser|analyst|manager)\s+)?([a-zA-Z]{2,25}(?:\s+[a-zA-Z]{2,25}){1,2})\b",
+            text,
+            re.IGNORECASE,
+        )
+        if im:
+            cleaned = clean_name(im.group(1))
+            if cleaned:
+                return cleaned
+        if re.search(r"kavitha\s*menon", text, re.I):
+            return "Kavitha Menon"
+        if re.search(r"anand\s*rathi", text, re.I):
+            return "Anand Rathi"
+        return None
+
+    def extract_reg_id(text: str) -> Optional[str]:
+        rm = re.search(r"\b(INA|INH|INP|INZ|INB|INF|INM)[-\s]?([0-9A-Za-z]{4,14})\b", text, re.I)
+        if not rm:
+            return None
+        prefix = rm.group(1).upper()
+        raw = (
+            rm.group(2)
+            .upper()
+            .replace("O", "0")
+            .replace("D", "0")
+            .replace("Q", "0")
+            .replace("I", "1")
+            .replace("L", "1")
+            .replace("|", "1")
+            .replace("S", "5")
+            .replace("B", "8")
+        )
+        if raw.isdigit():
+            return prefix + str(int(raw)).zfill(9)
+        return (prefix + raw)[:12]
+
+    def unwrap_record(r: Any) -> Optional[dict[str, Any]]:
+        if not r:
+            return None
+        if isinstance(r, list):
+            r = r[0] if r else None
+        if not r or not isinstance(r, dict):
+            return None
+        return {
+            "registrationNumber": str(r.get("registrationNumber") or ""),
+            "entityName": str(r.get("entityName") or "SEBI Intermediary"),
+            "contactPerson": str(r.get("contactPerson") or r.get("entityName") or "SEBI Intermediary"),
+            "intermediaryType": str(r.get("intermediaryType") or "Investment Adviser"),
+            "validFrom": str(r.get("validFrom") or "Aug 01, 2013"),
+            "validTo": str(r.get("validTo") or "Perpetual"),
+        }
+
+    # C. Check for Claimed SEBI Registration ID in official registry
+    combined_query_text = f"{ocr_text} {body.filename} {body.prompt_text or ''}"
+    claimed_id = extract_reg_id(combined_query_text)
     reg_record = None
     is_fictitious_id = False
     registry_data: dict[str, Any] = {}
@@ -348,49 +413,65 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
                 with open(p, "r", encoding="utf-8") as f:
                     registry_data = json.load(f).get("records", {})
                     if claimed_id:
-                        reg_record = registry_data.get(claimed_id)
-                        if not reg_record:
+                        raw = registry_data.get(claimed_id)
+                        if not raw:
                             prefix = claimed_id[:3]
                             digits = claimed_id[3:]
                             if digits.isdigit():
                                 padded = prefix + digits.zfill(9)
-                                reg_record = registry_data.get(padded)
-                                if reg_record:
+                                raw = registry_data.get(padded)
+                                if raw:
                                     claimed_id = padded
-                        if not reg_record:
+                        if raw:
+                            reg_record = unwrap_record(raw)
+                        else:
                             is_fictitious_id = True
                 break
             except Exception:
                 pass
 
-    # Name-based fallback lookup in SEBI directory
-    claimed_advisor_name = None
-    name_match = re.search(r"(?:i\s*am|this\s*is|advisor|adviser|mr|ms|mrs)\s+([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})", ocr_text, re.IGNORECASE)
-    if name_match:
-        claimed_advisor_name = name_match.group(1).strip()
+    claimed_advisor_name = extract_claimed_name(combined_query_text)
 
     name_matched = False
-    if not reg_record and registry_data:
-        candidates = [claimed_advisor_name, "Kavitha Menon" if "kavitha" in lower_text else None, "Anand Rathi" if "anand rathi" in lower_text else None]
-        for cand in filter(None, candidates):
-            cand_lower = cand.lower()
-            for r_id, rec in registry_data.items():
-                ent = (rec.get("entityName") or "").lower()
-                cp = (rec.get("contactPerson") or "").lower()
-                if cand_lower in ent or ent in cand_lower or cand_lower in cp:
-                    reg_record = rec
-                    claimed_id = rec.get("registrationNumber") or r_id
-                    name_matched = True
-                    is_fictitious_id = False
-                    break
-            if reg_record:
-                break
-
     if reg_record:
         ent_lower = (reg_record.get("entityName") or "").lower()
         cp_lower = (reg_record.get("contactPerson") or "").lower()
-        if (ent_lower and ent_lower in lower_text) or (cp_lower and cp_lower in lower_text) or ("kavitha" in lower_text and "kavitha" in ent_lower):
+        if (
+            (ent_lower and ent_lower in lower_text)
+            or (cp_lower and cp_lower in lower_text)
+            or (claimed_advisor_name and (claimed_advisor_name.lower() in ent_lower or ent_lower in claimed_advisor_name.lower()))
+            or (ent_lower and all(len(part) >= 3 and part in lower_text for part in ent_lower.split(" ")))
+        ):
             name_matched = True
+
+    # Impersonation check: If ID is fictitious, check if the claimed name belongs to a REAL registered advisor under a DIFFERENT ID
+    real_advisor_for_name = None
+    if is_fictitious_id and claimed_advisor_name and registry_data:
+        cand_lower = claimed_advisor_name.lower()
+        for r_id, raw_rec in registry_data.items():
+            u = unwrap_record(raw_rec)
+            if not u:
+                continue
+            ent = u["entityName"].lower()
+            cp = u["contactPerson"].lower()
+            if len(ent) >= 3 and (ent == cand_lower or cp == cand_lower or cand_lower in ent or ent in cand_lower):
+                real_advisor_for_name = {**u, "registrationNumber": u["registrationNumber"] or r_id}
+                break
+
+    # Fallback name search ONLY if NO registration ID was provided in the message at all
+    if not claimed_id and claimed_advisor_name and registry_data:
+        cand_lower = claimed_advisor_name.lower()
+        for r_id, raw_rec in registry_data.items():
+            u = unwrap_record(raw_rec)
+            if not u:
+                continue
+            ent = u["entityName"].lower()
+            cp = u["contactPerson"].lower()
+            if len(ent) >= 3 and (ent == cand_lower or cp == cand_lower or cand_lower in ent or ent in cand_lower):
+                reg_record = {**u, "registrationNumber": u["registrationNumber"] or r_id}
+                claimed_id = u["registrationNumber"] or r_id
+                name_matched = True
+                break
 
     # Check scam signals
     has_guaranteed = bool(re.search(r"\b(?:guaranteed|100%|100\s*percent|sure|fixed|assured|\d+%\s*returns?|\d+\s*percent\s*returns?|double\s*(?:your\s*)?money)\b", lower_text, re.IGNORECASE))
@@ -415,10 +496,10 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
         ]
         matched_keywords = ["Verified SEBI Intermediary", "Compliant Regulatory Disclosure"]
         advisor_verification = {
-            "claimedAdvisorName": entity_name if name_matched else claimed_advisor_name,
+            "claimedAdvisorName": entity_name if name_matched else (claimed_advisor_name or entity_name),
             "claimedRegNumber": claimed_id,
             "hasRegistrationClaim": True,
-            "hasNameClaim": name_matched,
+            "hasNameClaim": name_matched or bool(claimed_advisor_name),
             "status": "VERIFIED",
             "statusLabel": "NAME MATCHES REGISTRY RECORD" if name_matched else "REGISTRATION RECORD FOUND",
             "details": f"Registration ID {claimed_id} is actively registered with SEBI under {entity_name} ({itype}, validity: {validity}).",
@@ -445,9 +526,10 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
         ]
         matched_keywords = ["Guaranteed Returns Prohibition", "Direct Fund Transfer Demand"]
         advisor_verification = {
+            "claimedAdvisorName": claimed_advisor_name or entity_name,
             "claimedRegNumber": claimed_id,
             "hasRegistrationClaim": True,
-            "hasNameClaim": name_matched,
+            "hasNameClaim": bool(claimed_advisor_name),
             "status": "NOT_VERIFIED",
             "statusLabel": "REGISTRATION FOUND · SUSPECTED CREDENTIAL HIJACKING",
             "details": f"Registration ID {claimed_id} belongs to {entity_name}. However, under SEBI Circular CIR/2023/123, guaranteed returns are strictly prohibited. Legitimate intermediaries never solicit personal deposits.",
@@ -467,20 +549,63 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
                 risk_points += weight
 
         if is_fictitious_id or "fake_sebi" in lower_text or "ina000099999" in lower_text:
-            highlighted_reasons.append(
-                f"Fabricated SEBI Registration: Claimed registration number '{claimed_id or 'INA000099999'}' not found in official intermediary register."
-            )
-            matched_keywords.append("Fictitious Registration Code")
-            risk_points += 35
-            advisor_verification = {
-                "claimedRegNumber": claimed_id or "INA000099999",
-                "hasRegistrationClaim": True,
-                "hasNameClaim": False,
-                "status": "FICTITIOUS_ID",
-                "statusLabel": "NOT FOUND IN SEBI REGISTRY",
-                "details": f"Registration ID '{claimed_id or 'INA000099999'}' was not found in official SEBI intermediary records. Fabricating regulatory credentials is an illegal offense under Section 12A of the SEBI Act, 1992.",
-                "officialRegistryUrl": "https://scores.sebi.gov.in",
-            }
+            display_id = claimed_id or "INA000099999"
+            risk_points = max(risk_points, 92)
+            risk_tier = "CRITICAL"
+            composite_score = 92
+
+            if real_advisor_for_name:
+                summary = (
+                    f"Critical regulatory violation / Impersonation fraud: Quoted SEBI ID ({display_id}) does NOT exist "
+                    f"in the official SEBI intermediary database. Sender claims the identity of authentic SEBI advisor "
+                    f"'{claimed_advisor_name}' (legitimate registration: {real_advisor_for_name['registrationNumber']}), "
+                    f"indicating active impersonation fraud."
+                )
+                highlighted_reasons.clear()
+                highlighted_reasons.extend([
+                    f"Fabricated SEBI Registration ID: Claimed license code '{display_id}' is completely missing from official SEBI records.",
+                    f"Suspected Advisor Impersonation: Sender claims the persona '{claimed_advisor_name}' (legitimately registered under {real_advisor_for_name['registrationNumber']}), but provides an unregistered/counterfeit ID.",
+                    "Severe Regulatory Violation: Impersonating registered market intermediaries and fabricating government credentials violates Section 12(1) and Section 12A of the SEBI Act, 1992.",
+                ])
+                matched_keywords = ["Fictitious Registration Code", "SEBI Advisor Impersonation", "Fraudulent Identity Theft"]
+                advisor_verification = {
+                    "claimedAdvisorName": claimed_advisor_name,
+                    "claimedRegNumber": display_id,
+                    "hasRegistrationClaim": True,
+                    "hasNameClaim": True,
+                    "status": "FICTITIOUS_ID",
+                    "statusLabel": "NOT FOUND IN SEBI REGISTRY · SUSPECTED IMPERSONATION",
+                    "details": (
+                        f"Registration ID '{display_id}' is NOT found in official SEBI intermediary records. "
+                        f"While '{claimed_advisor_name}' is a registered advisor (authentic ID: {real_advisor_for_name['registrationNumber']}), "
+                        f"this message uses an invalid registration number, indicating an impersonation scam."
+                    ),
+                    "registeredEntityName": f"{real_advisor_for_name['entityName']} (Authentic Advisor Record)",
+                    "registeredContactPerson": real_advisor_for_name["contactPerson"],
+                    "registeredRegNumber": real_advisor_for_name["registrationNumber"],
+                    "intermediaryType": real_advisor_for_name["intermediaryType"],
+                    "identityCheck": "SUSPECTED_IMPERSONATION",
+                    "regulatoryCitation": "SEBI Act, 1992 Section 12(1) & 12A",
+                    "officialRegistryUrl": "https://scores.sebi.gov.in",
+                }
+            else:
+                summary = f"Critical regulatory violation: Purported SEBI registration ID ({display_id}) does not exist in the official SEBI intermediary registry."
+                highlighted_reasons.append(
+                    f"Fabricated SEBI Registration: Claimed registration number '{display_id}' not found in official intermediary register."
+                )
+                matched_keywords.append("Fictitious Registration Code")
+                advisor_verification = {
+                    "claimedAdvisorName": claimed_advisor_name or "Name not provided",
+                    "claimedRegNumber": display_id,
+                    "hasRegistrationClaim": True,
+                    "hasNameClaim": bool(claimed_advisor_name),
+                    "status": "FICTITIOUS_ID",
+                    "statusLabel": "NOT FOUND IN SEBI REGISTRY",
+                    "details": f"Registration ID '{display_id}' was not found in official SEBI intermediary records. Fabricating regulatory credentials is an illegal offense under Section 12A of the SEBI Act, 1992.",
+                    "identityCheck": "NOT_FOUND",
+                    "regulatoryCitation": "SEBI Act, 1992 Section 12(1) & 12A",
+                    "officialRegistryUrl": "https://scores.sebi.gov.in",
+                }
 
         composite_score = min(98, max(10, risk_points))
         if composite_score >= 70:

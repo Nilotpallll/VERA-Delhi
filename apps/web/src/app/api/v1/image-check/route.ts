@@ -134,84 +134,103 @@ export async function POST(req: NextRequest) {
     // ── STEP 3: HIGH-PRECISION SEBI REGISTRY & FORENSIC SCAM ANALYSIS ─────
     const combinedText = `${extractedText} ${prompt_text} ${filename}`.toLowerCase();
 
+    // Helper to unwrap Array records if needed and normalize fields
+    const unwrapRecord = (raw: any) => {
+      if (!raw) return null;
+      const r = Array.isArray(raw) ? raw[0] : raw;
+      if (!r) return null;
+      return {
+        registrationNumber: String(r.registrationNumber || ""),
+        entityName: String(r.entityName || "SEBI Intermediary"),
+        contactPerson: String(r.contactPerson || r.entityName || "SEBI Intermediary"),
+        intermediaryType: String(r.intermediaryType || "Investment Adviser"),
+        validFrom: String(r.validFrom || "Aug 01, 2013"),
+        validTo: String(r.validTo || "Perpetual"),
+      };
+    };
+
+    const cleanExtractedName = (name: string): string | undefined => {
+      const stopWords = new Set([
+        "sebi", "registered", "investment", "advisor", "adviser", "analyst",
+        "official", "id", "my", "name", "is", "a", "an", "the", "mr", "ms", "mrs"
+      ]);
+      const parts = name.split(/\s+/).filter((p) => !stopWords.has(p.toLowerCase()));
+      if (parts.length >= 2) {
+        return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(" ");
+      }
+      if (parts.length === 1 && parts[0].length >= 3 && !stopWords.has(parts[0].toLowerCase())) {
+        return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+      }
+      return undefined;
+    };
+
+    const extractClaimedName = (text: string): string | undefined => {
+      const directMatch = text.match(/\b(?:my\s+name\s+is|name\s*:\s*|myself|call\s+me)\s+([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})\b/i);
+      if (directMatch) {
+        const cleaned = cleanExtractedName(directMatch[1].trim());
+        if (cleaned) return cleaned;
+      }
+      const introMatch = text.match(/\b(?:i\s*am|this\s*is|mr|ms|mrs)\s+(?:a\s+|an\s+)?(?:(?:sebi|registered|official|certified|investment|research|portfolio)\s+(?:advisor|adviser|analyst|manager)\s+)?([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})\b/i);
+      if (introMatch) {
+        const cleaned = cleanExtractedName(introMatch[1].trim());
+        if (cleaned) return cleaned;
+      }
+      if (/kavitha\s*menon/i.test(text)) return "Kavitha Menon";
+      if (/anand\s*rathi/i.test(text)) return "Anand Rathi";
+      return undefined;
+    };
+
+    const extractRegId = (text: string): string | null => {
+      const regMatch = text.match(/\b(INA|INH|INP|INZ|INB|INF|INM)[-\s]?([0-9A-Za-z]{4,14})\b/i);
+      if (!regMatch) return null;
+      const prefix = regMatch[1].toUpperCase();
+      let rawNum = regMatch[2].toUpperCase()
+        .replace(/[ODQo]/g, "0")
+        .replace(/[IL|l]/g, "1")
+        .replace(/[S]/g, "5")
+        .replace(/[B]/g, "8");
+      if (/^\d+$/.test(rawNum)) {
+        const n = parseInt(rawNum, 10);
+        return prefix + String(n).padStart(9, "0");
+      }
+      return (prefix + rawNum).slice(0, 12);
+    };
+
     // 1. Check for Claimed SEBI Registration ID (INA, INH, INP, INZ, INB, INF, INM)
-    // Robust OCR extraction: handles dashes, spaces, and OCR digit noise (O->0, I/l->1)
-    const regMatch = combinedText.match(/\b(INA|INH|INP|INZ|INB|INF|INM)[-\s]?([0-9A-Za-z]{4,14})\b/i);
-    let claimedRegId: string | null = null;
+    let claimedRegId: string | null = extractRegId(combinedText);
     let registryRecord: any = null;
     let isFictitiousRegId = false;
 
-    if (regMatch) {
-      const prefix = regMatch[1].toUpperCase();
-      let rawNum = regMatch[2].toUpperCase().replace(/[O]/g, "0").replace(/[IL|]/g, "1");
-      if (/^\d+$/.test(rawNum)) {
-        const n = parseInt(rawNum, 10);
-        claimedRegId = prefix + String(n).padStart(9, "0");
+    const registry = await getSebiRegistry();
+
+    if (claimedRegId && registry && registry.records) {
+      let rawRec = registry.records[claimedRegId];
+      if (!rawRec) {
+        // Check padded format
+        const prefix = claimedRegId.slice(0, 3);
+        const rest = claimedRegId.slice(3);
+        if (/^\d+$/.test(rest)) {
+          const num = parseInt(rest, 10);
+          const padded = prefix + String(num).padStart(9, "0");
+          rawRec = registry.records[padded];
+          if (rawRec) claimedRegId = padded;
+        }
+      }
+      if (rawRec) {
+        registryRecord = unwrapRecord(rawRec);
       } else {
-        claimedRegId = (prefix + rawNum).slice(0, 12);
+        isFictitiousRegId = true;
       }
     }
 
-    if (claimedRegId) {
-      const registry = await getSebiRegistry();
-      if (registry && registry.records) {
-        registryRecord = registry.records[claimedRegId];
-        if (!registryRecord) {
-          // Check padded format
-          const prefix = claimedRegId.slice(0, 3);
-          const rest = claimedRegId.slice(3);
-          if (/^\d+$/.test(rest)) {
-            const num = parseInt(rest, 10);
-            const padded = prefix + String(num).padStart(9, "0");
-            registryRecord = registry.records[padded];
-            if (registryRecord) claimedRegId = padded;
-          }
-        }
-        if (!registryRecord) {
-          isFictitiousRegId = true;
-        }
-      }
-    }
-
-    // 2. Name Extraction & Matching for Registered Entities
+    // 2. Name Extraction & Cross-Checking
     let nameMatched = false;
-    let claimedAdvisorName: string | undefined = undefined;
-    const nameClaimMatch = combinedText.match(/(?:i\s*am|this\s*is|advisor|adviser|mr|ms|mrs)\s+([a-z]{2,25}(?:\s+[a-z]{2,25}){1,2})/i);
-    if (nameClaimMatch) {
-      claimedAdvisorName = nameClaimMatch[1].trim();
-    }
+    let claimedAdvisorName: string | undefined = extractClaimedName(combinedText);
 
-    // Fallback: If registration was not matched by ID, try searching by claimed name in registry
-    if (!registryRecord) {
-      const registry = await getSebiRegistry();
-      if (registry && registry.records) {
-        const nameCandidates = [
-          claimedAdvisorName,
-          combinedText.includes("kavitha menon") ? "Kavitha Menon" : null,
-          combinedText.includes("anand rathi") ? "Anand Rathi" : null,
-        ].filter(Boolean) as string[];
-
-        for (const cand of nameCandidates) {
-          const candNorm = cand.toLowerCase();
-          for (const [regId, rec] of Object.entries(registry.records as Record<string, any>)) {
-            const ent = (rec.entityName || "").toLowerCase();
-            const contact = (rec.contactPerson || "").toLowerCase();
-            if (ent === candNorm || contact === candNorm || ent.includes(candNorm) || candNorm.includes(ent)) {
-              registryRecord = rec;
-              claimedRegId = rec.registrationNumber || regId;
-              nameMatched = true;
-              isFictitiousRegId = false;
-              break;
-            }
-          }
-          if (registryRecord) break;
-        }
-      }
-    }
-
+    // If ID is valid, verify whether claimed name matches the registered entity/contact
     if (registryRecord) {
-      const entNameNorm = (registryRecord.entityName || "").toLowerCase();
-      const contactNorm = (registryRecord.contactPerson || "").toLowerCase();
+      const entNameNorm = registryRecord.entityName.toLowerCase();
+      const contactNorm = registryRecord.contactPerson.toLowerCase();
       if (
         (entNameNorm && combinedText.includes(entNameNorm)) ||
         (contactNorm && combinedText.includes(contactNorm)) ||
@@ -219,6 +238,40 @@ export async function POST(req: NextRequest) {
         (entNameNorm && entNameNorm.split(" ").every((part: string) => part.length >= 3 && combinedText.includes(part)))
       ) {
         nameMatched = true;
+      }
+    }
+
+    // If registration ID was fictitious, check if the claimed name belongs to a REAL registered advisor under a DIFFERENT ID
+    // (This constitutes Impersonation Fraud!)
+    let realAdvisorForClaimedName: any = null;
+    if (isFictitiousRegId && claimedAdvisorName && registry && registry.records) {
+      const candNorm = claimedAdvisorName.toLowerCase();
+      for (const [rId, rawRec] of Object.entries(registry.records as Record<string, any>)) {
+        const u = unwrapRecord(rawRec);
+        if (!u) continue;
+        const ent = u.entityName.toLowerCase();
+        const contact = u.contactPerson.toLowerCase();
+        if (ent.length >= 3 && (ent === candNorm || contact === candNorm || ent.includes(candNorm) || candNorm.includes(ent))) {
+          realAdvisorForClaimedName = { ...u, registrationNumber: u.registrationNumber || rId };
+          break;
+        }
+      }
+    }
+
+    // Fallback name search ONLY if NO registration ID was provided in the message at all
+    if (!claimedRegId && claimedAdvisorName && registry && registry.records) {
+      const candNorm = claimedAdvisorName.toLowerCase();
+      for (const [rId, rawRec] of Object.entries(registry.records as Record<string, any>)) {
+        const u = unwrapRecord(rawRec);
+        if (!u) continue;
+        const ent = u.entityName.toLowerCase();
+        const contact = u.contactPerson.toLowerCase();
+        if (ent.length >= 3 && (ent === candNorm || contact === candNorm || ent.includes(candNorm) || candNorm.includes(ent))) {
+          registryRecord = { ...u, registrationNumber: u.registrationNumber || rId };
+          claimedRegId = u.registrationNumber || rId;
+          nameMatched = true;
+          break;
+        }
       }
     }
 
@@ -270,10 +323,10 @@ export async function POST(req: NextRequest) {
       );
       matchedKeywords.push("Verified SEBI Intermediary", "Compliant Regulatory Disclosure");
       advisorVerification = {
-        claimedAdvisorName: nameMatched ? registryRecord.entityName : undefined,
+        claimedAdvisorName: nameMatched ? registryRecord.entityName : (claimedAdvisorName || registryRecord.entityName),
         claimedRegNumber: claimedRegId,
         hasRegistrationClaim: true,
-        hasNameClaim: nameMatched,
+        hasNameClaim: nameMatched || Boolean(claimedAdvisorName),
         status: "VERIFIED",
         statusLabel: nameMatched ? "NAME MATCHES REGISTRY RECORD" : "REGISTRATION RECORD FOUND",
         details: `Registration ID ${claimedRegId} is actively registered with SEBI under ${registryRecord.entityName} (${registryRecord.intermediaryType}, validity: ${registryRecord.validTo || "Perpetual"}).`,
@@ -314,8 +367,10 @@ export async function POST(req: NextRequest) {
         "Suspected Credential Hijacking: Legitimate registered advisors never guarantee investment returns or solicit personal chat deposits."
       );
       advisorVerification = {
+        claimedAdvisorName: claimedAdvisorName || registryRecord.entityName,
         claimedRegNumber: claimedRegId,
         hasRegistrationClaim: true,
+        hasNameClaim: Boolean(claimedAdvisorName),
         status: "NOT_VERIFIED",
         statusLabel: "REGISTRATION FOUND · SUSPECTED CREDENTIAL HIJACKING",
         details: `Registration ID ${claimedRegId} belongs to ${registryRecord.entityName}. However, under SEBI Circular CIR/2023/123, guaranteed returns are strictly prohibited. Legitimate intermediaries never solicit personal deposits. High probability of credential misuse.`,
@@ -330,33 +385,71 @@ export async function POST(req: NextRequest) {
         `Under SEBI Circular CIR/2023/123, assured returns are strictly illegal across all entities. Legitimate advisers never solicit funds into private personal accounts. ` +
         `This pattern strongly indicates credential hijacking or unauthorized impersonation. Capital loss risk is imminent.`;
     }
-    // SCENARIO 3: FICTITIOUS REGISTRATION ID (NOT FOUND IN REGISTRY)
+    // SCENARIO 3: FICTITIOUS REGISTRATION ID (NOT FOUND IN REGISTRY / SUSPECTED IMPERSONATION)
     else if (isFictitiousRegId || combinedText.includes("fake_sebi") || combinedText.includes("ina000099999")) {
       riskTier = "CRITICAL";
       score = 92;
-      summary = `Critical regulatory violation: Purported SEBI registration ID (${claimedRegId || "claimed"}) does not exist in the official SEBI intermediary registry.`;
-      highlightedReasons.push(
-        `Fabricated SEBI Registration: Claimed ID ${claimedRegId || "INA000099999"} not found in official intermediary register.`,
-        "Regulatory Impersonation: Non-existent regulatory credential used to induce investor trust."
-      );
-      if (hasGuaranteed) {
+      const displayId = claimedRegId || "INA000099999";
+      const isImpersonatingRealAdvisor = Boolean(realAdvisorForClaimedName);
+
+      if (isImpersonatingRealAdvisor) {
+        summary = `Critical regulatory violation / Impersonation fraud: Quoted SEBI ID (${displayId}) does NOT exist in the official SEBI intermediary database. Sender claims the identity of authentic SEBI advisor '${claimedAdvisorName}' (legitimate registration: ${realAdvisorForClaimedName.registrationNumber}), indicating active impersonation fraud.`;
         highlightedReasons.push(
-          "Statutory Violation: Promise of assured returns violates statutory SEBI Circular CIR/2023/123."
+          `Fabricated SEBI Registration ID: Claimed license code '${displayId}' is completely missing from official SEBI records.`,
+          `Suspected Advisor Impersonation: Sender claims the persona '${claimedAdvisorName}' (legitimately registered under ${realAdvisorForClaimedName.registrationNumber}), but provides an unregistered/counterfeit ID.`,
+          "Severe Regulatory Violation: Impersonating registered market intermediaries and fabricating government credentials violates Section 12(1) and Section 12A of the SEBI Act, 1992."
         );
+        matchedKeywords.push("Fictitious Registration Code", "SEBI Advisor Impersonation", "Fraudulent Identity Theft");
+        advisorVerification = {
+          claimedAdvisorName: claimedAdvisorName,
+          claimedRegNumber: displayId,
+          hasRegistrationClaim: true,
+          hasNameClaim: true,
+          status: "FICTITIOUS_ID",
+          statusLabel: "NOT FOUND IN SEBI REGISTRY · SUSPECTED IMPERSONATION",
+          details: `Registration ID '${displayId}' is NOT found in official SEBI intermediary records. While '${claimedAdvisorName}' is a registered advisor (authentic ID: ${realAdvisorForClaimedName.registrationNumber}), this message uses an invalid registration number, indicating an impersonation scam.`,
+          registeredEntityName: `${realAdvisorForClaimedName.entityName} (Authentic Advisor Record)`,
+          registeredContactPerson: realAdvisorForClaimedName.contactPerson,
+          registeredRegNumber: realAdvisorForClaimedName.registrationNumber,
+          intermediaryType: realAdvisorForClaimedName.intermediaryType,
+          identityCheck: "SUSPECTED_IMPERSONATION",
+          regulatoryCitation: "SEBI Act, 1992 Section 12(1) & 12A",
+          officialRegistryUrl: "https://scores.sebi.gov.in",
+        };
+        inference =
+          `Forensic Assessment Rationale (Risk Score: ${score}/100):\n` +
+          `CRITICAL FRAUD DETECTED: The submitted message claims the identity of registered advisor '${claimedAdvisorName}' while citing a fabricated/non-existent SEBI registration ID (${displayId}). ` +
+          `Cross-checking against the official SEBI register confirms that authentic intermediary '${realAdvisorForClaimedName.entityName}' is registered under ${realAdvisorForClaimedName.registrationNumber}, NOT ${displayId}. ` +
+          `Spoofing licensed intermediary identities to solicit investors is a severe criminal offense under Section 12A of the SEBI Act, 1992. Capital loss risk is immediate. Do NOT engage or transfer funds.`;
+      } else {
+        summary = `Critical regulatory violation: Purported SEBI registration ID (${displayId}) does not exist in the official SEBI intermediary registry.`;
+        highlightedReasons.push(
+          `Fabricated SEBI Registration: Claimed ID '${displayId}' not found in official intermediary register.`,
+          "Regulatory Impersonation: Non-existent regulatory credential used to induce investor trust."
+        );
+        if (hasGuaranteed) {
+          highlightedReasons.push(
+            "Statutory Violation: Promise of assured returns violates statutory SEBI Circular CIR/2023/123."
+          );
+        }
+        matchedKeywords.push("Fictitious Registration Code", "Regulatory Impersonation");
+        advisorVerification = {
+          claimedAdvisorName: claimedAdvisorName || "Name not provided",
+          claimedRegNumber: displayId,
+          hasRegistrationClaim: true,
+          hasNameClaim: Boolean(claimedAdvisorName),
+          status: "FICTITIOUS_ID",
+          statusLabel: "NOT FOUND IN SEBI REGISTRY",
+          details: `Registration ID '${displayId}' was not found in official SEBI intermediary records. Fabricating regulatory credentials is an illegal offense under Section 12A of the SEBI Act, 1992.`,
+          identityCheck: "NOT_FOUND",
+          regulatoryCitation: "SEBI Act, 1992 Section 12(1) & 12A",
+          officialRegistryUrl: "https://scores.sebi.gov.in",
+        };
+        inference =
+          `Forensic Assessment Rationale (Risk Score: ${score}/100):\n` +
+          `The analyzed screenshot displays a fictitious SEBI registration code (${displayId}) not present in official intermediary registers. ` +
+          `Impersonating regulatory authority or asserting false licensing constitutes illegal solicitation under Section 12A of the SEBI Act, 1992.`;
       }
-      matchedKeywords.push("Fictitious Registration Code", "Regulatory Impersonation");
-      advisorVerification = {
-        claimedRegNumber: claimedRegId || "INA000099999",
-        hasRegistrationClaim: true,
-        status: "FICTITIOUS_ID",
-        statusLabel: "NOT FOUND IN SEBI REGISTRY",
-        details: `Registration ID '${claimedRegId || "INA000099999"}' was not found in official SEBI intermediary records. Fabricating regulatory credentials is an illegal offense under Section 12A of the SEBI Act, 1992.`,
-        officialRegistryUrl: "https://scores.sebi.gov.in",
-      };
-      inference =
-        `Forensic Assessment Rationale (Risk Score: ${score}/100):\n` +
-        `The analyzed screenshot displays a fictitious SEBI registration code (${claimedRegId || "INA000099999"}) not present in official intermediary registers. ` +
-        `Impersonating regulatory authority or asserting false licensing constitutes illegal solicitation under Section 12A of the SEBI Act, 1992.`;
     }
     // SCENARIO 4: SEVERE SCAM VIOLATIONS WITHOUT REGISTRATION ID (WHATSAPP SCAMS)
     else if (hasGuaranteed || hasFundDemand || hasZeroRisk || hasVipGroup) {
