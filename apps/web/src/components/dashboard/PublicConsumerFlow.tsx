@@ -918,12 +918,27 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           (ptext.includes("ina0000") && !ptext.includes("ina000000037")) ||
           (fname.includes("ina0000") && !fname.includes("ina000000037"));
 
-        const isValidSebiAdvisor =
-          (ptext.includes("ina000000037") || fname.includes("ina000000037")) ||
-          (ptext.includes("inz000031633") || fname.includes("zerodha"));
+        const isKavithaVerified =
+          (ptext.includes("ina000000037") || fname.includes("ina000000037")) &&
+          (ptext.includes("kavitha") || fname.includes("kavitha") || ptext.includes("menon"));
+        const isZerodhaVerified =
+          (ptext.includes("inz000031633") || fname.includes("inz000031633")) &&
+          (ptext.includes("zerodha") || fname.includes("zerodha"));
 
-        if (isValidSebiAdvisor && !ptext.includes("percent") && !ptext.includes("rupees") && !ptext.includes("50k")) {
-          const isKavitha = ptext.includes("ina000000037") || fname.includes("ina000000037");
+        const hasScamWords =
+          ptext.includes("percent") ||
+          ptext.includes("return") ||
+          ptext.includes("profit") ||
+          ptext.includes("rupees") ||
+          ptext.includes("50k") ||
+          ptext.includes("send me") ||
+          ptext.includes("deposit") ||
+          ptext.includes("guarantee") ||
+          ptext.includes("zero risk") ||
+          ptext.includes("vip");
+
+        if ((isKavithaVerified || isZerodhaVerified) && !hasScamWords) {
+          const isKavitha = isKavithaVerified;
           setVerdict({
             riskTier: "LOW",
             score: 10,

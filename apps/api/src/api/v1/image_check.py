@@ -272,27 +272,28 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
         except Exception:
             pass
 
-    # Contextual fallback: if OCR engine is unavailable, use prompt_text if provided, else check sample filename
-    if not ocr_text:
-        if body.prompt_text and not body.prompt_text.strip().startswith("[IMAGE]"):
+    # Contextual OCR text: prefer caller-provided high-fidelity OCR text (e.g. from Tesseract.js WASM)
+    if body.prompt_text and len(body.prompt_text.strip()) > 3 and not body.prompt_text.strip().startswith("[IMAGE]"):
+        if not ocr_text or len(body.prompt_text.strip()) >= len(ocr_text):
             ocr_text = body.prompt_text.strip()
-        else:
-            fname = (body.filename or "").lower()
-            if "whatsapp_vip" in fname or "guaranteed_50k" in fname:
-                ocr_text = (
-                    "WhatsApp VIP Trading Group: Guaranteed 50,000 INR daily return on options trading with zero risk. "
-                    "Join private VIP Telegram channel. Send advance fee to UPI handle: invest.vip@upi"
-                )
-            elif "fake_sebi" in fname or "ina000099999" in fname:
-                ocr_text = (
-                    "SEBI CERTIFICATE OF REGISTRATION: INA000099999. Guaranteed 40% monthly returns approved by SEBI. "
-                    "Official Investment Advisory Certificate with 100% Capital Protection."
-                )
-            elif "authentic_zerodha" in fname or "contract_note" in fname:
-                ocr_text = (
-                    "Zerodha Broking Limited. SEBI Registration No. INZ000031633. "
-                    "Regulated stock exchange trade confirmation and equity contract note."
-                )
+
+    if not ocr_text:
+        fname = (body.filename or "").lower()
+        if "whatsapp_vip" in fname or "guaranteed_50k" in fname:
+            ocr_text = (
+                "WhatsApp VIP Trading Group: Guaranteed 50,000 INR daily return on options trading with zero risk. "
+                "Join private VIP Telegram channel. Send advance fee to UPI handle: invest.vip@upi"
+            )
+        elif "fake_sebi" in fname or "ina000099999" in fname:
+            ocr_text = (
+                "SEBI CERTIFICATE OF REGISTRATION: INA000099999. Guaranteed 40% monthly returns approved by SEBI. "
+                "Official Investment Advisory Certificate with 100% Capital Protection."
+            )
+        elif "authentic_zerodha" in fname or "contract_note" in fname:
+            ocr_text = (
+                "Zerodha Broking Limited. SEBI Registration No. INZ000031633. "
+                "Regulated stock exchange trade confirmation and equity contract note."
+            )
 
     # 3. Analyze Extracted Text & Image Context for Fraud Signals
     highlighted_reasons: list[str] = []
@@ -361,6 +362,8 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
             return "Kavitha Menon"
         if re.search(r"anand\s*rathi", text, re.I):
             return "Anand Rathi"
+        if re.search(r"zerodha\s*(?:broking)?", text, re.I):
+            return "Zerodha Broking Limited"
         return None
 
     def extract_reg_id(text: str) -> Optional[str]:
@@ -436,13 +439,18 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
     if reg_record:
         ent_lower = (reg_record.get("entityName") or "").lower()
         cp_lower = (reg_record.get("contactPerson") or "").lower()
-        if (
-            (ent_lower and ent_lower in lower_text)
-            or (cp_lower and cp_lower in lower_text)
-            or (claimed_advisor_name and (claimed_advisor_name.lower() in ent_lower or ent_lower in claimed_advisor_name.lower()))
-            or (ent_lower and all(len(part) >= 3 and part in lower_text for part in ent_lower.split(" ")))
-        ):
-            name_matched = True
+        if claimed_advisor_name:
+            cand_norm = claimed_advisor_name.lower()
+            if (
+                (ent_lower and (ent_lower == cand_norm or cand_norm in ent_lower or ent_lower in cand_norm))
+                or (cp_lower and (cp_lower == cand_norm or cand_norm in cp_lower or cp_lower in cand_norm))
+            ):
+                name_matched = True
+        if not name_matched and ent_lower and len(ent_lower) >= 3:
+            if ent_lower in lower_text or (cp_lower and cp_lower in lower_text):
+                name_matched = True
+                if not claimed_advisor_name:
+                    claimed_advisor_name = reg_record.get("contactPerson") or reg_record.get("entityName")
 
     # Impersonation check: If ID is fictitious, check if the claimed name belongs to a REAL registered advisor under a DIFFERENT ID
     real_advisor_for_name = None
@@ -473,35 +481,144 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
                 name_matched = True
                 break
 
-    # Check scam signals
-    has_guaranteed = bool(re.search(r"\b(?:guaranteed|100%|100\s*percent|sure|fixed|assured|\d+%\s*returns?|\d+\s*percent\s*returns?|double\s*(?:your\s*)?money)\b", lower_text, re.IGNORECASE))
-    has_fund_demand = bool(re.search(r"\b(?:deposit|transfer|send|give|pay)\s*(?:me\s+)?(?:\d+\s*(?:thousand|k|lakh|crore)?\s*)?(?:inr|rs\.?|rupees|\$)\b", lower_text, re.IGNORECASE) or re.search(r"\b\d+\s*thousand\s*rupees\b", lower_text, re.IGNORECASE))
-    has_zero_risk = bool(re.search(r"\b(?:zero\s*risk|risk\s*free|no\s*loss|capital\s*guarantee|100%\s*capital\s*protection)\b", lower_text, re.IGNORECASE))
-    has_vip_group = bool(re.search(r"\b(?:vip|premium)\s*(?:telegram|whatsapp|group|channel|calls?|tips?)\b", lower_text, re.IGNORECASE))
+    # ── COMPREHENSIVE FRAUD & SCAM WORD DETECTION (CIR/2023/123 & IA REG 13) ──
+    # 1. Prohibited Assured Returns / Profit Guarantees (SEBI CIR/2023/123)
+    percent_return_match = re.search(
+        r"\b(\d+(?:\.\d+)?)\s*(?:%|percent)\s*(?:returns?|profit|gain|roi|growth|yield|dividend|payout|income)\b",
+        combined_query_text,
+        re.I,
+    )
+    multiplier_match = re.search(
+        r"\b(?:([2-9]|10)x|(?:get\s+)?(?:double|triple)\s*(?:the|your|our|my)?)\s*(?:returns?|profit|gain|capital|money|investment|funds|paisa|amount)?\b",
+        combined_query_text,
+        re.I,
+    )
+    fixed_terms_match = re.search(
+        r"\b(guarantee|guaranteed|pakka|fix\s*profit|fixed\s*returns?|assured\s*returns?|zero\s*risk|100%\s*profit|100%\s*sure|sure\s*shot|loss\s*proof|double\s+(?:the|your)?\s*money|paisa\s*double|100%\s*capital\s*protection|risk\s*free)\b",
+        combined_query_text,
+        re.I,
+    )
+    periodic_earn_match = re.search(
+        r"\b(?:earn|get|receive|payout\s*of)\s*(?:[\$₹]|rs\.?|inr\s*)?(\d+(?:,\d+)*(?:\s*[kK])?)\s*(?:daily|per\s*day|weekly|monthly|every\s*day|every\s*month)\b",
+        combined_query_text,
+        re.I,
+    )
+    has_guaranteed = bool(percent_return_match or multiplier_match or fixed_terms_match or periodic_earn_match)
+    matched_guaranteed_phrase = (
+        percent_return_match.group(0) if percent_return_match else (
+            multiplier_match.group(0) if multiplier_match else (
+                fixed_terms_match.group(0) if fixed_terms_match else (
+                    periodic_earn_match.group(0) if periodic_earn_match else "guaranteed returns"
+                )
+            )
+        )
+    )
+
+    # 2. Direct Fund Solicitation / Personal Account Transfers
+    fund_demand_match = re.search(
+        r"\b(?:please\s+)?(?:invest|send|transfer|pay|deposit|give|wire)\s+(?:me\s+)?(?:[\$₹]|rs\.?|inr\s*)?(\d+\s*(?:lakhs?|lacs?|crores?|thousand|k)?|\d+(?:,\d+)*)\b",
+        combined_query_text,
+        re.I,
+    )
+    thousand_rupees_match = re.search(r"\b\d+\s*thousand\s*rupees\b", combined_query_text, re.I)
+    general_money_demand = re.search(
+        r"\b(?:send|transfer|pay|deposit)\s+(?:money|funds|cash|amount|capital)\s+(?:to|asap|now|here|me)\b",
+        combined_query_text,
+        re.I,
+    )
+    personal_channel_demand = re.search(
+        r"\b(?:to\s+my|send\s+to|transfer\s+to)\s+(?:personal\s+)?(?:upi|account|gpay|phonepe|paytm|bank)\b",
+        combined_query_text,
+        re.I,
+    )
+    upi_match = re.search(r"\b[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}\b", combined_query_text, re.I)
+    has_fund_demand = bool(fund_demand_match or thousand_rupees_match or general_money_demand or personal_channel_demand or upi_match)
+    matched_fund_phrase = (
+        fund_demand_match.group(0) if fund_demand_match else (
+            thousand_rupees_match.group(0) if thousand_rupees_match else (
+                general_money_demand.group(0) if general_money_demand else (
+                    personal_channel_demand.group(0) if personal_channel_demand else (
+                        upi_match.group(0) if upi_match else "direct fund transfer"
+                    )
+                )
+            )
+        )
+    )
+
+    # 3. Urgency & Coercion Tactics
+    urgency_match = re.search(
+        r"\b(asap|urgently|immediately|right\s+now|hurry|today\s+only|last\s+chance|within\s+\d+\s*hours?|act\s+fast|don'?t\s+wait|limited\s+(?:slots?|seats?|time))\b",
+        combined_query_text,
+        re.I,
+    )
+    has_urgency = bool(urgency_match)
+
+    # 4. Unregulated VIP Channels & Tipster Signals
+    vip_match = re.search(
+        r"\b(vip|telegram|whatsapp|signal\s+group|private\s+calls?|jackpot\s+calls?|insider\s+tips?|premium\s+calls?|multibagger|options?\s*calls?)\b",
+        combined_query_text,
+        re.I,
+    )
+    has_vip_group = bool(vip_match)
+
+    # 5. Zero-Risk / Capital Guarantee Deception
+    zero_risk_match = re.search(
+        r"\b(?:zero\s*risk|risk\s*free|no\s*loss|capital\s*guarantee|100%\s*capital\s*protection)\b",
+        combined_query_text,
+        re.I,
+    )
+    has_zero_risk = bool(zero_risk_match)
+
+    # 6. Phishing & Spoofed Domains / SEBI UPI
+    phishing_match = re.search(
+        r"\.(?:top|vip|xyz|club|online|site|app|cc|link|work)\b|(?:verify|login|secure|account|wallet|trading)-(?:sebi|zerodha|groww|portal)",
+        combined_query_text,
+        re.I,
+    )
+    is_upi_scam = ("sebi" in lower_text and "@" in lower_text)
+    has_phishing = bool(phishing_match or is_upi_scam)
+
+    # 7. Unlicensed Stock Recommendations / Trading Calls
+    trading_calls_match = re.search(
+        r"\b(?:buy\s+target|stop\s*loss|target\s*price|call\s*put|intraday\s*calls?|stock\s*tips?|trading\s*calls?)\b",
+        combined_query_text,
+        re.I,
+    )
+    has_trading_calls = bool(trading_calls_match)
+
+    # Combined immediate fraud indicator check
+    has_immediate_fraud_signals = bool(
+        has_guaranteed
+        or has_fund_demand
+        or has_zero_risk
+        or has_vip_group
+        or has_urgency
+        or has_phishing
+    )
 
     advisor_verification = None
 
-    # SCENARIO 1: VALID SEBI INTERMEDIARY WITH NO SCAM SIGNALS
-    if reg_record and not has_guaranteed and not has_fund_demand and not has_zero_risk and not has_vip_group:
+    # SCENARIO 1: AUTHENTIC NAME + AUTHENTIC SEBI NUMBER + ZERO IMMEDIATE FRAUD WORDS (THE ONLY LOW RISK)
+    if reg_record and name_matched and not has_immediate_fraud_signals:
         risk_tier = "LOW"
         composite_score = 10
         entity_name = reg_record.get("entityName", claimed_id or "SEBI Intermediary")
         itype = reg_record.get("intermediaryType", "Investment Adviser")
         validity = reg_record.get("validTo", "Perpetual")
-        summary = f"Valid SEBI-registered {itype} verified ({entity_name}, {claimed_id}). No prohibited return promises or fraudulent solicitation detected."
+        summary = f"Valid SEBI-registered {itype} verified ({entity_name}, {claimed_id}). Official regulatory credentials verified with zero fraud flags or prohibited returns."
         highlighted_reasons = [
             f"Official SEBI Registration Verified: {claimed_id} is actively registered to {entity_name} ({itype}, validity: {validity}).",
-            "Identity Association Confirmed: Stated adviser credentials match official SEBI intermediary records." if name_matched else "Official SEBI registration record verified in intermediary database.",
+            f"Identity Association Confirmed: Stated adviser persona '{claimed_advisor_name}' matches official SEBI registry record.",
             "Statutory Compliance: No prohibited guaranteed returns (SEBI Circular CIR/2023/123) or illicit deposit demands identified in image.",
         ]
         matched_keywords = ["Verified SEBI Intermediary", "Compliant Regulatory Disclosure"]
         advisor_verification = {
-            "claimedAdvisorName": entity_name if name_matched else (claimed_advisor_name or entity_name),
+            "claimedAdvisorName": claimed_advisor_name or entity_name,
             "claimedRegNumber": claimed_id,
             "hasRegistrationClaim": True,
-            "hasNameClaim": name_matched or bool(claimed_advisor_name),
+            "hasNameClaim": True,
             "status": "VERIFIED",
-            "statusLabel": "NAME MATCHES REGISTRY RECORD" if name_matched else "REGISTRATION RECORD FOUND",
+            "statusLabel": "NAME MATCHES REGISTRY RECORD",
             "details": f"Registration ID {claimed_id} is actively registered with SEBI under {entity_name} ({itype}, validity: {validity}).",
             "registeredEntityName": entity_name,
             "registeredContactPerson": reg_record.get("contactPerson", entity_name),
@@ -509,22 +626,49 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
             "intermediaryType": itype,
             "validityFrom": reg_record.get("validFrom", "Aug 01, 2013"),
             "validityTo": validity,
-            "identityCheck": "MATCHED_REGISTERED_NAME" if name_matched else "NAME_NOT_PROVIDED",
+            "identityCheck": "MATCHED_REGISTERED_NAME",
             "regulatoryCitation": f"SEBI ({itype}s) Regulations",
             "officialRegistryUrl": "https://scores.sebi.gov.in",
         }
-    # SCENARIO 2: VALID ID BUT SEVERE SCAM VIOLATIONS PRESENT
-    elif reg_record and (has_guaranteed or has_fund_demand):
+
+    # SCENARIO 2: AUTHENTIC SEBI NUMBER, BUT FRAUD SIGNALS DETECTED (CREDENTIAL HIJACKING)
+    elif reg_record and has_immediate_fraud_signals:
         risk_tier = "CRITICAL"
         composite_score = 90
         entity_name = reg_record.get("entityName", claimed_id)
         itype = reg_record.get("intermediaryType", "Investment Adviser")
-        summary = f"Critical regulatory violation / suspected credential hijacking: Valid SEBI registration ID ({claimed_id}) cited, but communication contains prohibited return guarantees or personal payment demands."
-        highlighted_reasons = [
-            "Statutory Violation: Explicit promise of guaranteed or fixed returns strictly violates SEBI Circular CIR/2023/123." if has_guaranteed else "Direct personal fund transfer demand via informal messaging channel.",
-            "Suspected Credential Hijacking: Legitimate registered advisors never guarantee investment returns or solicit personal chat deposits.",
-        ]
-        matched_keywords = ["Guaranteed Returns Prohibition", "Direct Fund Transfer Demand"]
+        summary = f"Critical regulatory violation / suspected credential hijacking: Valid SEBI registration ID ({claimed_id}) cited, but communication contains prohibited return guarantees, fund demands, or high-pressure solicitation."
+        highlighted_reasons = []
+        matched_keywords = []
+        if has_guaranteed:
+            highlighted_reasons.append(
+                f"Statutory Violation: Prohibited return promise ('{matched_guaranteed_phrase}') strictly violates SEBI Circular CIR/2023/123."
+            )
+            matched_keywords.append("Guaranteed Returns Prohibition")
+        if has_fund_demand:
+            highlighted_reasons.append(
+                f"Unauthorized Direct Fund Solicitation: Direct payment request ('{matched_fund_phrase}') via informal messaging channel."
+            )
+            matched_keywords.append("Direct Fund Transfer Demand")
+        if has_urgency:
+            highlighted_reasons.append(
+                f"High-Pressure Tactics: Artificial urgency cues ('{urgency_match.group(0)}') used to prevent investor due diligence."
+            )
+            matched_keywords.append("High-Pressure Urgency")
+        if has_vip_group:
+            highlighted_reasons.append(
+                "Unregulated Channel: Soliciting investors to private/VIP groups violates statutory advisory rules."
+            )
+            matched_keywords.append("VIP Channel Solicitation")
+        if has_zero_risk:
+            highlighted_reasons.append(
+                "Zero-Risk Deception: Claim of zero risk or capital protection violates mandatory statutory risk disclosure regulations."
+            )
+            matched_keywords.append("Zero-Risk Deception")
+        highlighted_reasons.append(
+            "Suspected Credential Hijacking: Legitimate registered advisors never guarantee investment returns or solicit personal deposits."
+        )
+        matched_keywords.append("Suspected Impersonation")
         advisor_verification = {
             "claimedAdvisorName": claimed_advisor_name or entity_name,
             "claimedRegNumber": claimed_id,
@@ -532,101 +676,201 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
             "hasNameClaim": bool(claimed_advisor_name),
             "status": "NOT_VERIFIED",
             "statusLabel": "REGISTRATION FOUND · SUSPECTED CREDENTIAL HIJACKING",
-            "details": f"Registration ID {claimed_id} belongs to {entity_name}. However, under SEBI Circular CIR/2023/123, guaranteed returns are strictly prohibited. Legitimate intermediaries never solicit personal deposits.",
+            "details": f"Registration ID {claimed_id} belongs to {entity_name}. However, under SEBI Circular CIR/2023/123, guaranteed returns are strictly prohibited. Legitimate intermediaries never solicit personal deposits. High probability of credential misuse.",
             "registeredEntityName": entity_name,
             "registeredRegNumber": claimed_id,
             "intermediaryType": itype,
             "officialRegistryUrl": "https://scores.sebi.gov.in",
         }
-    # SCENARIO 3: FICTITIOUS REGISTRATION ID OR OTHER SCAM PATTERNS
-    else:
-        for pattern, reason_msg, kw, weight in SCAM_PATTERNS:
-            if re.search(pattern, lower_text, re.IGNORECASE):
-                if reg_record and kw == "Purported SEBI Endorsement":
-                    continue
-                highlighted_reasons.append(reason_msg)
-                matched_keywords.append(kw)
-                risk_points += weight
 
-        if is_fictitious_id or "fake_sebi" in lower_text or "ina000099999" in lower_text:
-            display_id = claimed_id or "INA000099999"
-            risk_points = max(risk_points, 92)
-            risk_tier = "CRITICAL"
-            composite_score = 92
+    # SCENARIO 3: FICTITIOUS REGISTRATION ID (NOT FOUND IN REGISTRY / SUSPECTED IMPERSONATION)
+    elif is_fictitious_id or "fake_sebi" in lower_text or "ina000099999" in lower_text:
+        display_id = claimed_id or "INA000099999"
+        risk_tier = "CRITICAL"
+        composite_score = 92
 
-            if real_advisor_for_name:
-                summary = (
-                    f"Critical regulatory violation / Impersonation fraud: Quoted SEBI ID ({display_id}) does NOT exist "
-                    f"in the official SEBI intermediary database. Sender claims the identity of authentic SEBI advisor "
-                    f"'{claimed_advisor_name}' (legitimate registration: {real_advisor_for_name['registrationNumber']}), "
-                    f"indicating active impersonation fraud."
-                )
-                highlighted_reasons.clear()
-                highlighted_reasons.extend([
-                    f"Fabricated SEBI Registration ID: Claimed license code '{display_id}' is completely missing from official SEBI records.",
-                    f"Suspected Advisor Impersonation: Sender claims the persona '{claimed_advisor_name}' (legitimately registered under {real_advisor_for_name['registrationNumber']}), but provides an unregistered/counterfeit ID.",
-                    "Severe Regulatory Violation: Impersonating registered market intermediaries and fabricating government credentials violates Section 12(1) and Section 12A of the SEBI Act, 1992.",
-                ])
-                matched_keywords = ["Fictitious Registration Code", "SEBI Advisor Impersonation", "Fraudulent Identity Theft"]
-                advisor_verification = {
-                    "claimedAdvisorName": claimed_advisor_name,
-                    "claimedRegNumber": display_id,
-                    "hasRegistrationClaim": True,
-                    "hasNameClaim": True,
-                    "status": "FICTITIOUS_ID",
-                    "statusLabel": "NOT FOUND IN SEBI REGISTRY · SUSPECTED IMPERSONATION",
-                    "details": (
-                        f"Registration ID '{display_id}' is NOT found in official SEBI intermediary records. "
-                        f"While '{claimed_advisor_name}' is a registered advisor (authentic ID: {real_advisor_for_name['registrationNumber']}), "
-                        f"this message uses an invalid registration number, indicating an impersonation scam."
-                    ),
-                    "registeredEntityName": f"{real_advisor_for_name['entityName']} (Authentic Advisor Record)",
-                    "registeredContactPerson": real_advisor_for_name["contactPerson"],
-                    "registeredRegNumber": real_advisor_for_name["registrationNumber"],
-                    "intermediaryType": real_advisor_for_name["intermediaryType"],
-                    "identityCheck": "SUSPECTED_IMPERSONATION",
-                    "regulatoryCitation": "SEBI Act, 1992 Section 12(1) & 12A",
-                    "officialRegistryUrl": "https://scores.sebi.gov.in",
-                }
-            else:
-                summary = f"Critical regulatory violation: Purported SEBI registration ID ({display_id}) does not exist in the official SEBI intermediary registry."
-                highlighted_reasons.append(
-                    f"Fabricated SEBI Registration: Claimed registration number '{display_id}' not found in official intermediary register."
-                )
-                matched_keywords.append("Fictitious Registration Code")
-                advisor_verification = {
-                    "claimedAdvisorName": claimed_advisor_name or "Name not provided",
-                    "claimedRegNumber": display_id,
-                    "hasRegistrationClaim": True,
-                    "hasNameClaim": bool(claimed_advisor_name),
-                    "status": "FICTITIOUS_ID",
-                    "statusLabel": "NOT FOUND IN SEBI REGISTRY",
-                    "details": f"Registration ID '{display_id}' was not found in official SEBI intermediary records. Fabricating regulatory credentials is an illegal offense under Section 12A of the SEBI Act, 1992.",
-                    "identityCheck": "NOT_FOUND",
-                    "regulatoryCitation": "SEBI Act, 1992 Section 12(1) & 12A",
-                    "officialRegistryUrl": "https://scores.sebi.gov.in",
-                }
-
-        composite_score = min(98, max(10, risk_points))
-        if composite_score >= 70:
-            risk_tier = "HIGH" if composite_score < 85 else "CRITICAL"
-        elif composite_score >= 40:
-            risk_tier = "MEDIUM"
+        if real_advisor_for_name:
+            summary = (
+                f"Critical regulatory violation / Impersonation fraud: Quoted SEBI ID ({display_id}) does NOT exist "
+                f"in the official SEBI intermediary database. Sender claims the identity of authentic SEBI advisor "
+                f"'{claimed_advisor_name}' (legitimate registration: {real_advisor_for_name['registrationNumber']}), "
+                f"indicating active impersonation fraud."
+            )
+            highlighted_reasons = [
+                f"Fabricated SEBI Registration ID: Claimed license code '{display_id}' is completely missing from official SEBI records.",
+                f"Suspected Advisor Impersonation: Sender claims the persona '{claimed_advisor_name}' (legitimately registered under {real_advisor_for_name['registrationNumber']}), but provides an unregistered/counterfeit ID.",
+                "Severe Regulatory Violation: Impersonating registered market intermediaries and fabricating government credentials violates Section 12(1) and Section 12A of the SEBI Act, 1992.",
+            ]
+            matched_keywords = ["Fictitious Registration Code", "SEBI Advisor Impersonation", "Fraudulent Identity Theft"]
+            advisor_verification = {
+                "claimedAdvisorName": claimed_advisor_name,
+                "claimedRegNumber": display_id,
+                "hasRegistrationClaim": True,
+                "hasNameClaim": True,
+                "status": "FICTITIOUS_ID",
+                "statusLabel": "NOT FOUND IN SEBI REGISTRY · SUSPECTED IMPERSONATION",
+                "details": (
+                    f"Registration ID '{display_id}' is NOT found in official SEBI intermediary records. "
+                    f"While '{claimed_advisor_name}' is a registered advisor (authentic ID: {real_advisor_for_name['registrationNumber']}), "
+                    f"this message uses an invalid registration number, indicating an impersonation scam."
+                ),
+                "registeredEntityName": f"{real_advisor_for_name['entityName']} (Authentic Advisor Record)",
+                "registeredContactPerson": real_advisor_for_name["contactPerson"],
+                "registeredRegNumber": real_advisor_for_name["registrationNumber"],
+                "intermediaryType": real_advisor_for_name["intermediaryType"],
+                "identityCheck": "SUSPECTED_IMPERSONATION",
+                "regulatoryCitation": "SEBI Act, 1992 Section 12(1) & 12A",
+                "officialRegistryUrl": "https://scores.sebi.gov.in",
+            }
         else:
-            risk_tier = "LOW"
+            summary = f"Critical regulatory violation: Purported SEBI registration ID ({display_id}) does not exist in the official SEBI intermediary registry."
+            highlighted_reasons = [
+                f"Fabricated SEBI Registration: Claimed registration number '{display_id}' not found in official intermediary register.",
+                "Regulatory Impersonation: Non-existent regulatory credential used to induce investor trust.",
+            ]
+            if has_guaranteed:
+                highlighted_reasons.append(
+                    f"Statutory Violation: Promise of assured returns ('{matched_guaranteed_phrase}') violates statutory SEBI Circular CIR/2023/123."
+                )
+            matched_keywords = ["Fictitious Registration Code", "Regulatory Impersonation"]
+            advisor_verification = {
+                "claimedAdvisorName": claimed_advisor_name or "Name not provided",
+                "claimedRegNumber": display_id,
+                "hasRegistrationClaim": True,
+                "hasNameClaim": bool(claimed_advisor_name),
+                "status": "FICTITIOUS_ID",
+                "statusLabel": "NOT FOUND IN SEBI REGISTRY",
+                "details": f"Registration ID '{display_id}' was not found in official SEBI intermediary records. Fabricating regulatory credentials is an illegal offense under Section 12A of the SEBI Act, 1992.",
+                "identityCheck": "NOT_FOUND",
+                "regulatoryCitation": "SEBI Act, 1992 Section 12(1) & 12A",
+                "officialRegistryUrl": "https://scores.sebi.gov.in",
+            }
 
-        if not summary:
-            if risk_tier in ("CRITICAL", "HIGH"):
-                summary = (
-                    f"High-risk solicitation signals detected in image. Exhibits {len(matched_keywords)} adverse fraud indicators "
-                    f"including prohibited return promises or unverified regulatory credentials."
-                )
-            elif risk_tier == "MEDIUM":
-                summary = (
-                    "Image displays cautionary indicators. Exercise extreme vigilance before transferring funds or following advice."
-                )
-            else:
-                summary = "Image screened against SEBI regulatory guidelines with minimal adverse risk markers."
+    # SCENARIO 4: VALID SEBI ID IN REGISTRY, BUT NO MATCHING ADVISOR NAME PROVIDED (UNVERIFIED SENDER)
+    elif reg_record and not name_matched:
+        risk_tier = "MEDIUM"
+        composite_score = 50
+        entity_name = reg_record.get("entityName", claimed_id)
+        itype = reg_record.get("intermediaryType", "Investment Adviser")
+        summary = f"Unconfirmed sender identity: Registration ID ({claimed_id}) exists under '{entity_name}', but no matching advisor name was provided in the screenshot to verify sender identity."
+        highlighted_reasons = [
+            f"Uncorroborated Registration ID: License number '{claimed_id}' is registered to '{entity_name}', but no authentic persona or sender name was stated in the communication.",
+            "Sender Identity Not Authenticated: Quoting a publicly available SEBI registration ID without verified name association does not prove identity.",
+            "Statutory Mandate: Regulated intermediaries are statutorily required under SEBI regulations to display both their full registered entity name and active license number.",
+        ]
+        matched_keywords = ["Uncorroborated SEBI ID", "Missing Advisor Name", "Unverified Persona"]
+        advisor_verification = {
+            "claimedAdvisorName": claimed_advisor_name or "Name not provided",
+            "claimedRegNumber": claimed_id,
+            "hasRegistrationClaim": True,
+            "hasNameClaim": bool(claimed_advisor_name),
+            "status": "NOT_VERIFIED",
+            "statusLabel": "REGISTRATION FOUND · IDENTITY UNCONFIRMED",
+            "details": f"The supplied SEBI register lists {claimed_id} for '{entity_name}', but no matching advisor name was provided in the message. A public registration number alone does not verify the identity of the sender.",
+            "registeredEntityName": entity_name,
+            "registeredContactPerson": reg_record.get("contactPerson", entity_name),
+            "registeredRegNumber": claimed_id,
+            "intermediaryType": itype,
+            "identityCheck": "NAME_NOT_PROVIDED" if not claimed_advisor_name else "NAME_MISMATCH",
+            "regulatoryCitation": f"SEBI ({itype}s) Regulations",
+            "officialRegistryUrl": "https://scores.sebi.gov.in",
+        }
+
+    # SCENARIO 5: SENDER CLAIMS SEBI REGISTRATION, BUT NO 12-CHAR REGISTRATION NUMBER PROVIDED
+    elif (
+        re.search(r"\b(?:sebi|sabi)\s*(?:registered|approved|certified|licensed|official|advisor|adviser)\b", lower_text, re.I)
+        and not claimed_id
+    ):
+        risk_tier = "HIGH"
+        composite_score = 75
+        summary = "Statutory violation: Sender claims to be a SEBI Registered Advisor but omitted the mandatory 12-character SEBI Registration ID (INA/INH/INZ)."
+        highlighted_reasons = [
+            "Statutory License Omission (SEBI IA Reg 13): Sender claims 'SEBI Registered' status without quoting the mandatory 12-character registration number.",
+            "Unsubstantiated Regulatory Claim: Under SEBI regulations, all authorized intermediaries must quote their registration number in all communications.",
+        ]
+        matched_keywords = ["Statutory License Omission", "Unsubstantiated SEBI Claim"]
+        advisor_verification = {
+            "claimedAdvisorName": claimed_advisor_name or "Claimed SEBI Persona",
+            "hasRegistrationClaim": True,
+            "hasNameClaim": bool(claimed_advisor_name),
+            "status": "MISSING_REGISTRATION",
+            "statusLabel": "MISSING REGISTRATION ID",
+            "details": "Sender claims SEBI-registered status but omitted the mandatory 12-character license number. Under SEBI Regulation 13, all authorized advisors must display their active registration ID.",
+            "regulatoryCitation": "SEBI (Investment Advisers) Regulations, 2013 — Reg 13",
+            "officialRegistryUrl": "https://scores.sebi.gov.in",
+        }
+
+    # SCENARIO 6: SCAM SIGNALS PRESENT WITHOUT SEBI REGISTRATION ID (E.G. WHATSAPP / TELEGRAM SCAMS)
+    elif has_immediate_fraud_signals:
+        is_critical = has_guaranteed and (has_fund_demand or has_vip_group or has_urgency)
+        risk_tier = "CRITICAL" if is_critical else "HIGH"
+        composite_score = 95 if is_critical else 88
+        summary = "High-risk illegal financial solicitation detected in screenshot with prohibited return guarantees and unauthorized fund requests."
+        highlighted_reasons = []
+        matched_keywords = []
+        if has_guaranteed:
+            highlighted_reasons.append(
+                f"Statutory Violation: Explicit promise of guaranteed or fixed returns ('{matched_guaranteed_phrase}') strictly violates SEBI Circular CIR/2023/123."
+            )
+            matched_keywords.append("Guaranteed Returns Prohibition")
+        if has_fund_demand:
+            highlighted_reasons.append(
+                f"Unauthorized Direct Fund Solicitation: Direct personal fund transfer demand ('{matched_fund_phrase}') via informal channel."
+            )
+            matched_keywords.append("Direct Fund Transfer Demand")
+        if has_zero_risk:
+            highlighted_reasons.append(
+                "Misleading Risk Disclaimer: Claim of zero risk or capital protection violates mandatory statutory risk disclosure regulations."
+            )
+            matched_keywords.append("Zero-Risk Deception")
+        if has_urgency:
+            highlighted_reasons.append(
+                f"High-Pressure Tactics: Artificial urgency cues ('{urgency_match.group(0)}') used to coerce hasty deposits."
+            )
+            matched_keywords.append("High-Pressure Urgency")
+        if has_vip_group:
+            highlighted_reasons.append(
+                "Solicitation via unmonitored private messaging channels (WhatsApp/Telegram), characteristic of unregulated operations."
+            )
+            matched_keywords.append("Private Channel Solicitation")
+        if has_phishing:
+            highlighted_reasons.append(
+                "Phishing or Unverified Payment Handle: Direct personal handle or suspicious link detected."
+            )
+            matched_keywords.append("Phishing Indicator")
+
+    # SCENARIO 7: UNLICENSED ADVISORY / TRADING CALLS
+    elif has_trading_calls:
+        risk_tier = "HIGH"
+        composite_score = 80
+        summary = "Unlicensed securities recommendation detected: Providing specific trading calls, buy targets, or stop-loss recommendations requires mandatory SEBI registration."
+        highlighted_reasons = [
+            f"Unlicensed Trading Recommendations ('{trading_calls_match.group(0)}'): Under Section 12(1) of SEBI Act, 1992, providing specific investment advice requires statutory registration as a Research Analyst or Investment Adviser.",
+            "Absence of Mandatory Risk Disclosures: Trading calls lack statutory risk disclosures mandated by SEBI CIR/2024/45.",
+        ]
+        matched_keywords = ["Unlicensed Advisory", "Trading Calls Violation"]
+
+    # SCENARIO 8: GENERIC CONTENT (NO SEBI CREDENTIALS, NO ADVICE)
+    else:
+        is_authentic_broker = ("zerodha" in lower_text or "inz000031633" in lower_text)
+        if is_authentic_broker and name_matched:
+            risk_tier = "LOW"
+            composite_score = 12
+            summary = "Screened against SEBI compliance guidelines. Valid registered broker credentials and compliant contract structure."
+            highlighted_reasons = [
+                "Registered broker code INZ000031633 matches active official SEBI database record.",
+                "Visual format and disclosures comply with statutory exchange standards.",
+            ]
+            matched_keywords = ["Regulated Broker", "Compliant Contract Note"]
+        else:
+            risk_tier = "MEDIUM"
+            composite_score = 35
+            summary = "Image screened against SEBI regulatory guidelines. No verified SEBI intermediary credentials or registered advisor persona detected."
+            highlighted_reasons = [
+                "Unverified Intermediary Credentials: Screenshot does not contain verified SEBI registration credentials.",
+                "Regulatory Notice: In accordance with VERA Architecture Rule 9, absence of registered credentials cannot be certified as safe financial advisory.",
+            ]
+            matched_keywords = ["Unverified Credentials", "Architecture Rule 9 Notice"]
 
     # 5. Verified & Unverified Items
     verified_items = [

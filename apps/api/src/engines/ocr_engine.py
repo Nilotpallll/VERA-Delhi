@@ -106,7 +106,12 @@ class PaddleOCREngine(BaseAnalyzer):
 
             if not fallback_text:
                 if text_payload and not str(text_payload).startswith("data:image/"):
-                    fallback_text = str(text_payload)
+                    payload_str = str(text_payload).strip()
+                    # If it's a base64 encoded image string, do not treat as text
+                    if " " in payload_str and len(payload_str) < 5000:
+                        fallback_text = payload_str
+                    else:
+                        fallback_text = ""
                 else:
                     fallback_text = ""
 
