@@ -10,9 +10,10 @@ Architecture Rules validated:
   Rule 13 — Every investigation is reproducible (ruleset_version present).
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import AsyncMock, patch
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

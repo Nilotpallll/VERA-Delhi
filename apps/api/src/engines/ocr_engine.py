@@ -90,6 +90,7 @@ class PaddleOCREngine(BaseAnalyzer):
                 try:
                     import base64
                     import io
+
                     from PIL import Image
                     payload_bytes = raw_bytes
                     if not payload_bytes and text_payload:

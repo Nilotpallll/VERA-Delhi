@@ -43,15 +43,13 @@ from apps.api.src.ai.tasks import (
 from apps.api.src.contracts.enums import EvidenceCategory, SourceType
 from apps.api.src.engines.ocr_engine import PaddleOCREngine
 from apps.api.src.engines.stt_engine import FasterWhisperEngine
-from apps.api.src.knowledge.evaluation import BenchmarkEvaluator, LABELED_EVALUATION_DATASET
+from apps.api.src.knowledge.evaluation import LABELED_EVALUATION_DATASET, BenchmarkEvaluator
 from apps.api.src.knowledge.guideline_matcher import SEBIGuidelineDetector
 from apps.api.src.knowledge.pipeline import (
-    RegulatoryDocumentCleaner,
     RegulatoryDocumentChunker,
-    RegulatoryPipeline,
+    RegulatoryDocumentCleaner,
 )
 from apps.api.src.knowledge.store import RegulatoryVectorStore
-
 
 # ── Mock LLM Providers for Testing ───────────────────────────────────────────
 
@@ -308,7 +306,7 @@ class TestRegulatoryKnowledgePipeline:
     async def test_retrieval_precision_and_citation_generation(self):
         store = RegulatoryVectorStore()
         await store.initialize_seed_knowledge()
-        
+
         # Query for guaranteed returns
         res = await store.search("guaranteed assured return schemes", top_k=2)
         assert res.status == "SUCCESS"

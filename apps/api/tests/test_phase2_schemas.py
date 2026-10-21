@@ -3,9 +3,9 @@
 Tests all enums, contract schemas, and field constraints.
 """
 
-import pytest
-from pydantic import ValidationError
+from datetime import UTC, datetime
 
+import pytest
 from apps.api.src.contracts.enums import (
     ClaimStatus,
     EntityType,
@@ -14,26 +14,18 @@ from apps.api.src.contracts.enums import (
     InputType,
     InvestigationStatus,
     RelationshipType,
-    ReportStatus,
     SourceType,
 )
 from apps.api.src.contracts.phase2 import (
     AnalyzeRequest,
-    AnalyzerRun,
-    AuditLog,
     Claim,
     Entity,
     EntityRelationship,
     EvidenceItem,
-    InvestigationInput,
     InvestigationInputCreate,
-    ModelRun,
     RiskSignal,
-    UserRecord,
-    VerificationResultRecord,
 )
-from apps.api.src.contracts.verification import VerificationResult, VerificationState
-from datetime import UTC, datetime
+from pydantic import ValidationError
 
 
 # ── Status enums ──────────────────────────────────────────────────────────────

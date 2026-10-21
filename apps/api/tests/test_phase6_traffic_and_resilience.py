@@ -14,15 +14,13 @@ Validates the operational layer requirements:
    - UI / API remain functionally useful when investigation is PARTIAL
 """
 
-import pytest
-from httpx import AsyncClient
-from unittest.mock import AsyncMock, patch
 
-from apps.api.src.core.rate_limit import RateLimiter, _get_user_identifier
+import pytest
+from apps.api.src.core.rate_limit import _get_user_identifier
+from apps.api.src.investigator.risk_engine import DeterministicRiskEngine
 from apps.api.src.queue.jobs import InvestigationJobPayload, JobStatus, RetryPolicy
 from apps.api.src.queue.qstash import QStashClient
-from apps.api.src.investigator.risk_engine import DeterministicRiskEngine
-
+from httpx import AsyncClient
 
 # ── 1. Traffic Management Tests ───────────────────────────────────────────────
 

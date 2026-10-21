@@ -13,13 +13,11 @@ Tests:
   - Realistic sample investigations
 """
 
-import hashlib
 import uuid
 from datetime import UTC, datetime
 from typing import Any
 
 import pytest
-
 from apps.api.src.contracts.enums import (
     EvidenceCategory,
     EvidenceSeverity,
@@ -28,7 +26,6 @@ from apps.api.src.contracts.enums import (
     SourceType,
 )
 from apps.api.src.contracts.phase2 import (
-    AnalyzeRequest,
     Claim,
     EvidenceItem,
     InvestigationInputCreate,
@@ -38,14 +35,12 @@ from apps.api.src.models.phase2 import (
     AuditLogModel,
     ClaimModel,
     EvidenceModel,
-    InputModel,
     InvestigationModel,
-    RiskSignalModel,
 )
 from apps.api.src.services.investigation_service import (
     _check_suspicious_url,
-    _score_to_tier,
     _new_id,
+    _score_to_tier,
 )
 
 

@@ -13,11 +13,11 @@ from __future__ import annotations
 
 import base64
 import io
+
 import pytest
+from apps.api.src.main import app
 from httpx import ASGITransport, AsyncClient
 from PIL import Image, ImageDraw
-
-from apps.api.src.main import app
 
 
 def _create_test_image_b64(text: str = "Test Image", fmt: str = "PNG") -> str:

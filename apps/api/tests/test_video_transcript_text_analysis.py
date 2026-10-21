@@ -9,9 +9,9 @@ Verifies:
 """
 
 import base64
-from unittest.mock import AsyncMock, patch
-import pytest
+from unittest.mock import patch
 
+import pytest
 from apps.api.src.contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
 from apps.api.src.contracts.verification import VerificationResult, VerificationState
 from apps.api.src.engines.message_analyzer import MessageAnalyzer

@@ -73,7 +73,7 @@ class TestConcurrencyAndIdempotency:
     async def test_duplicate_requests_with_idempotency_key(self, client):
         """Concurrent requests with same Idempotency-Key are properly handled or deduplicated."""
         headers = {"Idempotency-Key": "phase8-idem-test-12345"}
-        
+
         resp1 = await client.post(
             "/api/v1/investigations",
             json={"title": "Idempotent Case 1"},

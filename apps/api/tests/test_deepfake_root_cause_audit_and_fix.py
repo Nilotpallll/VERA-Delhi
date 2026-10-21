@@ -21,16 +21,16 @@ import hashlib
 import os
 import tempfile
 from unittest.mock import patch
+
 import cv2
 import numpy as np
 import pytest
-from httpx import AsyncClient, ASGITransport
-
 from apps.api.src.contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
 from apps.api.src.contracts.verification import VerificationResult, VerificationState
 from apps.api.src.engines.video_analyzer import VideoAnalyzer
 from apps.api.src.main import app
-from apps.api.src.models.mesonet import Meso4Net, infer_single_crop, locate_face_crop
+from apps.api.src.models.mesonet import Meso4Net, infer_single_crop
+from httpx import ASGITransport, AsyncClient
 
 
 def _generate_synthetic_video_bytes(
@@ -45,7 +45,6 @@ def _generate_synthetic_video_bytes(
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(path, fourcc, 10.0, (256, 256))
-    rng = np.random.default_rng(seed)
 
     x = np.linspace(0, 1, 256)
     y = np.linspace(0, 1, 256)

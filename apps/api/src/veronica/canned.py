@@ -4,6 +4,7 @@ These responses require zero LLM token consumption, protecting the Gemini free t
 while providing instant, 100% deterministic guidance.
 """
 
+import re
 from typing import Any
 
 from .schemas import VeronicaAction
@@ -1242,8 +1243,6 @@ PRIORITIZED_INTENTS = [
     "affirmation",
     "negation",
 ]
-
-import re
 
 
 def _extract_tokens(text: str) -> set[str]:
