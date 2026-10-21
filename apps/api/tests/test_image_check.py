@@ -83,7 +83,7 @@ async def test_image_check_clean_image():
 
     assert resp.status_code == 200
     data = resp.json()
-    assert data["risk_tier"] in ("LOW", "MINIMAL")
+    assert data["risk_tier"] == "MEDIUM"
     assert data["composite_score"] < 40
 
 
@@ -160,4 +160,3 @@ async def test_image_check_valid_sebi_advisor_low_risk():
     assert data["composite_score"] <= 20
     assert "KAVITHA MENON" in data["summary"] or "INA000000037" in data["summary"]
     assert any("Verified" in reason for reason in data["highlighted_reasons"])
-
