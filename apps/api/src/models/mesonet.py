@@ -182,19 +182,6 @@ def detect_face_in_frame(frame: Any) -> tuple[Any | None, bool]:
     return None, False
 
 
-def locate_face_crop(frame: Any, fallback_to_center: bool = False) -> Any | None:
-    """Locates face in video frame. Returns face crop if found, or None/fallback."""
-    crop, found = detect_face_in_frame(frame)
-    if found:
-        return crop
-
-    if fallback_to_center and hasattr(frame, "shape") and len(frame.shape) >= 2:
-        h, w = frame.shape[:2]
-        return frame[int(h * 0.10) : int(h * 0.78), int(w * 0.20) : int(w * 0.80)]
-
-    return None
-
-
 def compute_fft_frequency_anomaly(face_crop: Any) -> float:
     """Calculates 2D FFT azimuthal directional spectral power anomaly.
 
@@ -364,4 +351,3 @@ def locate_face_crop(frame: Any) -> Any | None:
     except Exception as exc:
         logger.debug("locate_face_crop error: %s", exc)
         return None
-

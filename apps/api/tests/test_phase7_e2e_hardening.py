@@ -9,15 +9,10 @@ failsafe fallbacks, and regulatory audit compliance according to VERA rules:
   Rule 13 — Every investigation is mathematically reproducible via manifests and rule versioning.
 """
 
+
 import pytest
-from httpx import AsyncClient
-import hashlib
-import json
-
-from apps.api.src.investigator.graph import VERAInvestigator
 from apps.api.src.investigator.risk_engine import DeterministicRiskEngine
-from apps.api.src.investigator.reporter import ForensicReportGenerator
-
+from httpx import AsyncClient
 
 # ── Test 1: Full E2E Investigation Workflow (API + Agent + Risk Engine + Report) ──
 

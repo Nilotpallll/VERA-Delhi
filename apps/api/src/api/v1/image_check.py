@@ -21,8 +21,6 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
-from ...core.config import settings
-
 logger = logging.getLogger("vera.api.image")
 
 router = APIRouter(prefix="/image-check", tags=["Image Scam Detection"])
@@ -139,7 +137,7 @@ def _decode_and_validate_image(payload: str, filename: str = "") -> tuple[bytes,
     clean_b64 = payload.strip()
     if clean_b64.startswith("data:image/"):
         header, clean_b64 = clean_b64.split(",", 1)
-    
+
     if len(clean_b64) > 25_000_000:  # ~18MB decoded limit
         raise HTTPException(
             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
@@ -324,10 +322,10 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
 
     lower_text = (ocr_text or "").lower()
 
-    from pathlib import Path
     import json
+    from pathlib import Path
 
-    def clean_name(name: str) -> Optional[str]:
+    def clean_name(name: str) -> str | None:
         stop = {
             "sebi", "registered", "investment", "advisor", "adviser", "analyst",
             "official", "id", "my", "name", "is", "a", "an", "the", "mr", "ms", "mrs"
@@ -339,7 +337,7 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
             return parts[0].capitalize()
         return None
 
-    def extract_claimed_name(text: str) -> Optional[str]:
+    def extract_claimed_name(text: str) -> str | None:
         dm = re.search(
             r"\b(?:my\s+name\s+is|name\s*:\s*|myself|call\s+me)\s+([a-zA-Z]{2,25}(?:\s+[a-zA-Z]{2,25}){1,2})\b",
             text,
@@ -366,7 +364,7 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
             return "Zerodha Broking Limited"
         return None
 
-    def extract_reg_id(text: str) -> Optional[str]:
+    def extract_reg_id(text: str) -> str | None:
         rm = re.search(
             r"\b(INA|INH|INP|INZ)[-\s]?((?=[0-9A-Za-z]*\d)[0-9A-Za-z]{4,14})\b",
             text,
@@ -391,7 +389,7 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
             return prefix + str(int(raw)).zfill(9)
         return (prefix + raw)[:12]
 
-    def unwrap_record(r: Any) -> Optional[dict[str, Any]]:
+    def unwrap_record(r: Any) -> dict[str, Any] | None:
         if not r:
             return None
         if isinstance(r, list):
@@ -417,7 +415,7 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
     for p in [Path("data/sebi-registry.json"), Path("apps/web/data/sebi-registry.json"), Path("../../data/sebi-registry.json")]:
         if p.exists():
             try:
-                with open(p, "r", encoding="utf-8") as f:
+                with open(p, encoding="utf-8") as f:
                     registry_data = json.load(f).get("records", {})
                     if claimed_id:
                         raw = registry_data.get(claimed_id)

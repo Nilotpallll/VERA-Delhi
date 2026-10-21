@@ -201,7 +201,8 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
     full_transcript = (findings.get("transcript") or body.transcript or "").strip()
     advisor_verification = None
     if full_transcript:
-        import re, json
+        import json
+        import re
         from pathlib import Path
         sebi_id_match = re.search(r"\b(IN[A-Z]{1,3})[-\s]?([0-9A-Za-z]{4,14})\b", full_transcript, re.IGNORECASE)
         claimed_id = None
@@ -218,7 +219,7 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
         for p in [Path("data/sebi-registry.json"), Path("apps/web/data/sebi-registry.json"), Path("../../data/sebi-registry.json")]:
             if p.exists():
                 try:
-                    with open(p, "r", encoding="utf-8") as f:
+                    with open(p, encoding="utf-8") as f:
                         registry_data = json.load(f).get("records", {})
                         if claimed_id:
                             reg_record = registry_data.get(claimed_id)

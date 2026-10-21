@@ -11,13 +11,13 @@ import base64
 import os
 import subprocess
 import tempfile
-import pytest
-from httpx import AsyncClient, ASGITransport
 
+import pytest
 from apps.api.src.contracts.evidence import CanonicalEvidenceItem, EvidenceMediaType
 from apps.api.src.contracts.verification import VerificationResult, VerificationState
 from apps.api.src.engines.video_analyzer import VideoAnalyzer
 from apps.api.src.main import app
+from httpx import ASGITransport, AsyncClient
 
 
 def _create_synthetic_mp4_with_audio(text_dialogue: str) -> str:

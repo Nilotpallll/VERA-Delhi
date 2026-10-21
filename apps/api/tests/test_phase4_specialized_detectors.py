@@ -17,12 +17,10 @@ Plus:
 - Phase gate verification (No detector directly modifies risk score; all flow through canonical evidence)
 """
 
-import asyncio
 import base64
 import hashlib
 import io
 import zipfile
-from datetime import UTC, datetime
 
 import pytest
 from apps.api.src.contracts.analyzers import AnalyzerExecutionStatus
@@ -30,7 +28,7 @@ from apps.api.src.contracts.evidence import CanonicalEvidenceItem, EvidenceMedia
 from apps.api.src.contracts.verification import VerificationResult, VerificationState
 from apps.api.src.engines.apk_analyzer import APKAnalyzer
 from apps.api.src.engines.audio_analyzer import AudioAnalyzer
-from apps.api.src.engines.evaluation import ModelEvaluator, model_evaluator
+from apps.api.src.engines.evaluation import ModelEvaluator
 from apps.api.src.engines.image_analyzer import ImageAnalyzer
 from apps.api.src.engines.message_analyzer import MessageAnalyzer
 from apps.api.src.engines.profile_analyzer import ProfileAnalyzer
