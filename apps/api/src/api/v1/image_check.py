@@ -367,7 +367,11 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
         return None
 
     def extract_reg_id(text: str) -> Optional[str]:
-        rm = re.search(r"\b(INA|INH|INP|INZ|INB|INF|INM)[-\s]?([0-9A-Za-z]{4,14})\b", text, re.I)
+        rm = re.search(
+            r"\b(INA|INH|INP|INZ)[-\s]?((?=[0-9A-Za-z]*\d)[0-9A-Za-z]{4,14})\b",
+            text,
+            re.I,
+        )
         if not rm:
             return None
         prefix = rm.group(1).upper()
@@ -950,4 +954,3 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
         model_version=analyzer._version,
         weights_digest=analyzer._rules_digest,
     )
-
