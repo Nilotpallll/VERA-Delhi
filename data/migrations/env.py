@@ -24,10 +24,12 @@ except Exception:
 
 
 def get_url():
-    url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/vera_db")
-    # Convert asyncpg to psycopg2 / sync driver for alembic migrations
+    url = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:postgres@localhost:5432/vera_db")
+    # Convert asyncpg or generic postgresql to explicit psycopg2 sync driver for alembic migrations
     if url.startswith("postgresql+asyncpg://"):
-        url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
+        url = url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
+    elif url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
     return url
 
 

@@ -10,13 +10,12 @@ Note: The real Postgres pgvector CI job is in .github/workflows/ci.yml.
       Alembic migration up/down test requires real credentials and is documented in ci.yml.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from fastapi import HTTPException
+from unittest.mock import MagicMock, patch
 
+import pytest
 from apps.api.src.core.config import Settings
 from apps.api.src.core.rate_limit import RateLimiter, is_expensive_route
-
+from fastapi import HTTPException
 
 # ── (b) ENVIRONMENT=test allows in-memory fallback ───────────────────────────
 
@@ -53,24 +52,31 @@ async def test_production_db_down_returns_503_not_silent_success(client):
     - dev/test: DB down => in-memory fallback => 201
     - production: DB down => 503 with request_id (never 201 from in-memory)
     """
-    # Simulate production mode + DB session is None (DB unreachable).
-    # is_production is a computed property (ENVIRONMENT == "production"), so patching
-    # ENVIRONMENT to "production" is sufficient — no separate patch of is_production.
-    with patch("apps.api.src.core.config.settings.ENVIRONMENT", "production"):
-        res = await client.post(
-            "/api/v1/investigations",
-            json={"title": "Prod DB Down Case", "target_entity_name": "TargetCo"},
-            headers={"Idempotency-Key": "idemp_prod_db_down_inverted_01"},
+    from apps.api.src.api.deps import get_db_session
+    from apps.api.src.main import app
+
+    async def _mock_offline_db():
+        yield None
+
+    app.dependency_overrides[get_db_session] = _mock_offline_db
+    try:
+        with patch("apps.api.src.core.config.settings.ENVIRONMENT", "production"):
+            res = await client.post(
+                "/api/v1/investigations",
+                json={"title": "Prod DB Down Case", "target_entity_name": "TargetCo"},
+                headers={"Idempotency-Key": "idemp_prod_db_down_inverted_01"},
+            )
+        assert res.status_code == 503, (
+            f"Expected 503 (DB down in prod), got {res.status_code}: {res.text}"
         )
-    assert res.status_code == 503, (
-        f"Expected 503 (DB down in prod), got {res.status_code}: {res.text}"
-    )
-    data = res.json()
-    detail = data.get("detail", data)
-    assert "database" in detail.get("error", "").lower() or \
-           "database" in detail.get("message", "").lower(), (
-        f"Response must mention database unavailability: {data}"
-    )
+        data = res.json()
+        detail = data.get("detail", data)
+        assert "database" in detail.get("error", "").lower() or \
+               "database" in detail.get("message", "").lower(), (
+            f"Response must mention database unavailability: {data}"
+        )
+    finally:
+        app.dependency_overrides.pop(get_db_session, None)
 
 
 @pytest.mark.asyncio
@@ -80,9 +86,10 @@ async def test_production_db_exception_returns_503_not_silent_success(client):
     Simulates the case where db session exists but the actual DB call throws
     (e.g. network partition mid-request). Uses generic OSError to avoid asyncpg dep.
     """
+    from unittest.mock import AsyncMock
+
     from apps.api.src.api.deps import get_db_session
     from apps.api.src.main import app
-    from unittest.mock import AsyncMock
 
     mock_db = AsyncMock()
     app.dependency_overrides[get_db_session] = lambda: mock_db

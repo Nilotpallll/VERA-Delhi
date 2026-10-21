@@ -83,3 +83,71 @@ async def test_investigation_creation_endpoint_rule_1_and_2(client: AsyncClient)
     assert data["evidence_count"] == 1
     assert data["manifest"]["scoring_algorithm_version"] == "scoring.v1.0"
     assert data["risk_assessment"]["is_llm_assigned"] is False
+
+
+@pytest.mark.asyncio
+async def test_legacy_create_contract_is_preserved_with_db_backing(client: AsyncClient):
+    """Legacy request shape should remain stable even when DB path is used."""
+    from datetime import UTC, datetime
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock, patch
+
+    from apps.api.src.api.deps import get_db_session
+    from apps.api.src.main import app
+
+    now = datetime.now(UTC)
+    fake_inv = SimpleNamespace(
+        id="inv_test_db",
+        status="QUEUED",
+        title="Legacy DB compatibility",
+        target_entity_name="Entity",
+        primary_url="https://example.com",
+        summary_note="note",
+        submitted_by=None,
+        risk_score=None,
+        risk_tier=None,
+        risk_summary=None,
+        manifest={"investigation_id": "inv_test_db", "scoring_algorithm_version": "scoring.v2.0"},
+        created_at=now,
+        updated_at=now,
+    )
+
+    class _DummyDB:
+        async def flush(self):
+            return None
+
+        async def rollback(self):
+            return None
+
+    async def _mock_db():
+        yield _DummyDB()
+
+    app.dependency_overrides[get_db_session] = _mock_db
+    try:
+        with patch(
+            "apps.api.src.api.v1.investigations.create_investigation",
+            new=AsyncMock(return_value=fake_inv),
+        ):
+            resp = await client.post(
+                "/api/v1/investigations",
+                json={
+                    "title": "Legacy DB compatibility",
+                    "initial_evidence_items": [
+                        {
+                            "media_type": "URL",
+                            "content_payload": "https://example.com",
+                            "source_origin": "user",
+                            "tags": [],
+                        }
+                    ],
+                },
+            )
+    finally:
+        app.dependency_overrides.pop(get_db_session, None)
+
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["status"] == "PENDING"
+    assert data["evidence_count"] == 1
+    assert data["manifest"]["scoring_algorithm_version"] == "scoring.v1.0"
+    assert data["risk_assessment"]["is_llm_assigned"] is False

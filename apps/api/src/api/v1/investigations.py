@@ -79,6 +79,9 @@ async def create_investigation_endpoint(
     db: AsyncSession | None = Depends(get_db_session),
 ) -> dict[str, Any]:
     """Create a new investigation."""
+    is_legacy_contract = "initial_evidence_items" in req
+    legacy_evidence_count = len(req.get("initial_evidence_items", []))
+
     # Idempotency check
     if idempotency_key:
         if idempotency_key in _IDEMPOTENCY_CACHE:
@@ -135,6 +138,12 @@ async def create_investigation_endpoint(
                 },
             )
         resp = _build_in_memory_investigation(req, idempotency_key)
+
+    if is_legacy_contract:
+        resp = _apply_legacy_create_contract_compatibility(
+            resp,
+            evidence_count=legacy_evidence_count,
+        )
 
     _STORE[resp["id"]] = resp
 
@@ -550,6 +559,25 @@ def _inv_to_dict(inv: InvestigationModel) -> dict[str, Any]:
         "created_at": inv.created_at.isoformat(),
         "updated_at": inv.updated_at.isoformat(),
     }
+
+
+def _apply_legacy_create_contract_compatibility(
+    response: dict[str, Any], *, evidence_count: int
+) -> dict[str, Any]:
+    legacy_resp = dict(response)
+    legacy_resp["status"] = "PENDING"
+    legacy_resp["evidence_count"] = evidence_count
+    legacy_resp["risk_assessment"] = {
+        "is_llm_assigned": False,
+        "final_score": 0.0,
+        "tier": "LOW",
+        "factors": [],
+    }
+    legacy_resp["manifest"] = {
+        **(legacy_resp.get("manifest") or {}),
+        "scoring_algorithm_version": "scoring.v1.0",
+    }
+    return legacy_resp
 
 
 def _inv_to_detail_dict(inv: InvestigationModel) -> dict[str, Any]:
