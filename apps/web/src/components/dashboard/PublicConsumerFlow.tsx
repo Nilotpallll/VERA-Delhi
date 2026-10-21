@@ -128,6 +128,110 @@ const VERIFIED_SEBI_INTERMEDIARIES: Record<
   INZ000282739: { name: "Upstox (RKSV Securities)", type: "Stock Broker", status: "ACTIVE" },
 };
 
+export interface VerifiedBrokerEntity {
+  name: string;
+  regNumber: string;
+  type: string;
+  status: "ACTIVE" | "SUSPENDED" | "CANCELLED";
+  aliases: string[];
+  officialDomains: string[];
+}
+
+export const VERIFIED_BROKER_REGISTRY: VerifiedBrokerEntity[] = [
+  {
+    name: "Angel One Limited",
+    regNumber: "INZ000186937",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["angelone", "angel one", "angel broking", "angelbroking", "angel"],
+    officialDomains: ["angelone.in", "angelone.com", "angelbroking.com"],
+  },
+  {
+    name: "Zerodha Broking Limited",
+    regNumber: "INZ000031633",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["zerodha", "zerodha broking", "kite"],
+    officialDomains: ["zerodha.com"],
+  },
+  {
+    name: "Groww Invest Tech Pvt Ltd",
+    regNumber: "INZ000208032",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["groww", "groww invest tech", "groww tech"],
+    officialDomains: ["groww.in"],
+  },
+  {
+    name: "Upstox (RKSV Securities)",
+    regNumber: "INZ000282739",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["upstox", "rksv", "rksv securities"],
+    officialDomains: ["upstox.com", "rksv.in"],
+  },
+  {
+    name: "ICICI Securities Limited",
+    regNumber: "INZ000015837",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["icici securities", "icicidirect", "icici direct", "icici"],
+    officialDomains: ["icicidirect.com", "icicisecurities.com"],
+  },
+  {
+    name: "Kotak Securities Limited",
+    regNumber: "INZ000171337",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["kotak securities", "kotak"],
+    officialDomains: ["kotaksecurities.com"],
+  },
+  {
+    name: "HDFC Securities Limited",
+    regNumber: "INZ000005835",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["hdfc securities", "hdfcsec", "hdfc direct"],
+    officialDomains: ["hdfcsec.com", "hdfcsecurities.com"],
+  },
+  {
+    name: "Motilal Oswal Financial Services",
+    regNumber: "INZ000163434",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["motilal oswal", "motilaloswal"],
+    officialDomains: ["motilaloswal.com"],
+  },
+  {
+    name: "Sharekhan Limited",
+    regNumber: "INZ000171337",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["sharekhan", "sharekhan limited"],
+    officialDomains: ["sharekhan.com"],
+  },
+  {
+    name: "5paisa Capital Limited",
+    regNumber: "INZ000010231",
+    type: "Stock Broker",
+    status: "ACTIVE",
+    aliases: ["5paisa", "5paisa capital"],
+    officialDomains: ["5paisa.com"],
+  },
+  {
+    name: "Securities and Exchange Board of India (SEBI)",
+    regNumber: "REGULATOR",
+    type: "Statutory Regulatory Body",
+    status: "ACTIVE",
+    aliases: ["sebi", "scores", "scores sebi"],
+    officialDomains: ["sebi.gov.in", "scores.sebi.gov.in", "scores.gov.in"],
+  },
+];
+
+function normalizeBrokerSlug(val: string): string {
+  return (val || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function getApiBase(): string {
   // Always use same-origin relative path so requests route through Next.js API route seamlessly
   return "";
@@ -1337,6 +1441,16 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       claimedAdvisorName = recordNames.find((name) => lower.includes(name.toLowerCase()));
     }
     if (!claimedAdvisorName) {
+      for (const broker of VERIFIED_BROKER_REGISTRY) {
+        const cleanLower = normalizeBrokerSlug(lower);
+        const brokerMatches = broker.aliases.some((a) => cleanLower.includes(normalizeBrokerSlug(a)));
+        if (brokerMatches && !lower.includes("http://") && !lower.includes("https://") && !lower.includes(".in/") && !lower.includes(".com/")) {
+          claimedAdvisorName = broker.name;
+          break;
+        }
+      }
+    }
+    if (!claimedAdvisorName) {
       for (const data of Object.values(VERIFIED_SEBI_INTERMEDIARIES)) {
         if (lower.includes(data.name.toLowerCase())) {
           claimedAdvisorName = data.name;
@@ -1349,7 +1463,18 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         .replace(/^(check|verify|is|advisor|adviser|name:?|persona:?)\s+/i, "")
         .replace(/[,\.\?!]+$/, "")
         .trim();
-      if (candidateClean.length >= 3 && candidateClean.length <= 60 && !candidateClean.includes("\n")) {
+      const hasUrlOrFile = /https?:\/\/|\.in\b|\.com\b|\.org\b|\.ac\b|\.vip\b|\.top\b|\.xyz\b|\.apk\b|www\./i.test(candidateClean);
+      const isActionPhrase = /^(invest\s+on|trade\s+on|download|install|click|visit|join|transfer|pay|deposit)\b/i.test(candidateClean);
+      const isLetterPattern = /^[A-Za-z\s.'-]+$/.test(candidateClean);
+
+      if (
+        !hasUrlOrFile &&
+        !isActionPhrase &&
+        isLetterPattern &&
+        candidateClean.length >= 3 &&
+        candidateClean.length <= 60 &&
+        !candidateClean.includes("\n")
+      ) {
         claimedAdvisorName = candidateClean;
       }
     }
@@ -1434,12 +1559,100 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
     // 5. Unregulated Channels / VIP Signals
     const isVip =
-      /\b(vip|telegram|whatsapp|signal\s+group|private\s+calls?|jackpot\s+calls?|insider\s+tips?|premium\s+calls?)\b/i.test(textToScan);
+      /(?:(?<!\.)\bvip\b|telegram|whatsapp|signal\s+group|private\s+calls?|jackpot\s+calls?|insider\s+tips?|premium\s+calls?)/i.test(textToScan);
 
-    // 6. Phishing & Spoofed UPI
-    const isPhishing =
-      /\.(?:top|vip|xyz|club|online|site|app|cc|link|work)\b/i.test(textToScan) ||
-      /(?:verify|login|secure|account|wallet|trading)-(?:sebi|zerodha|groww|portal)/i.test(textToScan);
+    // 6. URL & Domain Screening (Impersonation, Official Portals, Unverified Destinations)
+    const extractedDomains: Array<{ raw: string; host: string; cleanHost: string }> = [];
+    const seenDomains = new Set<string>();
+    const domainRegex = /(?:https?:\/\/)?([a-zA-Z0-9][-a-zA-Z0-9]*(?:\.[a-zA-Z0-9][-a-zA-Z0-9]*)*\.[a-zA-Z]{2,}(?::\d+)?)(?:\/[^\s"'<>]*)?/gi;
+    let urlMatch: RegExpExecArray | null;
+    while ((urlMatch = domainRegex.exec(textToScan)) !== null) {
+      const raw = urlMatch[0];
+      const host = urlMatch[1].toLowerCase().split(":")[0];
+      if (host.endsWith(".apk") || host.endsWith(".png") || host.endsWith(".jpg") || host.endsWith(".pdf")) {
+        continue;
+      }
+      const cleanHost = host.replace(/^www\./, "");
+      if (!seenDomains.has(cleanHost) && cleanHost.includes(".")) {
+        seenDomains.add(cleanHost);
+        extractedDomains.push({ raw, host, cleanHost });
+      }
+    }
+
+    let hasOfficialBrokerDomain = false;
+    let verifiedBrokerEntity: VerifiedBrokerEntity | undefined = undefined;
+    let verifiedBrokerDomain = "";
+
+    const lookalikeDomains: Array<{ domain: string; broker: VerifiedBrokerEntity }> = [];
+    const unverifiedInvestmentDestinations: string[] = [];
+
+    const isInvestmentContext =
+      /\b(invest|investing|investment|trade|trading|trader|stocks?|crypto|deposit|yield|returns?|profit|broker|demat|fund|money|capital)\b/i.test(textToScan) ||
+      /^(?:invest\s+on|trade\s+on|deposit\s+on)\b/i.test(textToScan.trim());
+
+    for (const item of extractedDomains) {
+      const dom = item.cleanHost;
+      const domSlug = normalizeBrokerSlug(dom);
+
+      // Check if domain matches an official domain of a registered broker
+      let matchedOfficial: VerifiedBrokerEntity | undefined;
+      for (const broker of VERIFIED_BROKER_REGISTRY) {
+        if (broker.officialDomains.some((od) => dom === od || dom.endsWith("." + od))) {
+          matchedOfficial = broker;
+          break;
+        }
+      }
+
+      if (matchedOfficial) {
+        hasOfficialBrokerDomain = true;
+        verifiedBrokerEntity = matchedOfficial;
+        verifiedBrokerDomain = dom;
+        continue;
+      }
+
+      // Check if domain is a lookalike/impersonation of a registered broker
+      let matchedLookalike: VerifiedBrokerEntity | undefined;
+      for (const broker of VERIFIED_BROKER_REGISTRY) {
+        const brokerAliases = [
+          normalizeBrokerSlug(broker.name),
+          ...broker.aliases.map(normalizeBrokerSlug),
+        ];
+        const isImpersonating = brokerAliases.some((alias) => {
+          if (alias.length < 4 && alias !== "rbi" && alias !== "nse" && alias !== "bse") return false;
+          return domSlug.includes(alias);
+        });
+
+        if (isImpersonating) {
+          matchedLookalike = broker;
+          break;
+        }
+      }
+
+      if (matchedLookalike) {
+        lookalikeDomains.push({ domain: dom, broker: matchedLookalike });
+        continue;
+      }
+
+      // Check if domain is an unverified investment destination
+      const isGovOrExchange = /^(?:nseindia\.com|bseindia\.com|rbi\.org\.in|mcxindia\.com|cdslindia\.com|nsdl\.co\.in|sebi\.gov\.in)$/i.test(dom);
+      const isDirectDomainScan =
+        textToScan.trim() === item.raw.trim() ||
+        textToScan.trim() === item.host ||
+        textToScan.trim().startsWith("http://") ||
+        textToScan.trim().startsWith("https://");
+
+      if ((isInvestmentContext || isDirectDomainScan) && !isGovOrExchange) {
+        unverifiedInvestmentDestinations.push(dom);
+      }
+    }
+
+    // 7. Unsolicited APK Download / Install Link Detection
+    const apkPattern = /(?:download\s+(?:and\s+)?install|sideload|install|download)?.*?([a-zA-Z0-9_\-\.]+\.apk)|\b([a-zA-Z0-9_\-\.]+\.apk)\b/i;
+    const apkMatch = textToScan.match(apkPattern);
+    const hasApkLink = Boolean(apkMatch);
+    const apkFileName = apkMatch ? (apkMatch[1] || apkMatch[2] || "trading-app.apk") : undefined;
+
+    // 8. Spoofed UPI / Regulated Handle Checks
     const isUpiScam = lower.includes("sebi") && lower.includes("@");
 
     // ── Evaluate Advisor & SEBI Credential Status ──
@@ -1672,15 +1885,52 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       matched.push("vip", "telegram", "whatsapp");
     }
 
-    // Reason 6: Phishing / Fake UPI
-    if (isPhishing || isUpiScam) {
+    // Reason 6A: Impersonation / Lookalike Broker Domain
+    if (lookalikeDomains.length > 0) {
+      score += 55;
+      for (const item of lookalikeDomains) {
+        reasons.push(
+          locale === "hi"
+            ? `संदिग्ध नकली ब्रोकर डोमेन ('${item.domain}') — यह डोमेन सेबी-पंजीकृत स्टॉक ब्रोकर '${item.broker.name}' की नकल कर रहा है, परंतु यह उनका अधिकृत आधिकारिक डोमेन (${item.broker.officialDomains.join(", ")}) नहीं है। वैध ब्रोकर कभी भी अनधिकृत या संदिग्ध डोमेन का उपयोग नहीं करते।`
+            : `Impersonation / Lookalike Broker Domain ('${item.domain}') — Domain imitates SEBI-registered stock broker '${item.broker.name}', but is not an authorized official domain (${item.broker.officialDomains.join(", ")}). Legitimate brokers never operate on disposable or unverified TLDs.`
+        );
+        matched.push(item.domain, item.broker.name, "lookalike domain");
+      }
+    }
+
+    // Reason 6B: Unverified Investment Destination
+    if (unverifiedInvestmentDestinations.length > 0) {
+      score += 45;
+      for (const dom of unverifiedInvestmentDestinations) {
+        reasons.push(
+          locale === "hi"
+            ? `अपुष्ट निवेश गंतव्य ('${dom}') — यह डोमेन स्थानीय सेबी रजिस्टर में किसी भी पंजीकृत स्टॉक ब्रोकर या अधिकृत वित्तीय मध्यस्थ से मेल नहीं खाता है। अपंजीकृत प्लेटफॉर्म के माध्यम से निवेश आमंत्रित करना सेबी नियमों का उल्लंघन है।`
+            : `Unverified Investment Destination ('${dom}') — This investment destination cannot be matched to any SEBI-registered stock broker or authorized intermediary in the local registry. Soliciting investment capital or trading via unregistered web domains violates SEBI regulations.`
+        );
+        matched.push(dom, "unverified investment destination");
+      }
+    }
+
+    // Reason 6C: Unsolicited APK Download / Install Warning
+    if (hasApkLink && apkFileName) {
+      score += 45;
+      reasons.push(
+        locale === "hi"
+          ? `अवांछित APK डाउनलोड / इंस्टॉल चेतावनी ('${apkFileName}') — आधिकारिक ऐप स्टोर (Google Play Store / Apple App Store) से बाहर ट्रेडिंग या निवेश एपीके फाइल डाउनलोड करना मैलवेयर और वित्तीय क्रेडेंशियल चोरी का गंभीर जोखिम पैदा करता है। ध्यान दें: VERA द्वारा APK फ़ाइल की मैलवेयर जाँच नहीं की गई है क्योंकि फ़ाइल को विश्लेषण हेतु अपलोड नहीं किया गया था।`
+          : `Unsolicited APK Download / Install Warning ('${apkFileName}') — Sideloading investment/trading APK files outside official app stores (Google Play Store / Apple App Store) is a primary vector for financial trojans and credential harvesting. Note: The APK file itself has NOT been malware-scanned by VERA because the binary file was not uploaded and analyzed.`
+      );
+      matched.push(apkFileName, "unsolicited apk", "apk install");
+    }
+
+    // Reason 6D: Spoofed UPI
+    if (isUpiScam) {
       score += 35;
       reasons.push(
         locale === "hi"
-          ? "सेबी के नाम पर फर्जी यूपीआई या संदिग्ध लिंक — सेबी कभी भी व्यक्तिगत बैंक या यूपीआई पर पैसे नहीं मांगता।"
-          : "Impersonation or unverified payment handle — SEBI and legitimate stock brokers NEVER ask for deposits to personal UPI IDs."
+          ? "सेबी के नाम पर फर्जी यूपीआई आईडी — सेबी कभी भी व्यक्तिगत यूपीआई पर पैसे नहीं मांगता।"
+          : "Impersonation payment handle — SEBI and legitimate regulators NEVER collect funds via personal UPI IDs."
       );
-      matched.push("domain", "sebi", "@");
+      matched.push("sebi", "@");
     }
 
     // Final score & Risk tier calculation
@@ -1710,6 +1960,12 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       highlightedReasons:
         reasons.length > 0
           ? reasons
+          : hasOfficialBrokerDomain && verifiedBrokerEntity
+          ? [
+              locale === "hi"
+                ? `इस संदेश में कोई धोखाधड़ी संकेत नहीं मिला। यूआरएल ('${verifiedBrokerDomain}') सेबी-पंजीकृत स्टॉक ब्रोकर ${verifiedBrokerEntity.name} (${verifiedBrokerEntity.regNumber}) का आधिकारिक और प्रामाणिक वेब डोमेन है।`
+                : `No high-risk deception patterns detected. The URL ('${verifiedBrokerDomain}') matches the verified official web domain of SEBI-registered stock broker ${verifiedBrokerEntity.name} (${verifiedBrokerEntity.regNumber}).`,
+            ]
           : [
               locale === "hi"
                 ? "इस संदेश में कोई स्पष्ट घोटाला संकेत नहीं मिला।"
@@ -1724,11 +1980,25 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         locale === "hi"
           ? "निश्चित लाभ और व्यक्तिगत फंड ट्रांसफर जाँच"
           : "Scanned for illegal assured returns and direct fund solicitation",
+        ...(hasOfficialBrokerDomain && verifiedBrokerEntity
+          ? [
+              locale === "hi"
+                ? `आधिकारिक सेबी-पंजीकृत ब्रोकर डोमेन सत्यापित: '${verifiedBrokerDomain}' (${verifiedBrokerEntity.name} - ${verifiedBrokerEntity.regNumber})`
+                : `Official SEBI-Registered Broker Domain: '${verifiedBrokerDomain}' is the authentic verified portal of ${verifiedBrokerEntity.name} (${verifiedBrokerEntity.regNumber})`,
+            ]
+          : []),
       ],
       unverifiedItems: [
         locale === "hi"
           ? "प्राप्तकर्ता का आंतरिक बैंक रिकॉर्ड (गोपनीयता कानून)"
           : "Receiver bank account ownership (Internal bank KYC is protected by privacy laws)",
+        ...(hasApkLink
+          ? [
+              locale === "hi"
+                ? "APK बाइनरी मैलवेयर विश्लेषण (फ़ाइल को स्टेटिक/डायनामिक सैंडबॉक्स विश्लेषण हेतु अपलोड नहीं किया गया)"
+                : "APK binary file malware analysis (the APK file was not uploaded for static/dynamic sandbox analysis)",
+            ]
+          : []),
       ],
       advisorVerification,
       inference:
@@ -1764,7 +2034,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const getDetectedType = (text: string): string | null => {
     const trimmed = text.trim();
     if (!trimmed) return null;
-    if (/https?:\/\/|www\.|\.com|\.in|\.vip|\.top/i.test(trimmed)) return t.detectedTypeUrl;
+    if (/\.apk\b/i.test(trimmed)) return "APK";
+    if (/https?:\/\/|www\.|\.[a-zA-Z]{2,}/i.test(trimmed)) return t.detectedTypeUrl;
     if (/@\w+/i.test(trimmed) || /upi|paytm|gpay/i.test(trimmed)) return t.detectedTypeUpi;
     if (/\b(?:\+91|0)?[6-9]\d{9}\b/.test(trimmed)) return t.detectedTypePhone;
     return t.detectedTypeText;
