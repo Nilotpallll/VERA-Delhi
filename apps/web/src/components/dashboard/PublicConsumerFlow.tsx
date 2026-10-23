@@ -535,6 +535,84 @@ async function extractVideoFrames(videoSrc: string, numFrames = 5): Promise<stri
   });
 }
 
+function writeWavHeaderString(view: DataView, offset: number, string: string) {
+  for (let i = 0; i < string.length; i++) {
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}
+
+function encodeWav(samples: Float32Array, sampleRate: number): ArrayBuffer {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  writeWavHeaderString(view, 0, "RIFF");
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeWavHeaderString(view, 8, "WAVE");
+  writeWavHeaderString(view, 12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, 1, true); // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeWavHeaderString(view, 36, "data");
+  view.setUint32(40, samples.length * 2, true);
+
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    offset += 2;
+  }
+  return buffer;
+}
+
+async function extractAudioWavFromVideo(file: File, maxSeconds = 20): Promise<string> {
+  if (typeof window === "undefined" || !file) return "";
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return "";
+    const ctx = new AudioCtx();
+
+    // Slicing first 20MB of file is plenty to capture audio tracks
+    const blobToRead = file.size > 20 * 1024 * 1024 ? file.slice(0, 20 * 1024 * 1024) : file;
+    const arrayBuffer = await blobToRead.arrayBuffer();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+    const targetSampleRate = 16000;
+    const duration = Math.min(audioBuffer.duration, maxSeconds);
+    const targetLength = Math.max(1, Math.floor(duration * targetSampleRate));
+
+    const OfflineCtx = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
+    if (!OfflineCtx) {
+      ctx.close();
+      return "";
+    }
+    const offlineCtx = new OfflineCtx(1, targetLength, targetSampleRate);
+    const source = offlineCtx.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(offlineCtx.destination);
+    source.start(0);
+
+    const renderedBuffer = await offlineCtx.startRendering();
+    const pcmData = renderedBuffer.getChannelData(0);
+    const wavBytes = encodeWav(pcmData, targetSampleRate);
+    ctx.close();
+
+    const bytes = new Uint8Array(wavBytes);
+    let binary = "";
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i += 8192) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, Math.min(i + 8192, len))));
+    }
+    return "data:audio/wav;base64," + btoa(binary);
+  } catch (err) {
+    console.debug("Client audio extraction note:", err);
+    return "";
+  }
+}
+
 export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const t = translations[locale];
   const [inputText, setInputText] = useState("");
@@ -545,6 +623,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const [uploadedFile, setUploadedFile] = useState<{ name: string; sizeMB: string } | null>(null);
   const [uploadedB64, setUploadedB64] = useState<string | null>(null);
   const [extractedFrames, setExtractedFrames] = useState<string[]>([]);
+  const [extractedAudioB64, setExtractedAudioB64] = useState<string | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [userSpokenText, setUserSpokenText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -655,11 +734,19 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedFile({ name: file.name, sizeMB });
     setVerdict(null);
     setExtractedFrames([]);
+    setExtractedAudioB64(null);
 
     // Sample 5 frames in background as soon as video is selected
     extractVideoFrames(preview, 5).then((frames) => {
       if (frames && frames.length > 0) {
         setExtractedFrames(frames);
+      }
+    });
+
+    // Extract 20s 16kHz mono audio in background for instant speech transcription
+    extractAudioWavFromVideo(file, 20).then((audio) => {
+      if (audio) {
+        setExtractedAudioB64(audio);
       }
     });
 
@@ -717,6 +804,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedFile(null);
     setUploadedB64(null);
     setExtractedFrames([]);
+    setExtractedAudioB64(null);
     setInputText("");
     setClaimedIdentityName("");
     setUserSpokenText("");
@@ -958,6 +1046,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         body: JSON.stringify({
           video_b64: videoPayload,
           frames_b64: extractedFrames.length > 0 ? extractedFrames : undefined,
+          audio_b64: extractedAudioB64 || undefined,
           source_label: uploadedFile?.name || "rechecked_video",
           filename: uploadedFile?.name || "",
           transcript: customSpeech,
@@ -1328,6 +1417,22 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           }
         }
 
+        // High-performance client-side audio extraction for automatic speech-to-text
+        let audioToSend = extractedAudioB64;
+        if (!audioToSend && uploadedFile) {
+          try {
+            const rawFile = fileInputRef.current?.files?.[0];
+            if (rawFile) {
+              audioToSend = await extractAudioWavFromVideo(rawFile, 20);
+              if (audioToSend) {
+                setExtractedAudioB64(audioToSend);
+              }
+            }
+          } catch (e) {
+            console.debug("Audio extraction wait note:", e);
+          }
+        }
+
         const isLargeVideo = Boolean(uploadedFile && parseFloat(uploadedFile.sizeMB) > 1.5);
         const videoPayload = (isLargeVideo && framesToSend.length > 0)
           ? MP4_CONTAINER_STUB
@@ -1339,6 +1444,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           body: JSON.stringify({
             video_b64: videoPayload,
             frames_b64: framesToSend.length > 0 ? framesToSend : undefined,
+            audio_b64: audioToSend || undefined,
             source_label: uploadedFile?.name || "public_consumer_upload",
             filename: uploadedFile?.name || "",
             transcript: userSpokenText || customTranscriptText || "",

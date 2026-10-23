@@ -110,8 +110,23 @@ class VideoAnalyzer(BaseAnalyzer):
         if video_bytes is None:
             raise ValueError("Corrupted or unsupported video encoding. Unable to extract video stream.")
 
-        # Extract and separate audio from video container (first 25s for fast advisory detection)
-        audio_bytes = self._extract_audio(video_bytes)
+        # Extract audio: check client-supplied audio_b64 first, fallback to container demux
+        client_audio_b64 = None
+        if hasattr(evidence, "metadata") and isinstance(evidence.metadata, dict):
+            client_audio_b64 = evidence.metadata.get("audio_b64")
+
+        audio_bytes = None
+        if client_audio_b64:
+            try:
+                clean_audio = str(client_audio_b64).strip()
+                if "," in clean_audio and clean_audio.startswith("data:"):
+                    clean_audio = clean_audio.split(",", 1)[1]
+                audio_bytes = base64.b64decode(clean_audio)
+            except Exception as a_exc:
+                logger.debug("Client audio decode note: %s", a_exc)
+
+        if not audio_bytes:
+            audio_bytes = self._extract_audio(video_bytes)
         gc.collect()
         custom_transcript = ""
         if hasattr(evidence, "metadata") and isinstance(evidence.metadata, dict):
@@ -660,18 +675,16 @@ class VideoAnalyzer(BaseAnalyzer):
 
     @classmethod
     def _get_whisper_model(cls):
-        # On memory-constrained free-tier containers (e.g. Render 512MB RAM),
-        # loading CTranslate2 Whisper model in-process causes Linux kernel OOM killer (SIGKILL 137).
-        if os.environ.get("RENDER") == "true" or os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
-            logger.info("Local Whisper bypassed: Render 512MB RAM tier or DISABLE_LOCAL_WHISPER active.")
+        if os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
+            logger.info("Local Whisper bypassed: DISABLE_LOCAL_WHISPER active.")
             return None
 
         # Check available host RAM if psutil is available
         try:
             import psutil
             avail_mb = psutil.virtual_memory().available / (1024 * 1024)
-            if avail_mb < 350:
-                logger.info("Local Whisper bypassed: available RAM (%s MB) < 350 MB safe threshold.", int(avail_mb))
+            if avail_mb < 120:
+                logger.info("Local Whisper bypassed: available RAM (%s MB) < 120 MB safe threshold.", int(avail_mb))
                 return None
         except Exception:
             pass

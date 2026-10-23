@@ -32,6 +32,10 @@ class DeepfakeCheckRequest(BaseModel):
         default=None,
         description="Optional list of pre-extracted video frame base64 strings (for fast client-side streaming).",
     )
+    audio_b64: str | None = Field(
+        default=None,
+        description="Optional base64-encoded audio stream (e.g. 16kHz mono WAV) for fast direct speech transcription.",
+    )
     source_label: str | None = Field(
         default="anonymous_upload",
         description="Optional label for audit log.",
@@ -165,6 +169,7 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
             "transcript": body.transcript or "",
             "custom_transcript": body.transcript or "",
             "frames_b64": body.frames_b64 or [],
+            "audio_b64": body.audio_b64 or "",
         },
     )
 
