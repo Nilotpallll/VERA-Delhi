@@ -22,7 +22,7 @@ function resolveApiBaseUrl(): string {
       return "http://localhost:8000";
     }
   }
-  return "https://vera-delhi.onrender.com";
+  return "https://vera-delhi-ldfinal.onrender.com";
 }
 
 const API_BASE_URL = resolveApiBaseUrl();

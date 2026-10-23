@@ -55,14 +55,47 @@ export async function POST(req: NextRequest) {
     const rawB64 = cleanB64.replace(/^data:image\/[a-zA-Z0-9.+]+;base64,/, "");
     const imgBuffer = Buffer.from(rawB64, "base64");
 
-    // ── STEP 1: OPTICAL CHARACTER RECOGNITION (OCR) VIA TESSERACT.JS ──────
+    // ── STEP 1: FORWARD DIRECTLY TO PYTHON FORENSICS BACKEND FIRST ─────────
+    const backendUrl =
+      process.env.API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.NEXT_PUBLIC_VERA_API_URL ||
+      "http://127.0.0.1:8000";
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8500);
+      const pyResp = await fetch(`${backendUrl}/api/v1/image-check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_b64: cleanB64,
+          source_label,
+          filename,
+          prompt_text,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (pyResp.ok) {
+        const data = await pyResp.json().catch(() => null);
+        if (data && data.risk_tier && data.risk_tier !== "INCONCLUSIVE") {
+          return NextResponse.json(data, { status: 200 });
+        }
+      }
+    } catch (backendErr: any) {
+      console.warn("[image-check] Python backend forward note:", backendErr?.message);
+    }
+
+    // ── STEP 2: LOCAL FALLBACK OCR & DETERMINISTIC ANALYSIS ─────────────────
     let extractedText = "";
     try {
       const { createWorker } = await import("tesseract.js");
       const worker = await createWorker("eng");
       const ocrPromise = worker.recognize(imgBuffer);
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("OCR extraction timed out after 12s")), 12000)
+        setTimeout(() => reject(new Error("OCR extraction timed out after 5s")), 5000)
       );
       const ocrResult = (await Promise.race([ocrPromise, timeoutPromise])) as any;
       extractedText = (ocrResult?.data?.text || "").trim();
@@ -90,47 +123,6 @@ export async function POST(req: NextRequest) {
       } else if (prompt_text && !prompt_text.startsWith("[IMAGE]")) {
         extractedText = prompt_text.trim();
       }
-    }
-
-    // ── STEP 2: FORWARD TO PYTHON BACKEND IF AVAILABLE ────────────────────
-    const backendUrl =
-      process.env.API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_VERA_API_URL ||
-      "http://127.0.0.1:8000";
-
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 45000);
-      const pyResp = await fetch(`${backendUrl}/api/v1/image-check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          image_b64: cleanB64,
-          source_label,
-          filename,
-          prompt_text: extractedText
-            ? (prompt_text ? `${extractedText} ${prompt_text}` : extractedText)
-            : prompt_text,
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      if (pyResp.ok) {
-        const data = await pyResp.json().catch(() => null);
-        if (data && data.risk_tier && data.risk_tier !== "INCONCLUSIVE") {
-          if (!data.extracted_text && extractedText) {
-            data.extracted_text = extractedText;
-          }
-          if (data.advisor_verification && !data.advisorVerification) {
-            data.advisorVerification = data.advisor_verification;
-          }
-          return NextResponse.json(data, { status: 200 });
-        }
-      }
-    } catch {
-      // Backend offline or timeout: seamlessly proceed to local deterministic analysis
     }
 
     // ── STEP 3: HIGH-PRECISION SEBI REGISTRY & FORENSIC SCAM ANALYSIS ─────

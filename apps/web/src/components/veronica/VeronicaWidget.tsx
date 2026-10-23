@@ -14,7 +14,7 @@ function resolveApiBaseUrl(): string {
   }
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   if (process.env.NEXT_PUBLIC_VERA_API_URL) return process.env.NEXT_PUBLIC_VERA_API_URL;
-  return "https://vera-delhi.onrender.com";
+  return "https://vera-delhi-ldfinal.onrender.com";
 }
 
 const STORAGE_KEY = "vera_veronica_chat_v1";
