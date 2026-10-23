@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: vera-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ENVIRONMENT
+        value: development
+      - key: RENDER
+        value: "true"
+      - key: DISABLE_LOCAL_WHISPER
+        value: "1"
+      - key: LLM_PROVIDER
+        value: chain
+      - key: CORS_ORIGINS
+        value: '["*"]'

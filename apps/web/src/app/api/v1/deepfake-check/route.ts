@@ -25,11 +25,13 @@ export async function POST(req: NextRequest) {
 
     const {
       video_b64,
+      frames_b64,
+      audio_b64,
       source_label = "public_consumer_upload",
       filename = "",
       transcript: userTranscript = "",
     } = body;
-    let cleanB64 = String(video_b64).trim();
+    let cleanB64 = String(video_b64 || "").trim();
 
     // Strip data-URI prefix if present
     if (cleanB64.includes(",") && cleanB64.startsWith("data:")) {
@@ -52,6 +54,8 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           video_b64: cleanB64,
+          frames_b64: Array.isArray(frames_b64) && frames_b64.length > 0 ? frames_b64 : undefined,
+          audio_b64: audio_b64 || undefined,
           source_label,
           filename,
           transcript: userTranscript,

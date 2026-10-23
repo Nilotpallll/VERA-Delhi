@@ -545,9 +545,9 @@ class VideoAnalyzer(BaseAnalyzer):
             except Exception as cv_exc:
                 logger.debug("OpenCV frame extraction fallback: %s", cv_exc)
 
-            # If OpenCV yielded nothing, try ffmpeg CLI if installed or bundled
+            # If OpenCV yielded nothing, try ffmpeg CLI if installed or bundled (skip on small stubs/Render)
             ffmpeg_bin = self._get_ffmpeg_exe()
-            if not frames and ffmpeg_bin:
+            if not frames and ffmpeg_bin and len(video_bytes) >= 32768 and os.environ.get("RENDER") != "true":
                 out_dir = tempfile.mkdtemp()
                 try:
                     subprocess.run(
@@ -559,7 +559,7 @@ class VideoAnalyzer(BaseAnalyzer):
                         ],
                         check=False,
                         capture_output=True,
-                        timeout=15,
+                        timeout=5,
                     )
                     import numpy as np
                     from PIL import Image
@@ -707,8 +707,16 @@ class VideoAnalyzer(BaseAnalyzer):
 
     def _extract_audio(self, video_bytes: bytes) -> bytes | None:
         """Extracts 16kHz mono raw PCM audio stream from video container via FFmpeg pipe."""
+        if (
+            os.environ.get("RENDER") == "true"
+            or os.environ.get("DISABLE_LOCAL_WHISPER") == "1"
+            or len(video_bytes) < 32768
+            or self._get_whisper_model() is None
+        ):
+            return None
+
         ffmpeg_cmd = self._get_ffmpeg_exe()
-        if not ffmpeg_cmd or len(video_bytes) < 100:
+        if not ffmpeg_cmd:
             return None
 
         # Detect container suffix from magic bytes to guarantee proper FFmpeg demuxing
@@ -786,7 +794,13 @@ class VideoAnalyzer(BaseAnalyzer):
             t = custom_transcript.strip()
             return t, t, "en", [{"start": 0.0, "end": 4.5, "text": t}]
 
-        if not audio_bytes or len(audio_bytes) < 400:
+        if (
+            os.environ.get("RENDER") == "true"
+            or os.environ.get("DISABLE_LOCAL_WHISPER") == "1"
+            or not audio_bytes
+            or len(audio_bytes) < 400
+            or self._get_whisper_model() is None
+        ):
             return "", "", "en", []
 
         try:

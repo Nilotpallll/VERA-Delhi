@@ -63,3 +63,6 @@ scratch/
 
 # User-supplied SEBI registry snapshot; keep local and out of Git
 apps/web/data/sebi-registry.local.json
+
+.vercel
+.env*

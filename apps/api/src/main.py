@@ -29,6 +29,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Startup and shutdown lifecycle handler."""
     init_observability()
     logger.info("Starting %s v%s in %s mode", settings.PROJECT_NAME, settings.VERSION, settings.ENVIRONMENT)
+    try:
+        from .models.mesonet import load_mesonet_model
+        load_mesonet_model()
+    except Exception as m_exc:
+        logger.debug("MesoNet warmup notice: %s", m_exc)
     yield
     logger.info("Shutting down %s", settings.PROJECT_NAME)
     await dispose_engine()
