@@ -83,6 +83,7 @@ app.include_router(veronica_router, prefix="/api/veronica")
 
 # Root health and ready aliases for load balancers and orchestrators
 @app.get("/health", response_model=HealthCheckResponse, tags=["Health"])
+@app.get("/healthz", response_model=HealthCheckResponse, tags=["Health"], include_in_schema=False)
 async def root_health():
     from .api.v1.health import check_health
     return await check_health()
