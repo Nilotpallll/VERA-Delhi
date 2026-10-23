@@ -1184,12 +1184,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     const clientCheck = screenVideoSpeechText(customSpeech, locale);
 
     try {
-      const isPayloadTooLarge = Boolean(uploadedB64 && uploadedB64.length > 4_400_000);
-      const videoPayload = (isPayloadTooLarge && extractedFrames.length > 0)
-        ? MP4_CONTAINER_STUB
-        : (uploadedB64 || MP4_CONTAINER_STUB);
+      const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+      const targetEndpoint = isLocal
+        ? "http://localhost:8000/api/v1/deepfake-check"
+        : "https://vera-delhi-ldfinal.onrender.com/api/v1/deepfake-check";
 
-      const resp = await fetch(`${getApiBase()}/api/v1/deepfake-check`, {
+      const videoPayload = uploadedB64 || MP4_CONTAINER_STUB;
+
+      const resp = await fetch(targetEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1665,16 +1667,13 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           }
         }
 
-        const isPayloadTooLargeForProxy = Boolean(currentB64 && currentB64.length > 4_200_000);
-        let targetEndpoint = `${getApiBase()}/api/v1/deepfake-check`;
-        if (isPayloadTooLargeForProxy) {
-          // Send directly to Render FastAPI backend to prevent Vercel 4.5MB proxy 413 error
-          targetEndpoint = "https://vera-delhi-ldfinal.onrender.com/api/v1/deepfake-check";
-        }
+        const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+        const targetEndpoint = isLocal
+          ? "http://localhost:8000/api/v1/deepfake-check"
+          : "https://vera-delhi-ldfinal.onrender.com/api/v1/deepfake-check";
 
-        const videoPayload = (isPayloadTooLargeForProxy && framesToSend.length > 0 && targetEndpoint.includes(getApiBase()))
-          ? MP4_CONTAINER_STUB
-          : (currentB64 || MP4_CONTAINER_STUB);
+        // Always send the full video bytes (currentB64) so backend FFmpeg can demux the audio track for Whisper STT
+        const videoPayload = currentB64 || MP4_CONTAINER_STUB;
 
         const resp = await fetch(targetEndpoint, {
           method: "POST",

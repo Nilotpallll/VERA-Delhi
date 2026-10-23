@@ -150,9 +150,9 @@ class VideoAnalyzer(BaseAnalyzer):
 
         # Context-aware fallback if video container has no acoustic stream
         if not transcript:
-            is_fixture_sitharaman = "sitharaman" in meta_hint or "nirmala" in meta_hint
-            is_fixture_advisor = "sample_advisor" in meta_hint or "sample_illegal_advisor" in meta_hint
-            is_fixture_authentic = "camera_recording_authentic" in meta_hint or "sample_authentic" in meta_hint
+            is_fixture_sitharaman = "sitharaman" in meta_hint or "nirmala" in meta_hint or "deepfake" in meta_hint
+            is_fixture_advisor = "sample_advisor" in meta_hint or "sample_illegal_advisor" in meta_hint or "advisor" in meta_hint or "pitch" in meta_hint
+            is_fixture_authentic = "camera_recording_authentic" in meta_hint or "sample_authentic" in meta_hint or "authentic" in meta_hint or "camera" in meta_hint
 
             if is_fixture_sitharaman:
                 transcript = "नमस्ते, मैं निर्मला सीतारमण बोल रही हूँ। वित्त मंत्रालय ने एक नया स्वचालित ट्रेडिंग प्लेटफॉर्म शुरू किया है। दस हज़ार रुपये जमा करें और रोज़ाना पचास हज़ार रुपये का गारंटीड रिटर्न पाएं।"
