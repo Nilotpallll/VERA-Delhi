@@ -82,20 +82,20 @@ app.include_router(veronica_router, prefix="/api/veronica")
 
 
 # Root health and ready aliases for load balancers and orchestrators
-@app.get("/health", response_model=HealthCheckResponse, tags=["Health"])
-@app.get("/healthz", response_model=HealthCheckResponse, tags=["Health"], include_in_schema=False)
+@app.api_route("/health", methods=["GET", "HEAD"], response_model=HealthCheckResponse, tags=["Health"])
+@app.api_route("/healthz", methods=["GET", "HEAD"], response_model=HealthCheckResponse, tags=["Health"], include_in_schema=False)
 async def root_health():
     from .api.v1.health import check_health
     return await check_health()
 
 
-@app.get("/ready", tags=["Health"])
+@app.api_route("/ready", methods=["GET", "HEAD"], tags=["Health"])
 async def root_ready():
     from .api.v1.health import check_ready
     return await check_ready()
 
 
-@app.get("/", tags=["Root"])
+@app.api_route("/", methods=["GET", "HEAD"], tags=["Root"])
 async def root():
     return {
         "service": settings.PROJECT_NAME,
