@@ -609,9 +609,9 @@ class VideoAnalyzer(BaseAnalyzer):
             except Exception as cv_exc:
                 logger.debug("OpenCV frame extraction fallback: %s", cv_exc)
 
-            # If OpenCV yielded nothing, try ffmpeg CLI if installed or bundled (skip on small stubs/Render)
+            # If OpenCV yielded nothing, try ffmpeg CLI if installed or bundled
             ffmpeg_bin = self._get_ffmpeg_exe()
-            if not frames and ffmpeg_bin and len(video_bytes) >= 32768 and os.environ.get("RENDER") != "true":
+            if not frames and ffmpeg_bin and len(video_bytes) >= 32768:
                 out_dir = tempfile.mkdtemp()
                 try:
                     subprocess.run(
@@ -745,9 +745,9 @@ class VideoAnalyzer(BaseAnalyzer):
         if cls._cached_whisper is not None:
             return cls._cached_whisper
 
-        # Bypass local Whisper on Render (512MB RAM tier) or if explicitly disabled
-        if os.environ.get("RENDER") == "true" or os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
-            logger.info("Local Whisper bypassed: Cloud environment or DISABLE_LOCAL_WHISPER active.")
+        # Bypass local Whisper only if explicitly disabled
+        if os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
+            logger.info("Local Whisper bypassed: DISABLE_LOCAL_WHISPER active.")
             return None
 
         # Check available host RAM if psutil is available (tiny int8 requires ~50MB)
@@ -863,18 +863,24 @@ class VideoAnalyzer(BaseAnalyzer):
                     raw_pcm = raw_pcm[44:]
             elif not raw_pcm.startswith(b"RIFF"):
                 is_container = (
-                    b"ftyp" in raw_pcm[:32]
+                    b"ftyp" in raw_pcm[:64]
                     or raw_pcm.startswith(b"\x1a\x45\xdf\xa3")
                     or raw_pcm.startswith(b"ID3")
                     or raw_pcm.startswith(b"\xff\xfb")
                     or (len(raw_pcm) >= 8 and raw_pcm[4:8] in (b"ftyp", b"moov", b"mdat", b"wide"))
+                    or b"moov" in raw_pcm[:4096]
                 )
                 if is_container:
                     ffmpeg_cmd = self._get_ffmpeg_exe()
                     if ffmpeg_cmd:
                         tf_name = None
                         try:
-                            with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tf:
+                            sfx = ".mp4"
+                            if raw_pcm.startswith(b"\x1a\x45\xdf\xa3"):
+                                sfx = ".webm"
+                            elif raw_pcm.startswith(b"ID3") or raw_pcm.startswith(b"\xff\xfb"):
+                                sfx = ".mp3"
+                            with tempfile.NamedTemporaryFile(suffix=sfx, delete=False) as tf:
                                 tf_name = tf.name
                                 tf.write(raw_pcm)
                             cmd = [
@@ -890,7 +896,7 @@ class VideoAnalyzer(BaseAnalyzer):
                                 "-ac", "1",
                                 "-",
                             ]
-                            p = subprocess.run(cmd, capture_output=True, timeout=8)
+                            p = subprocess.run(cmd, capture_output=True, timeout=10)
                             if p.stdout and len(p.stdout) > 200:
                                 raw_pcm = p.stdout
                         except Exception as c_err:
@@ -968,7 +974,7 @@ class VideoAnalyzer(BaseAnalyzer):
     async def _transcribe_audio(
         self, audio_bytes: bytes | None, custom_transcript: str = ""
     ) -> tuple[str, str, str, list[dict[str, Any]]]:
-        """Dual-tier speech transcription: Gemini Cloud Multimodal (zero server RAM) + Local Whisper fallback."""
+        """Dual-tier speech transcription: Faster-Whisper STT (Tier 1 verbatim) + Gemini Cloud Multimodal fallback (Tier 2)."""
         if custom_transcript.strip():
             t = custom_transcript.strip()
             return t, t, "en", [{"start": 0.0, "end": 4.5, "text": t}]
@@ -976,7 +982,18 @@ class VideoAnalyzer(BaseAnalyzer):
         if not audio_bytes or len(audio_bytes) < 400:
             return "", "", "en", []
 
-        # ── TIER 1: Gemini Cloud Multimodal STT (Zero server RAM, ideal for Render) ──
+        # ── TIER 1: Faster-Whisper (Direct Speech-to-Text) ────────────────────
+        # Active on all environments (tiny int8 model runs in <40MB RAM)
+        if os.environ.get("DISABLE_LOCAL_WHISPER") != "1":
+            try:
+                whisper_res = self._transcribe_audio_whisper(audio_bytes)
+                if whisper_res and whisper_res[0]:
+                    logger.info("Transcribed video speech via Faster-Whisper: %s", whisper_res[0][:80])
+                    return whisper_res
+            except Exception as w_err:
+                logger.debug("Faster-Whisper transcription note: %s", w_err)
+
+        # ── TIER 2: Gemini Cloud Multimodal STT Fallback ──────────────────────
         is_valid_gemini_key = bool(settings.GEMINI_API_KEY and not settings.GEMINI_API_KEY.startswith("your-gemini"))
         if is_valid_gemini_key:
             try:
@@ -1051,16 +1068,7 @@ class VideoAnalyzer(BaseAnalyzer):
                     else:
                         logger.debug("Gemini STT notice: API returned status %s: %s", resp.status_code, resp.text[:120])
             except Exception as g_err:
-                logger.debug("Gemini STT notice: %s, falling back to local engine.", g_err)
-
-        # ── TIER 2: Local Faster-Whisper (Active on Localhost / Dev) ─────────────
-        if os.environ.get("RENDER") != "true" and os.environ.get("DISABLE_LOCAL_WHISPER") != "1":
-            try:
-                whisper_res = self._transcribe_audio_whisper(audio_bytes)
-                if whisper_res and whisper_res[0]:
-                    return whisper_res
-            except Exception as w_err:
-                logger.debug("Local Whisper transcription note: %s", w_err)
+                logger.debug("Gemini STT notice: %s", g_err)
 
         return "", "", "en", []
 
