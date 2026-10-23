@@ -47,6 +47,10 @@ class ImageCheckRequest(BaseModel):
         default="",
         description="Optional prompt text or context for OCR fallback.",
     )
+    client_ocr_text: str | None = Field(
+        default="",
+        description="High-fidelity client-side OCR text extracted in browser runtime.",
+    )
 
 
 class ImageCheckResponse(BaseModel):
@@ -272,11 +276,16 @@ async def check_image_for_scams(body: ImageCheckRequest) -> ImageCheckResponse:
         except Exception:
             pass
 
-    # Contextual OCR text: prefer caller-provided high-fidelity OCR text (e.g. from Tesseract.js WASM)
-    if body.prompt_text and len(body.prompt_text.strip()) > 3 and not body.prompt_text.strip().startswith("[IMAGE]"):
-        if not ocr_text or len(body.prompt_text.strip()) >= len(ocr_text):
-            ocr_text = body.prompt_text.strip()
+    # Contextual OCR text: prefer caller-provided high-fidelity OCR text (from Tesseract.js WASM)
+    if body.client_ocr_text and len(body.client_ocr_text.strip()) > 2:
+        ocr_text = body.client_ocr_text.strip()
+    elif body.prompt_text and len(body.prompt_text.strip()) > 3:
+        clean_p = body.prompt_text.strip()
+        if not clean_p.startswith("[IMAGE]"):
+            if not ocr_text or len(clean_p) >= len(ocr_text):
+                ocr_text = clean_p
 
+    # Standard fallback presets for preloaded demo sample assets
     if not ocr_text:
         fname = (body.filename or "").lower()
         if "whatsapp_vip" in fname or "guaranteed_50k" in fname:

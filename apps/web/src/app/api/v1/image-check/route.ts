@@ -19,8 +19,11 @@ let cachedRegistrySnapshot: any = null;
 async function getSebiRegistry() {
   if (cachedRegistrySnapshot) return cachedRegistrySnapshot;
   const paths = [
-    path.join(process.cwd(), "data", "sebi-registry.json"),
     path.join(process.cwd(), "apps", "web", "data", "sebi-registry.json"),
+    path.join(process.cwd(), "data", "sebi-registry.json"),
+    path.resolve(process.cwd(), "../data/sebi-registry.json"),
+    path.resolve(__dirname, "../../../../../data/sebi-registry.json"),
+    path.resolve(__dirname, "../../../../data/sebi-registry.json"),
   ];
   for (const p of paths) {
     try {
@@ -49,66 +52,43 @@ export async function POST(req: NextRequest) {
       source_label = "public_consumer_upload",
       filename = "",
       prompt_text = "",
+      client_ocr_text = "",
     } = body;
 
     const cleanB64 = String(image_b64).trim();
     const rawB64 = cleanB64.replace(/^data:image\/[a-zA-Z0-9.+]+;base64,/, "");
     const imgBuffer = Buffer.from(rawB64, "base64");
 
-    // ── STEP 1: FORWARD DIRECTLY TO PYTHON FORENSICS BACKEND FIRST ─────────
-    const backendUrl =
-      process.env.API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_VERA_API_URL ||
-      "https://vera-delhi-ldfinal.onrender.com";
+    // ── STEP 1: OCR EXTRACTION VIA PRE-EXTRACTED CLIENT TEXT OR SERVER TESSERACT ──
+    let extractedText = (client_ocr_text && client_ocr_text.trim()) || "";
 
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8500);
-      const pyResp = await fetch(`${backendUrl}/api/v1/image-check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          image_b64: cleanB64,
-          source_label,
-          filename,
-          prompt_text,
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
+    if (!extractedText && prompt_text && !prompt_text.startsWith("[IMAGE]") && prompt_text.length > 5) {
+      extractedText = prompt_text.trim();
+    }
 
-      if (pyResp.ok) {
-        const data = await pyResp.json().catch(() => null);
-        if (data && data.risk_tier && data.risk_tier !== "INCONCLUSIVE") {
-          return NextResponse.json(data, { status: 200 });
-        }
+    if (!extractedText && imgBuffer.length > 0) {
+      try {
+        const { createWorker } = await import("tesseract.js");
+        const os = await import("node:os");
+        const worker = await createWorker("eng", 1, {
+          cachePath: os.tmpdir(),
+        });
+        const ocrPromise = worker.recognize(imgBuffer);
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("OCR extraction timed out after 15s")), 15000)
+        );
+        const ocrResult = (await Promise.race([ocrPromise, timeoutPromise])) as any;
+        extractedText = (ocrResult?.data?.text || "").trim();
+        await worker.terminate();
+      } catch (ocrErr: any) {
+        console.warn("[image-check] Tesseract OCR note:", ocrErr?.message);
       }
-    } catch (backendErr: any) {
-      console.warn("[image-check] Python backend forward note:", backendErr?.message);
     }
 
-    // ── STEP 2: LOCAL FALLBACK OCR & DETERMINISTIC ANALYSIS ─────────────────
-    let extractedText = "";
-    try {
-      const { createWorker } = await import("tesseract.js");
-      const worker = await createWorker("eng");
-      const ocrPromise = worker.recognize(imgBuffer);
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("OCR extraction timed out after 5s")), 5000)
-      );
-      const ocrResult = (await Promise.race([ocrPromise, timeoutPromise])) as any;
-      extractedText = (ocrResult?.data?.text || "").trim();
-      await worker.terminate();
-    } catch (ocrErr: any) {
-      console.warn("[image-check] Tesseract OCR note:", ocrErr?.message);
-    }
-
-    // Fallback if OCR returned empty
+    // Fallback ONLY for official demo sample buttons if OCR returned empty
     if (!extractedText) {
       const fname = String(filename || "").toLowerCase();
-      const ptext = String(prompt_text || "").toLowerCase();
-      if (fname.includes("whatsapp") || fname.includes("vip_group") || fname.includes("50k")) {
+      if (fname.includes("whatsapp_vip") || fname.includes("guaranteed_50k")) {
         extractedText =
           "WhatsApp VIP Trading Group: Guaranteed returns with 50,000 INR daily profit. " +
           "Join private Telegram options call. Zero risk capital protection. Send deposit to UPI: invest.vip@upi";
@@ -116,12 +96,10 @@ export async function POST(req: NextRequest) {
         extractedText =
           "SEBI CERTIFICATE OF REGISTRATION: Claimed Reg Number INA000099999. " +
           "Guaranteed 40% monthly returns approved by SEBI. 100% Capital Protection.";
-      } else if (fname.includes("authentic") || fname.includes("zerodha")) {
+      } else if (fname.includes("authentic") || fname.includes("zerodha") || fname.includes("inz000031633")) {
         extractedText =
           "Zerodha Broking Limited. SEBI Registration No. INZ000031633. " +
           "Regulated equity exchange trade confirmation and contract note. Statutory disclosures included.";
-      } else if (prompt_text && !prompt_text.startsWith("[IMAGE]")) {
-        extractedText = prompt_text.trim();
       }
     }
 

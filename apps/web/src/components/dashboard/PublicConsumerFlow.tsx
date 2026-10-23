@@ -233,14 +233,8 @@ function normalizeBrokerSlug(val: string): string {
 }
 
 function getApiBase(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  if (process.env.NEXT_PUBLIC_VERA_API_URL) return process.env.NEXT_PUBLIC_VERA_API_URL;
-  if (typeof window !== "undefined") {
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      return "";
-    }
-  }
-  return "https://vera-delhi-ldfinal.onrender.com";
+  // Always use same-origin relative path so Vercel and Localhost route through Next.js API routes
+  return "";
 }
 
 function normalizeRegistryName(value: string | undefined): string {
@@ -657,6 +651,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const [quickSamplesCanScroll, setQuickSamplesCanScroll] = useState({ left: false, right: false });
   const [uploadedImageFile, setUploadedImageFile] = useState<{ name: string; sizeMB: string } | null>(null);
   const [uploadedImageB64, setUploadedImageB64] = useState<string | null>(null);
+  const [clientOcrText, setClientOcrText] = useState<string>("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isImageDragging, setIsImageDragging] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
@@ -835,6 +830,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(null);
     setUploadedImageFile(null);
     setUploadedImageB64(null);
+    setClientOcrText("");
     setImageUploadError(null);
     if (imageFileInputRef.current) imageFileInputRef.current.value = "";
     if (composerTab === "IMAGE") {
@@ -873,12 +869,30 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(preview);
     setUploadedImageFile({ name: file.name, sizeMB });
     setVerdict(null);
+    setClientOcrText("");
 
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
       setUploadedImageB64(dataUrl);
       setInputText(`[IMAGE]: ${file.name} (${sizeMB} MB) — ready for scam screening`);
+
+      // High-performance client-side Tesseract OCR recognition
+      import("tesseract.js")
+        .then(async ({ createWorker }) => {
+          try {
+            const worker = await createWorker("eng");
+            const ret = await worker.recognize(file);
+            const text = (ret?.data?.text || "").trim();
+            await worker.terminate();
+            if (text) {
+              setClientOcrText(text);
+            }
+          } catch (e) {
+            console.debug("Client OCR background worker note:", e);
+          }
+        })
+        .catch(() => {});
     };
     reader.onerror = () => {
       setImageUploadError(
@@ -925,6 +939,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(SAMPLE_IMAGE_FAKE_SEBI.dataUrl);
     setUploadedImageFile({ name: SAMPLE_IMAGE_FAKE_SEBI.name, sizeMB: SAMPLE_IMAGE_FAKE_SEBI.sizeMB });
     setUploadedImageB64(SAMPLE_IMAGE_FAKE_SEBI.dataUrl);
+    setClientOcrText("i am a sebi registered investment advisor my name is kavitha menon my id is INA000000089 4:15 am");
     setInputText(SAMPLE_IMAGE_FAKE_SEBI.promptText);
     setVerdict(null);
   };
@@ -935,6 +950,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(SAMPLE_IMAGE_WHATSAPP_SCAM.dataUrl);
     setUploadedImageFile({ name: SAMPLE_IMAGE_WHATSAPP_SCAM.name, sizeMB: SAMPLE_IMAGE_WHATSAPP_SCAM.sizeMB });
     setUploadedImageB64(SAMPLE_IMAGE_WHATSAPP_SCAM.dataUrl);
+    setClientOcrText("WhatsApp VIP Trading Group: Guaranteed returns with 50,000 INR daily profit. Join private Telegram options call. Zero risk capital protection. Send deposit to UPI: invest.vip@upi");
     setInputText(SAMPLE_IMAGE_WHATSAPP_SCAM.promptText);
     setVerdict(null);
   };
@@ -945,6 +961,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(SAMPLE_IMAGE_AUTHENTIC_NOTE.dataUrl);
     setUploadedImageFile({ name: SAMPLE_IMAGE_AUTHENTIC_NOTE.name, sizeMB: SAMPLE_IMAGE_AUTHENTIC_NOTE.sizeMB });
     setUploadedImageB64(SAMPLE_IMAGE_AUTHENTIC_NOTE.dataUrl);
+    setClientOcrText("Zerodha Broking Limited. SEBI Registration No. INZ000031633. Regulated equity exchange trade confirmation and contract note. Statutory disclosures included.");
     setInputText(SAMPLE_IMAGE_AUTHENTIC_NOTE.promptText);
     setVerdict(null);
   };
@@ -1168,6 +1185,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       await new Promise((r) => setTimeout(r, 350));
 
       try {
+        const promptForOcr = (clientOcrText && clientOcrText.trim()) || inputText;
         const resp = await fetch(`${getApiBase()}/api/v1/image-check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1175,7 +1193,8 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             image_b64: uploadedImageB64,
             source_label: uploadedImageFile?.name || "public_consumer_upload",
             filename: uploadedImageFile?.name || "uploaded_image.png",
-            prompt_text: inputText,
+            prompt_text: promptForOcr,
+            client_ocr_text: clientOcrText || "",
           }),
         });
 
@@ -1185,6 +1204,22 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
         }
 
         const data = await resp.json();
+
+        let resolvedOcr = (data.extracted_text && data.extracted_text.trim()) || clientOcrText || "";
+        if (!resolvedOcr && uploadedImageB64) {
+          try {
+            const { createWorker } = await import("tesseract.js");
+            const worker = await createWorker("eng");
+            const ret = await worker.recognize(uploadedImageB64);
+            resolvedOcr = (ret?.data?.text || "").trim();
+            await worker.terminate();
+            if (resolvedOcr) {
+              setClientOcrText(resolvedOcr);
+            }
+          } catch (e) {
+            console.debug("Client-side inline OCR notice:", e);
+          }
+        }
 
         setVerdict({
           riskTier: (data.risk_tier || "INCONCLUSIVE") as ScanVerdict["riskTier"],
@@ -1200,7 +1235,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             "Real physical identity of the publisher or author",
           ],
           isImageResult: true,
-          extractedImageText: data.extracted_text || "",
+          extractedImageText: resolvedOcr,
           imageSummary: data.summary || "",
           advisorVerification: data.advisor_verification || data.advisorVerification,
           inference: data.inference || (
@@ -1215,22 +1250,25 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           screenshotAnalysis: data.screenshot_analysis || {},
         });
       } catch (err: any) {
-        // Resilient fallback based on filename and user prompt keywords
+        // Resilient fallback based on filename, OCR text, and user prompt keywords
         const fname = (uploadedImageFile?.name || "").toLowerCase();
         const ptext = (inputText || "").toLowerCase();
+        const ocrHint = (clientOcrText || "").toLowerCase();
         const isWhatsapp =
           fname.includes("whatsapp") ||
           fname.includes("50k") ||
-          fname.includes("screenshot") ||
           ptext.includes("whatsapp") ||
           ptext.includes("percent") ||
           ptext.includes("rupees") ||
-          ptext.includes("returns");
+          ptext.includes("returns") ||
+          ocrHint.includes("telegram") ||
+          ocrHint.includes("whatsapp");
         const isFakeSebi =
           fname.includes("fake_sebi") ||
           fname.includes("ina000000089") ||
           ptext.includes("fake_sebi") ||
           ptext.includes("ina000000089") ||
+          ocrHint.includes("ina000000089") ||
           (ptext.includes("ina0000") && !ptext.includes("ina000000037")) ||
           (fname.includes("ina0000") && !fname.includes("ina000000037"));
 
