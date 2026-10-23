@@ -652,6 +652,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const [uploadedImageFile, setUploadedImageFile] = useState<{ name: string; sizeMB: string } | null>(null);
   const [uploadedImageB64, setUploadedImageB64] = useState<string | null>(null);
   const [clientOcrText, setClientOcrText] = useState<string>("");
+  const clientOcrPromiseRef = useRef<Promise<string> | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isImageDragging, setIsImageDragging] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
@@ -831,6 +832,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedImageFile(null);
     setUploadedImageB64(null);
     setClientOcrText("");
+    clientOcrPromiseRef.current = null;
     setImageUploadError(null);
     if (imageFileInputRef.current) imageFileInputRef.current.value = "";
     if (composerTab === "IMAGE") {
@@ -871,28 +873,31 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setVerdict(null);
     setClientOcrText("");
 
+    // High-performance client-side Tesseract OCR recognition in background Web Worker
+    const ocrPromise = import("tesseract.js")
+      .then(async ({ createWorker }) => {
+        try {
+          const worker = await createWorker("eng");
+          const ret = await worker.recognize(file);
+          const text = (ret?.data?.text || "").trim();
+          await worker.terminate();
+          if (text) {
+            setClientOcrText(text);
+          }
+          return text;
+        } catch (e) {
+          console.debug("Client OCR background worker note:", e);
+          return "";
+        }
+      })
+      .catch(() => "");
+    clientOcrPromiseRef.current = ocrPromise;
+
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
       setUploadedImageB64(dataUrl);
       setInputText(`[IMAGE]: ${file.name} (${sizeMB} MB) — ready for scam screening`);
-
-      // High-performance client-side Tesseract OCR recognition
-      import("tesseract.js")
-        .then(async ({ createWorker }) => {
-          try {
-            const worker = await createWorker("eng");
-            const ret = await worker.recognize(file);
-            const text = (ret?.data?.text || "").trim();
-            await worker.terminate();
-            if (text) {
-              setClientOcrText(text);
-            }
-          } catch (e) {
-            console.debug("Client OCR background worker note:", e);
-          }
-        })
-        .catch(() => {});
     };
     reader.onerror = () => {
       setImageUploadError(
@@ -939,7 +944,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(SAMPLE_IMAGE_FAKE_SEBI.dataUrl);
     setUploadedImageFile({ name: SAMPLE_IMAGE_FAKE_SEBI.name, sizeMB: SAMPLE_IMAGE_FAKE_SEBI.sizeMB });
     setUploadedImageB64(SAMPLE_IMAGE_FAKE_SEBI.dataUrl);
-    setClientOcrText("i am a sebi registered investment advisor my name is kavitha menon my id is INA000000089 4:15 am");
+    const sampleFakeText = "i am a sebi registered investment advisor my name is kavitha menon my id is INA000000089 4:15 am";
+    setClientOcrText(sampleFakeText);
+    clientOcrPromiseRef.current = Promise.resolve(sampleFakeText);
     setInputText(SAMPLE_IMAGE_FAKE_SEBI.promptText);
     setVerdict(null);
   };
@@ -950,7 +957,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(SAMPLE_IMAGE_WHATSAPP_SCAM.dataUrl);
     setUploadedImageFile({ name: SAMPLE_IMAGE_WHATSAPP_SCAM.name, sizeMB: SAMPLE_IMAGE_WHATSAPP_SCAM.sizeMB });
     setUploadedImageB64(SAMPLE_IMAGE_WHATSAPP_SCAM.dataUrl);
-    setClientOcrText("WhatsApp VIP Trading Group: Guaranteed returns with 50,000 INR daily profit. Join private Telegram options call. Zero risk capital protection. Send deposit to UPI: invest.vip@upi");
+    const sampleWaText = "WhatsApp VIP Trading Group: Guaranteed returns with 50,000 INR daily profit. Join private Telegram options call. Zero risk capital protection. Send deposit to UPI: invest.vip@upi";
+    setClientOcrText(sampleWaText);
+    clientOcrPromiseRef.current = Promise.resolve(sampleWaText);
     setInputText(SAMPLE_IMAGE_WHATSAPP_SCAM.promptText);
     setVerdict(null);
   };
@@ -961,7 +970,9 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setImagePreviewUrl(SAMPLE_IMAGE_AUTHENTIC_NOTE.dataUrl);
     setUploadedImageFile({ name: SAMPLE_IMAGE_AUTHENTIC_NOTE.name, sizeMB: SAMPLE_IMAGE_AUTHENTIC_NOTE.sizeMB });
     setUploadedImageB64(SAMPLE_IMAGE_AUTHENTIC_NOTE.dataUrl);
-    setClientOcrText("Zerodha Broking Limited. SEBI Registration No. INZ000031633. Regulated equity exchange trade confirmation and contract note. Statutory disclosures included.");
+    const sampleAuthText = "Zerodha Broking Limited. SEBI Registration No. INZ000031633. Regulated equity exchange trade confirmation and contract note. Statutory disclosures included.";
+    setClientOcrText(sampleAuthText);
+    clientOcrPromiseRef.current = Promise.resolve(sampleAuthText);
     setInputText(SAMPLE_IMAGE_AUTHENTIC_NOTE.promptText);
     setVerdict(null);
   };
@@ -1185,7 +1196,34 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       await new Promise((r) => setTimeout(r, 350));
 
       try {
-        const promptForOcr = (clientOcrText && clientOcrText.trim()) || inputText;
+        let textToSend = (clientOcrText && clientOcrText.trim()) || "";
+        if (!textToSend && clientOcrPromiseRef.current) {
+          try {
+            const res = await Promise.race([
+              clientOcrPromiseRef.current,
+              new Promise<string>((r) => setTimeout(() => r(""), 3500)),
+            ]);
+            if (res) textToSend = res;
+          } catch {}
+        }
+
+        if (!textToSend && uploadedImageB64) {
+          try {
+            const { createWorker } = await import("tesseract.js");
+            const worker = await createWorker("eng");
+            const ret = await worker.recognize(uploadedImageB64);
+            textToSend = (ret?.data?.text || "").trim();
+            await worker.terminate();
+          } catch (e) {
+            console.debug("Client-side inline OCR notice:", e);
+          }
+        }
+
+        if (textToSend && !clientOcrText) {
+          setClientOcrText(textToSend);
+        }
+
+        const promptForOcr = textToSend || inputText;
         const resp = await fetch(`${getApiBase()}/api/v1/image-check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1194,7 +1232,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             source_label: uploadedImageFile?.name || "public_consumer_upload",
             filename: uploadedImageFile?.name || "uploaded_image.png",
             prompt_text: promptForOcr,
-            client_ocr_text: clientOcrText || "",
+            client_ocr_text: textToSend,
           }),
         });
 
@@ -1205,21 +1243,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
         const data = await resp.json();
 
-        let resolvedOcr = (data.extracted_text && data.extracted_text.trim()) || clientOcrText || "";
-        if (!resolvedOcr && uploadedImageB64) {
-          try {
-            const { createWorker } = await import("tesseract.js");
-            const worker = await createWorker("eng");
-            const ret = await worker.recognize(uploadedImageB64);
-            resolvedOcr = (ret?.data?.text || "").trim();
-            await worker.terminate();
-            if (resolvedOcr) {
-              setClientOcrText(resolvedOcr);
-            }
-          } catch (e) {
-            console.debug("Client-side inline OCR notice:", e);
-          }
-        }
+        let resolvedOcr = (data.extracted_text && data.extracted_text.trim()) || textToSend || clientOcrText || "";
 
         setVerdict({
           riskTier: (data.risk_tier || "INCONCLUSIVE") as ScanVerdict["riskTier"],

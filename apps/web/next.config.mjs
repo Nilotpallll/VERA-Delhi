@@ -14,9 +14,14 @@ const nextConfig = {
       (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "https://vera-delhi-ldfinal.onrender.com"),
   },
   experimental: {
-    serverComponentsExternalPackages: ["tesseract.js"],
+    serverComponentsExternalPackages: ["tesseract.js", "tesseract.js-core"],
     outputFileTracingIncludes: {
-      "/api/**/*": ["./data/**/*", "./apps/web/data/**/*"],
+      "/api/**/*": [
+        "./data/**/*",
+        "./apps/web/data/**/*",
+        "./node_modules/tesseract.js-core/**/*",
+        "../../node_modules/tesseract.js-core/**/*",
+      ],
     },
   },
 };
