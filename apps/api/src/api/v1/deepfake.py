@@ -24,9 +24,13 @@ router = APIRouter(prefix="/deepfake-check", tags=["Deepfake Analysis"])
 class DeepfakeCheckRequest(BaseModel):
     """Request body for deepfake quick-check."""
 
-    video_b64: str = Field(
-        ...,
+    video_b64: str | None = Field(
+        default="",
         description="Base64-encoded video bytes (may include data-URI prefix).",
+    )
+    frames_b64: list[str] | None = Field(
+        default=None,
+        description="Optional list of pre-extracted video frame base64 strings (for fast client-side streaming).",
     )
     source_label: str | None = Field(
         default="anonymous_upload",
@@ -103,12 +107,16 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
             detail="Deepfake engine unavailable. Please try again later.",
         )
 
-    raw_b64 = body.video_b64.strip()
-    if not raw_b64:
+    raw_b64 = (body.video_b64 or "").strip()
+    if not raw_b64 and not body.frames_b64:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="video_b64 must not be empty.",
+            detail="Either video_b64 or frames_b64 must be provided.",
         )
+
+    # If only frames_b64 was sent, use a default MP4 container stub for raw_b64
+    if not raw_b64 and body.frames_b64:
+        raw_b64 = "AAAAGGZ0eXBtcDQyAAAAAG1wNDJpc29tAAAAGGJlYW0BAAAAAQAAAAAAAAACAAAAAAAhI21vb3YAAABsbXZoZAAAAAAAAAAAAAAAAAAArEQADXcJAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAy1dHJhawAAAFx0a2hkAAAABwAAAAAAAAAAAAAAAQAAAAAADXVQAAAAAAAAAAAAAAAAAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAA=="
 
     # Strip data-URI prefix if present (browser FileReader produces these)
     if "," in raw_b64 and raw_b64.startswith("data:"):
@@ -156,6 +164,7 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
             "filename": body.filename or "",
             "transcript": body.transcript or "",
             "custom_transcript": body.transcript or "",
+            "frames_b64": body.frames_b64 or [],
         },
     )
 

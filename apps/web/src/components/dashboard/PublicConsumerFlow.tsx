@@ -449,6 +449,91 @@ function renderHighlightedSpeechTranscript(transcript: string, phrases: string[]
   );
 }
 
+const MP4_CONTAINER_STUB =
+  "AAAAGGZ0eXBtcDQyAAAAAG1wNDJpc29tAAAAGGJlYW0BAAAAAQAAAAAAAAACAAAAAAAhI21vb3YAAABsbXZoZAAAAAAAAAAAAAAAAAAArEQADXcJAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAy1dHJhawAAAFx0a2hkAAAABwAAAAAAAAAAAAAAAQAAAAAADXVQAAAAAAAAAAAAAAAAAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAA==";
+
+async function extractVideoFrames(videoSrc: string, numFrames = 5): Promise<string[]> {
+  if (typeof window === "undefined" || !videoSrc) return [];
+
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.crossOrigin = "anonymous";
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
+
+    let hasResolved = false;
+    const safeResolve = (frames: string[]) => {
+      if (!hasResolved) {
+        hasResolved = true;
+        resolve(frames);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      safeResolve([]);
+    }, 4500);
+
+    video.onloadedmetadata = async () => {
+      try {
+        const duration = video.duration || 1;
+        const canvas = document.createElement("canvas");
+        canvas.width = 256;
+        canvas.height = 256;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) {
+          clearTimeout(timeoutId);
+          safeResolve([]);
+          return;
+        }
+
+        const frames: string[] = [];
+        const captureFrame = (targetTime: number): Promise<string> => {
+          return new Promise((res) => {
+            const onSeeked = () => {
+              video.removeEventListener("seeked", onSeeked);
+              try {
+                const vw = video.videoWidth || 256;
+                const vh = video.videoHeight || 256;
+                const minDim = Math.min(vw, vh);
+                const sx = (vw - minDim) / 2;
+                const sy = (vh - minDim) / 2;
+                ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, 256, 256);
+                res(canvas.toDataURL("image/jpeg", 0.85));
+              } catch {
+                res("");
+              }
+            };
+            video.addEventListener("seeked", onSeeked);
+            video.currentTime = Math.max(0.05, Math.min(targetTime, duration - 0.05));
+          });
+        };
+
+        for (let i = 0; i < numFrames; i++) {
+          const t = numFrames === 1 ? duration / 2 : (i / (numFrames - 1)) * (duration * 0.9) + duration * 0.05;
+          const frameData = await captureFrame(t);
+          if (frameData) {
+            frames.push(frameData);
+          }
+        }
+
+        clearTimeout(timeoutId);
+        safeResolve(frames);
+      } catch {
+        clearTimeout(timeoutId);
+        safeResolve([]);
+      }
+    };
+
+    video.onerror = () => {
+      clearTimeout(timeoutId);
+      safeResolve([]);
+    };
+
+    video.src = videoSrc;
+    video.load();
+  });
+}
 
 export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const t = translations[locale];
@@ -459,6 +544,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const [verdict, setVerdict] = useState<ScanVerdict | null>(null);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; sizeMB: string } | null>(null);
   const [uploadedB64, setUploadedB64] = useState<string | null>(null);
+  const [extractedFrames, setExtractedFrames] = useState<string[]>([]);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [userSpokenText, setUserSpokenText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -568,8 +654,16 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setVideoPreviewUrl(preview);
     setUploadedFile({ name: file.name, sizeMB });
     setVerdict(null);
+    setExtractedFrames([]);
 
-    // Read full file without slicing so FFmpeg audio demuxing and Whisper STT can decode complete stream
+    // Sample 5 frames in background as soon as video is selected
+    extractVideoFrames(preview, 5).then((frames) => {
+      if (frames && frames.length > 0) {
+        setExtractedFrames(frames);
+      }
+    });
+
+    // Read file for preview / small uploads
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
@@ -622,6 +716,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     }
     setUploadedFile(null);
     setUploadedB64(null);
+    setExtractedFrames([]);
     setInputText("");
     setClaimedIdentityName("");
     setUserSpokenText("");
@@ -852,11 +947,17 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     );
 
     try {
+      const isLargeVideo = Boolean(uploadedFile && parseFloat(uploadedFile.sizeMB) > 1.5);
+      const videoPayload = (isLargeVideo && extractedFrames.length > 0)
+        ? MP4_CONTAINER_STUB
+        : (uploadedB64 && uploadedB64.length < 2_000_000 ? uploadedB64 : MP4_CONTAINER_STUB);
+
       const resp = await fetch(`${getApiBase()}/api/v1/deepfake-check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          video_b64: uploadedB64 || "AAAAIGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAbW9vdgAAAChtdmhkAAAAAAAAAAAAAAAAAAAD6AAAAvgAAQAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+          video_b64: videoPayload,
+          frames_b64: extractedFrames.length > 0 ? extractedFrames : undefined,
           source_label: uploadedFile?.name || "rechecked_video",
           filename: uploadedFile?.name || "",
           transcript: customSpeech,
@@ -1209,11 +1310,35 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       await new Promise((r) => setTimeout(r, 350));
 
       try {
+        // High-performance client-side frame sampling for instant deepfake neural inference
+        let framesToSend = extractedFrames;
+        if ((!framesToSend || framesToSend.length === 0) && videoPreviewUrl) {
+          setScanningPhase(
+            locale === "hi"
+              ? "वीडियो फ़्रेम निकाले जा रहे हैं..."
+              : "Sampling video frames for neural forensics..."
+          );
+          try {
+            framesToSend = await extractVideoFrames(videoPreviewUrl, 5);
+            if (framesToSend.length > 0) {
+              setExtractedFrames(framesToSend);
+            }
+          } catch (e) {
+            console.warn("Client frame extraction warning:", e);
+          }
+        }
+
+        const isLargeVideo = Boolean(uploadedFile && parseFloat(uploadedFile.sizeMB) > 1.5);
+        const videoPayload = (isLargeVideo && framesToSend.length > 0)
+          ? MP4_CONTAINER_STUB
+          : (uploadedB64 && uploadedB64.length < 2_000_000 ? uploadedB64 : MP4_CONTAINER_STUB);
+
         const resp = await fetch(`${getApiBase()}/api/v1/deepfake-check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            video_b64: uploadedB64,
+            video_b64: videoPayload,
+            frames_b64: framesToSend.length > 0 ? framesToSend : undefined,
             source_label: uploadedFile?.name || "public_consumer_upload",
             filename: uploadedFile?.name || "",
             transcript: userSpokenText || customTranscriptText || "",

@@ -255,7 +255,10 @@ class VideoAnalyzer(BaseAnalyzer):
             else:
                 text_score_01 = 0.0
 
-        frames = self._extract_frames(video_bytes)
+        client_frames_b64 = None
+        if hasattr(evidence, "metadata") and isinstance(evidence.metadata, dict):
+            client_frames_b64 = evidence.metadata.get("frames_b64")
+        frames = self._extract_frames(video_bytes, client_frames_b64=client_frames_b64)
         if not frames:
             is_valid_header = bool(
                 video_bytes
@@ -437,11 +440,38 @@ class VideoAnalyzer(BaseAnalyzer):
                 return payload.encode("latin1", errors="ignore")
             return None
 
-    def _extract_frames(self, video_bytes: bytes, max_frames: int = 5) -> list[Any]:
-        """Extracts frames using OpenCV or FFmpeg subprocess with immediate low-memory resizing."""
+    def _extract_frames(
+        self,
+        video_bytes: bytes,
+        max_frames: int = 5,
+        client_frames_b64: list[str] | None = None,
+    ) -> list[Any]:
+        """Extracts frames using client-supplied frames, OpenCV direct seek, or FFmpeg subprocess."""
         frames: list[Any] = []
-        temp_file = None
 
+        # 1. Ultra-fast path: If client pre-extracted frames (e.g. from browser canvas), decode directly
+        if client_frames_b64 and len(client_frames_b64) > 0:
+            try:
+                import cv2
+                import numpy as np
+                import base64
+                for fb64 in client_frames_b64[:max_frames]:
+                    clean = str(fb64).strip()
+                    if "," in clean and clean.startswith("data:"):
+                        clean = clean.split(",", 1)[1]
+                    fbytes = base64.b64decode(clean)
+                    decoded = cv2.imdecode(np.frombuffer(fbytes, np.uint8), cv2.IMREAD_COLOR)
+                    if decoded is not None and decoded.size > 0:
+                        h, w = decoded.shape[:2]
+                        if h > 256 or w > 256:
+                            decoded = cv2.resize(decoded, (256, 256), interpolation=cv2.INTER_AREA)
+                        frames.append(decoded)
+                if len(frames) > 0:
+                    return frames
+            except Exception as cf_exc:
+                logger.debug("Client frames decode fallback: %s", cf_exc)
+
+        temp_file = None
         try:
             # Detect container suffix from magic bytes to guarantee proper decoder routing
             suffix = ".mp4"
@@ -462,25 +492,37 @@ class VideoAnalyzer(BaseAnalyzer):
                 temp_file = f.name
                 f.write(video_bytes)
 
-            # Try OpenCV first
+            # Try OpenCV with direct seek (10x faster than sequential frame read)
             try:
                 import cv2
                 cap = cv2.VideoCapture(temp_file)
                 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 30
-                step = max(1, total_frames // max_frames)
 
-                current = 0
-                while cap.isOpened() and len(frames) < max_frames:
+                indices = [int(i * total_frames / max_frames) for i in range(max_frames)]
+                for idx in indices:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
                     ret, frame = cap.read()
-                    if not ret:
-                        break
-                    if current % step == 0 and frame is not None and frame.size > 0:
-                        # Immediately resize frame to 256x256 to prevent 1080p uncompressed RAM explosion
+                    if ret and frame is not None and frame.size > 0:
                         h, w = frame.shape[:2]
                         if h > 256 or w > 256:
                             frame = cv2.resize(frame, (256, 256), interpolation=cv2.INTER_AREA)
                         frames.append(frame)
-                    current += 1
+
+                # Fallback to bounded sequential read if seek returned fewer frames
+                if len(frames) < max_frames:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    step = max(1, total_frames // max_frames)
+                    current = 0
+                    while cap.isOpened() and len(frames) < max_frames and current < 150:
+                        ret, frame = cap.read()
+                        if not ret:
+                            break
+                        if current % step == 0 and frame is not None and frame.size > 0:
+                            h, w = frame.shape[:2]
+                            if h > 256 or w > 256:
+                                frame = cv2.resize(frame, (256, 256), interpolation=cv2.INTER_AREA)
+                            frames.append(frame)
+                        current += 1
                 cap.release()
             except Exception as cv_exc:
                 logger.debug("OpenCV frame extraction fallback: %s", cv_exc)
