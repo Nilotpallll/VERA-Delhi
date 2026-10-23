@@ -20,8 +20,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY apps/api/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download Whisper tiny model during Docker build to eliminate runtime latency and timeouts
-RUN python -c "from faster_whisper import WhisperModel; WhisperModel('tiny', device='cpu', compute_type='int8')"
 
 COPY apps/api /app/apps/api
 COPY data /app/data

@@ -29,19 +29,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Startup and shutdown lifecycle handler."""
     init_observability()
     logger.info("Starting %s v%s in %s mode", settings.PROJECT_NAME, settings.VERSION, settings.ENVIRONMENT)
-
-    # Pre-warm Whisper speech recognition model in background thread
-    async def _warmup_whisper() -> None:
-        try:
-            from .engines.video_analyzer import VideoAnalyzer
-
-            await asyncio.to_thread(VideoAnalyzer._get_whisper_model)
-            logger.info("Whisper STT model pre-warmed and cached successfully.")
-        except Exception as exc:
-            logger.warning("Whisper pre-warm notice: %s", exc)
-
-    asyncio.create_task(_warmup_whisper())
-
     yield
     logger.info("Shutting down %s", settings.PROJECT_NAME)
     await dispose_engine()

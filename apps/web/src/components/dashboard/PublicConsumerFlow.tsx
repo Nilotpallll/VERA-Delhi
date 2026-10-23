@@ -2809,6 +2809,33 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                         className="w-full text-xs p-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-subtle)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"
                         rows={2}
                       />
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                        <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mr-1">
+                          {locale === "hi" ? "त्वरित संवाद:" : "Quick Presets:"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setUserSpokenText("Namaste investors, send 15,000 rupees to my UPI ID to join our VIP Telegram group. We guarantee 40% monthly returns on options trading with zero risk.")}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                        >
+                          🚨 40% Guaranteed Returns (Scam)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setUserSpokenText("Join our exclusive VIP Telegram trading channel. We provide daily jackpot calls with assured returns and zero loss.")}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                        >
+                          ⚠️ VIP Telegram Channel (Scam)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setUserSpokenText("Market update: Discussion regarding quarterly macroeconomic indicators, GDP growth projections, and diversified index fund asset allocation.")}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                        >
+                          ✓ Educational / Compliant
+                        </button>
+                      </div>
+
                       <p className="text-[11px] text-[var(--text-muted)] mt-1.5 flex items-center gap-1">
                         <span>⚖️</span>
                         <span>
