@@ -87,9 +87,13 @@ class FasterWhisperEngine(BaseAnalyzer):
 
         # 2. Worker-side / local faster-whisper fallback
         try:
+            import os
+            if os.environ.get("RENDER") == "true" or os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
+                raise RuntimeError("Local Whisper disabled on Render 512MB RAM tier")
+
             if self._model is None:
                 from faster_whisper import WhisperModel
-                self._model = WhisperModel(self.model_size, device="cpu", compute_type="int8")
+                self._model = WhisperModel(self.model_size, device="cpu", compute_type="int8", cpu_threads=1)
 
             if self._model is not None:
                 # transcribe

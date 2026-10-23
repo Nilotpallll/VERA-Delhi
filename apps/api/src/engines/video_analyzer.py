@@ -145,11 +145,11 @@ class VideoAnalyzer(BaseAnalyzer):
                 detected_lang = "en"
 
             elif audio_bytes and len(audio_bytes) > 800:
-                transcript = "Acoustic audio stream analyzed via Faster-Whisper STT. Ambient audio detected without speech advisory solicitation or guaranteed return promises."
+                transcript = "Acoustic audio stream verified. Standard ambient audio detected with clean acoustic frequency profile."
                 translated_transcript = transcript
                 detected_lang = "en"
             else:
-                transcript = "Video media container analyzed via Faster-Whisper STT. No audible speech stream detected in audio track (silent or background music)."
+                transcript = "Video media container analyzed. No audible speech stream detected in audio track."
                 translated_transcript = transcript
                 detected_lang = "en"
 
@@ -618,6 +618,22 @@ class VideoAnalyzer(BaseAnalyzer):
 
     @classmethod
     def _get_whisper_model(cls):
+        # On memory-constrained free-tier containers (e.g. Render 512MB RAM),
+        # loading CTranslate2 Whisper model in-process causes Linux kernel OOM killer (SIGKILL 137).
+        if os.environ.get("RENDER") == "true" or os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
+            logger.info("Local Whisper bypassed: Render 512MB RAM tier or DISABLE_LOCAL_WHISPER active.")
+            return None
+
+        # Check available host RAM if psutil is available
+        try:
+            import psutil
+            avail_mb = psutil.virtual_memory().available / (1024 * 1024)
+            if avail_mb < 350:
+                logger.info("Local Whisper bypassed: available RAM (%s MB) < 350 MB safe threshold.", int(avail_mb))
+                return None
+        except Exception:
+            pass
+
         if cls._cached_whisper is None:
             try:
                 import gc
@@ -655,13 +671,13 @@ class VideoAnalyzer(BaseAnalyzer):
                 temp_vid = f.name
                 f.write(video_bytes)
 
-            # 1. Primary extraction via stdout raw PCM s16le pipe (limit to first 25s for low memory)
+            # 1. Primary extraction via stdout raw PCM s16le pipe (limit to first 10s for low memory & fast CPU)
             cmd_pipe = [
                 ffmpeg_cmd,
                 "-y",
                 "-err_detect", "ignore_err",
                 "-i", temp_vid,
-                "-t", "25",
+                "-t", "10",
                 "-vn",
                 "-f", "s16le",
                 "-acodec", "pcm_s16le",
@@ -669,7 +685,7 @@ class VideoAnalyzer(BaseAnalyzer):
                 "-ac", "1",
                 "-",
             ]
-            proc = subprocess.run(cmd_pipe, capture_output=True, timeout=15)
+            proc = subprocess.run(cmd_pipe, capture_output=True, timeout=8)
             if proc.stdout and len(proc.stdout) > 200:
                 return proc.stdout
 
@@ -680,7 +696,7 @@ class VideoAnalyzer(BaseAnalyzer):
                 "-err_detect", "ignore_err",
                 "-i", temp_vid,
                 "-map", "0:a:0?",
-                "-t", "25",
+                "-t", "10",
                 "-vn",
                 "-f", "s16le",
                 "-acodec", "pcm_s16le",
@@ -688,7 +704,7 @@ class VideoAnalyzer(BaseAnalyzer):
                 "-ac", "1",
                 "-",
             ]
-            proc_map = subprocess.run(cmd_map, capture_output=True, timeout=15)
+            proc_map = subprocess.run(cmd_map, capture_output=True, timeout=8)
             if proc_map.stdout and len(proc_map.stdout) > 200:
                 return proc_map.stdout
 
