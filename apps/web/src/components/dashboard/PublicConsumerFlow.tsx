@@ -1354,6 +1354,10 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           advisorySignalsDetected: false,
           advisoryViolations: [],
           flaggedAdvisoryPhrases: [],
+          inference:
+            locale === "hi"
+              ? "फोरेंसिक विश्लेषण सूचना: वीडियो विश्लेषण सेवा व्यस्त है। सेबी निवेशक सुरक्षा नियमों के अनुसार अनिर्णायक परिणाम को सुरक्षा का प्रमाण नहीं माना जा सकता। कृपया कुछ पलों में पुनः प्रयास करें।"
+              : "Forensic Analysis Notice: The video analysis service was unable to complete full forensic processing within the current execution window. In accordance with VERA Architecture Rule 9 and SEBI investor protection standards, an inconclusive result must never be interpreted as safety. Please retry in a few moments or test with a sample.",
         });
       } finally {
         setIsScanning(false);

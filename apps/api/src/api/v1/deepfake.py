@@ -124,13 +124,17 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
             detail="Invalid base64 encoding.",
         )
 
+    v_len = len(video_bytes)
     sha256 = hashlib.sha256(video_bytes).hexdigest()
+    del video_bytes
+    import gc
+    gc.collect()
 
     # Guard: 50 MB max
-    if len(video_bytes) > 50 * 1024 * 1024:
+    if v_len > 50 * 1024 * 1024:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"Video too large ({len(video_bytes) // (1024*1024)} MB). Maximum is 50 MB.",
+            detail=f"Video too large ({v_len // (1024*1024)} MB). Maximum is 50 MB.",
         )
 
     # ── Build canonical evidence item ──────────────────────────────────────────

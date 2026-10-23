@@ -102,13 +102,17 @@ class VideoAnalyzer(BaseAnalyzer):
                 "statement": "No video payload available for facial manipulation analysis.",
             }, 0.5
 
-        # Extract frames
+        # Extract frames with low-memory footprint
+        import gc
         video_bytes = self._decode_payload(payload)
+        del payload
+        gc.collect()
         if video_bytes is None:
             raise ValueError("Corrupted or unsupported video encoding. Unable to extract video stream.")
 
-        # Extract and separate audio from video container
+        # Extract and separate audio from video container (first 25s for fast advisory detection)
         audio_bytes = self._extract_audio(video_bytes)
+        gc.collect()
         custom_transcript = ""
         if hasattr(evidence, "metadata") and isinstance(evidence.metadata, dict):
             custom_transcript = (
@@ -433,8 +437,8 @@ class VideoAnalyzer(BaseAnalyzer):
                 return payload.encode("latin1", errors="ignore")
             return None
 
-    def _extract_frames(self, video_bytes: bytes, max_frames: int = 10) -> list[Any]:
-        """Extracts frames using OpenCV or FFmpeg subprocess."""
+    def _extract_frames(self, video_bytes: bytes, max_frames: int = 5) -> list[Any]:
+        """Extracts frames using OpenCV or FFmpeg subprocess with immediate low-memory resizing."""
         frames: list[Any] = []
         temp_file = None
 
@@ -470,7 +474,11 @@ class VideoAnalyzer(BaseAnalyzer):
                     ret, frame = cap.read()
                     if not ret:
                         break
-                    if current % step == 0:
+                    if current % step == 0 and frame is not None and frame.size > 0:
+                        # Immediately resize frame to 256x256 to prevent 1080p uncompressed RAM explosion
+                        h, w = frame.shape[:2]
+                        if h > 256 or w > 256:
+                            frame = cv2.resize(frame, (256, 256), interpolation=cv2.INTER_AREA)
                         frames.append(frame)
                     current += 1
                 cap.release()
@@ -612,8 +620,10 @@ class VideoAnalyzer(BaseAnalyzer):
     def _get_whisper_model(cls):
         if cls._cached_whisper is None:
             try:
+                import gc
+                gc.collect()
                 from faster_whisper import WhisperModel
-                cls._cached_whisper = WhisperModel("tiny", device="cpu", compute_type="int8")
+                cls._cached_whisper = WhisperModel("tiny", device="cpu", compute_type="int8", cpu_threads=1)
             except Exception as exc:
                 logger.warning("Could not initialize WhisperModel: %s", exc)
                 return None
@@ -645,12 +655,13 @@ class VideoAnalyzer(BaseAnalyzer):
                 temp_vid = f.name
                 f.write(video_bytes)
 
-            # 1. Primary extraction via stdout raw PCM s16le pipe
+            # 1. Primary extraction via stdout raw PCM s16le pipe (limit to first 25s for low memory)
             cmd_pipe = [
                 ffmpeg_cmd,
                 "-y",
                 "-err_detect", "ignore_err",
                 "-i", temp_vid,
+                "-t", "25",
                 "-vn",
                 "-f", "s16le",
                 "-acodec", "pcm_s16le",
@@ -658,7 +669,7 @@ class VideoAnalyzer(BaseAnalyzer):
                 "-ac", "1",
                 "-",
             ]
-            proc = subprocess.run(cmd_pipe, capture_output=True, timeout=25)
+            proc = subprocess.run(cmd_pipe, capture_output=True, timeout=15)
             if proc.stdout and len(proc.stdout) > 200:
                 return proc.stdout
 
@@ -669,6 +680,7 @@ class VideoAnalyzer(BaseAnalyzer):
                 "-err_detect", "ignore_err",
                 "-i", temp_vid,
                 "-map", "0:a:0?",
+                "-t", "25",
                 "-vn",
                 "-f", "s16le",
                 "-acodec", "pcm_s16le",
@@ -676,7 +688,7 @@ class VideoAnalyzer(BaseAnalyzer):
                 "-ac", "1",
                 "-",
             ]
-            proc_map = subprocess.run(cmd_map, capture_output=True, timeout=20)
+            proc_map = subprocess.run(cmd_map, capture_output=True, timeout=15)
             if proc_map.stdout and len(proc_map.stdout) > 200:
                 return proc_map.stdout
 
@@ -728,8 +740,8 @@ class VideoAnalyzer(BaseAnalyzer):
             if peak > 1e-4:
                 audio_np = audio_np / max(peak, 0.01)
 
-            # Limit transcription to first 90 seconds to guarantee fast CPU response
-            max_samples = 16000 * 90
+            # Limit transcription to first 25 seconds to guarantee fast CPU response and low RAM
+            max_samples = 16000 * 25
             if audio_np.size > max_samples:
                 audio_np = audio_np[:max_samples]
 
@@ -737,44 +749,48 @@ class VideoAnalyzer(BaseAnalyzer):
             if model is None:
                 return "", "", "en", []
 
-            # 1. Verbatim transcription (original language)
-            segments, info = model.transcribe(
-                audio_np,
-                beam_size=2,
-                best_of=2,
-                vad_filter=False,
-            )
-            parts: list[str] = []
-            segment_list: list[dict[str, Any]] = []
-            for s in segments:
-                txt = s.text.strip() if s.text else ""
-                if txt:
-                    parts.append(txt)
-                    segment_list.append({
-                        "start": round(float(s.start), 2),
-                        "end": round(float(s.end), 2),
-                        "text": txt,
-                    })
+            try:
+                # 1. Verbatim transcription (original language, greedy beam_size=1 for lowest RAM)
+                segments, info = model.transcribe(
+                    audio_np,
+                    beam_size=1,
+                    best_of=1,
+                    vad_filter=False,
+                )
+                parts: list[str] = []
+                segment_list: list[dict[str, Any]] = []
+                for s in segments:
+                    txt = s.text.strip() if s.text else ""
+                    if txt:
+                        parts.append(txt)
+                        segment_list.append({
+                            "start": round(float(s.start), 2),
+                            "end": round(float(s.end), 2),
+                            "text": txt,
+                        })
 
-            transcript = " ".join(parts).strip()
-            detected_lang = info.language or "en"
-            translated_transcript = transcript
+                transcript = " ".join(parts).strip()
+                detected_lang = info.language or "en"
+                translated_transcript = transcript
 
-            # 2. English translation if spoken language is non-English
-            if detected_lang != "en" and transcript:
-                try:
-                    t_segs, _ = model.transcribe(
-                        audio_np,
-                        beam_size=2,
-                        best_of=2,
-                        task="translate",
-                        vad_filter=False,
-                    )
-                    t_parts = [s.text.strip() for s in t_segs if s.text]
-                    if t_parts:
-                        translated_transcript = " ".join(t_parts).strip()
-                except Exception as t_exc:
-                    logger.debug("Whisper translation note: %s", t_exc)
+                # 2. English translation if spoken language is non-English
+                if detected_lang != "en" and transcript:
+                    try:
+                        t_segs, _ = model.transcribe(
+                            audio_np,
+                            beam_size=1,
+                            best_of=1,
+                            task="translate",
+                            vad_filter=False,
+                        )
+                        t_parts = [s.text.strip() for s in t_segs if s.text]
+                        if t_parts:
+                            translated_transcript = " ".join(t_parts).strip()
+                    except Exception as t_exc:
+                        logger.debug("Whisper translation note: %s", t_exc)
+            except Exception as w_exc:
+                logger.warning("Whisper transcription runtime or memory notice: %s", w_exc)
+                return "", "", "en", []
 
             return transcript, translated_transcript, detected_lang, segment_list
         except Exception as exc:
