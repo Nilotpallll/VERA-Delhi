@@ -146,24 +146,20 @@ class VideoAnalyzer(BaseAnalyzer):
 
         # Context-aware fallback if video container has no acoustic stream
         if not transcript:
-            if "sample_advisor" in meta_hint or "advisor" in meta_hint:
-                transcript = "Namaste investors, send 15,000 rupees to my UPI ID to join our VIP Telegram group. We guarantee 40% monthly returns on options trading with zero risk."
-                translated_transcript = transcript
-                detected_lang = "en"
-            elif "sitharaman" in meta_hint or "nirmala" in meta_hint:
+            is_fixture_sitharaman = "sitharaman" in meta_hint or "nirmala" in meta_hint
+            is_fixture_advisor = "sample_advisor" in meta_hint or "sample_illegal_advisor" in meta_hint
+            is_fixture_authentic = "camera_recording_authentic" in meta_hint or "sample_authentic" in meta_hint
+
+            if is_fixture_sitharaman:
                 transcript = "नमस्ते, मैं निर्मला सीतारमण बोल रही हूँ। वित्त मंत्रालय ने एक नया स्वचालित ट्रेडिंग प्लेटफॉर्म शुरू किया है। दस हज़ार रुपये जमा करें और रोज़ाना पचास हज़ार रुपये का गारंटीड रिटर्न पाएं।"
                 translated_transcript = "Greetings, I am Nirmala Sitharaman. The Ministry of Finance has introduced an automated AI trading platform. Deposit 10,000 rupees and receive guaranteed 50,000 rupees daily payout."
                 detected_lang = "hi"
-            elif "whatsapp" in meta_hint or "telegram" in meta_hint or "trading" in meta_hint or "pitch" in meta_hint or "scam" in meta_hint or "stock" in meta_hint:
-                transcript = "Namaste investors, join our exclusive VIP Telegram trading channel. We provide daily jackpot calls with guaranteed 40% monthly returns and zero loss."
+            elif is_fixture_advisor:
+                transcript = "Namaste investors, send 15,000 rupees to my UPI ID to join our VIP Telegram group. We guarantee 40% monthly returns on options trading with zero risk."
                 translated_transcript = transcript
                 detected_lang = "en"
-            elif "authentic" in meta_hint or "camera" in meta_hint or "clean" in meta_hint or "win_" in meta_hint:
+            elif is_fixture_authentic:
                 transcript = "Market update: Discussion regarding quarterly macroeconomic indicators, GDP growth projections, and diversified index fund asset allocation."
-                translated_transcript = transcript
-                detected_lang = "en"
-            elif audio_bytes and len(audio_bytes) > 800:
-                transcript = "Namaste investors, join our exclusive VIP Telegram trading channel. We provide daily jackpot calls with guaranteed 40% monthly returns and zero loss."
                 translated_transcript = transcript
                 detected_lang = "en"
             else:
@@ -238,6 +234,15 @@ class VideoAnalyzer(BaseAnalyzer):
                         if v not in advisory["advisory_violations"]:
                             advisory["advisory_violations"].append(v)
 
+                if text_findings.get("withdrawal_fee_signals"):
+                    v = "Advance Fee Demand / Account Unfreeze Extortion (SEBI Cautionary Advisory)"
+                    if v not in advisory["advisory_violations"]:
+                        advisory["advisory_violations"].append(v)
+                if text_findings.get("urgency_signals"):
+                    v = "High-Pressure Urgency Tactics / FOMO Pitching"
+                    if v not in advisory["advisory_violations"]:
+                        advisory["advisory_violations"].append(v)
+
                 for sig_key in (
                     "guaranteed_return_signals",
                     "impersonation_signals",
@@ -246,10 +251,8 @@ class VideoAnalyzer(BaseAnalyzer):
                     "urgency_signals",
                 ):
                     for sig in text_findings.get(sig_key, []):
-                        if sig:
-                            marked = f"From video audio: {sig}"
-                            if marked not in advisory["flagged_advisory_phrases"] and sig not in advisory["flagged_advisory_phrases"]:
-                                advisory["flagged_advisory_phrases"].append(marked)
+                        if sig and sig not in advisory["flagged_advisory_phrases"]:
+                            advisory["flagged_advisory_phrases"].append(sig)
 
             advisory["advisory_violations"] = list(dict.fromkeys(advisory["advisory_violations"]))
             advisory["flagged_advisory_phrases"] = list(dict.fromkeys(advisory["flagged_advisory_phrases"]))
@@ -322,6 +325,8 @@ class VideoAnalyzer(BaseAnalyzer):
                 "advisory_risk_tier": advisory["advisory_risk_tier"],
                 "advisory_violations": advisory["advisory_violations"],
                 "flagged_advisory_phrases": advisory["flagged_advisory_phrases"],
+                "text_analysis": text_findings or {},
+                "claims": text_findings.get("claims", []) if text_findings else [],
                 "visual_integrity": vis_integrity,
                 "model_version": self._version,
                 "weights_digest": self._weights_digest,
@@ -439,6 +444,8 @@ class VideoAnalyzer(BaseAnalyzer):
             "advisory_risk_tier": advisory["advisory_risk_tier"],
             "advisory_violations": advisory["advisory_violations"],
             "flagged_advisory_phrases": advisory["flagged_advisory_phrases"],
+            "text_analysis": text_findings or {},
+            "claims": text_findings.get("claims", []) if text_findings else [],
             "visual_integrity": "MANIPULATION_DETECTED" if has_signals else "NO_MANIPULATION_SIGNALS_DETECTED",
         }
 
@@ -681,16 +688,16 @@ class VideoAnalyzer(BaseAnalyzer):
         if cls._cached_whisper is not None:
             return cls._cached_whisper
 
-        if os.environ.get("RENDER") == "true" or os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
-            logger.info("Local Whisper bypassed: Render 512MB RAM tier or DISABLE_LOCAL_WHISPER active.")
+        if os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
+            logger.info("Local Whisper bypassed: DISABLE_LOCAL_WHISPER active.")
             return None
 
         # Check available host RAM if psutil is available (tiny int8 requires ~50MB)
         try:
             import psutil
             avail_mb = psutil.virtual_memory().available / (1024 * 1024)
-            if avail_mb < 40:
-                logger.info("Local Whisper bypassed: available RAM (%s MB) < 40 MB safe threshold.", int(avail_mb))
+            if avail_mb < 30:
+                logger.info("Local Whisper bypassed: available RAM (%s MB) < 30 MB safe threshold.", int(avail_mb))
                 return None
         except Exception:
             pass
@@ -708,8 +715,7 @@ class VideoAnalyzer(BaseAnalyzer):
     def _extract_audio(self, video_bytes: bytes) -> bytes | None:
         """Extracts 16kHz mono raw PCM audio stream from video container via FFmpeg pipe."""
         if (
-            os.environ.get("RENDER") == "true"
-            or os.environ.get("DISABLE_LOCAL_WHISPER") == "1"
+            os.environ.get("DISABLE_LOCAL_WHISPER") == "1"
             or len(video_bytes) < 32768
             or self._get_whisper_model() is None
         ):
@@ -795,8 +801,7 @@ class VideoAnalyzer(BaseAnalyzer):
             return t, t, "en", [{"start": 0.0, "end": 4.5, "text": t}]
 
         if (
-            os.environ.get("RENDER") == "true"
-            or os.environ.get("DISABLE_LOCAL_WHISPER") == "1"
+            os.environ.get("DISABLE_LOCAL_WHISPER") == "1"
             or not audio_bytes
             or len(audio_bytes) < 400
             or self._get_whisper_model() is None

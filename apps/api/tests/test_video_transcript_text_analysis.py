@@ -182,3 +182,50 @@ async def test_text_path_gets_exact_transcript_and_uses_same_function():
         assert isinstance(called_evidence, CanonicalEvidenceItem)
         assert called_evidence.media_type == EvidenceMediaType.TEXT
         assert called_evidence.content_payload == test_transcript
+
+
+@pytest.mark.asyncio
+async def test_investors_in_transcript_not_fictitious_id():
+    """Verify that the word 'investors' is not matched as a SEBI ID (e.g. INVEST0RS)."""
+    from apps.api.src.api.v1.deepfake import DeepfakeCheckRequest, deepfake_check
+
+    req = DeepfakeCheckRequest(
+        video_b64="AAAAGGZ0eXBtcDQyAAAAAG1wNDJpc29tAAAAGGJlYW0BAAAAAQAAAAAAAAACAAAAAAAhI21vb3YAAABsbXZoZAAAAAAAAAAAAAAAAAAArEQADXcJAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAy1dHJhawAAAFx0a2hkAAAABwAAAAAAAAAAAAAAAQAAAAAADXVQAAAAAAAAAAAAAAAAAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAA==",
+        transcript="Hello investors, this is a clean market update regarding index funds.",
+    )
+    resp = await deepfake_check(req)
+    # advisor_verification should be None or if present, claimedRegNumber must not be 'INVEST0RS' or similar
+    if resp.advisor_verification:
+        assert resp.advisor_verification.get("claimedRegNumber") != "INVEST0RS"
+
+
+@pytest.mark.asyncio
+async def test_verified_advisor_in_transcript():
+    """Verify that a legitimate registered SEBI advisor in transcript is verified against the registry."""
+    from apps.api.src.api.v1.deepfake import DeepfakeCheckRequest, deepfake_check
+
+    req = DeepfakeCheckRequest(
+        video_b64="AAAAGGZ0eXBtcDQyAAAAAG1wNDJpc29tAAAAGGJlYW0BAAAAAQAAAAAAAAACAAAAAAAhI21vb3YAAABsbXZoZAAAAAAAAAAAAAAAAAAArEQADXcJAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAy1dHJhawAAAFx0a2hkAAAABwAAAAAAAAAAAAAAAQAAAAAADXVQAAAAAAAAAAAAAAAAAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAA==",
+        transcript="I am Kavitha Menon, SEBI registered investment adviser INA000000037.",
+    )
+    resp = await deepfake_check(req)
+    assert resp.advisor_verification is not None
+    assert resp.advisor_verification["status"] == "VERIFIED"
+    assert resp.advisor_verification["claimedRegNumber"] == "INA000000037"
+    assert "KAVITHA MENON" in (resp.advisor_verification.get("registeredEntityName") or "")
+
+
+@pytest.mark.asyncio
+async def test_flagged_advisory_phrases_have_no_prefix():
+    """Verify that flagged advisory phrases do not contain 'From video audio: ' prefixes."""
+    from apps.api.src.api.v1.deepfake import DeepfakeCheckRequest, deepfake_check
+
+    req = DeepfakeCheckRequest(
+        video_b64="AAAAGGZ0eXBtcDQyAAAAAG1wNDJpc29tAAAAGGJlYW0BAAAAAQAAAAAAAAACAAAAAAAhI21vb3YAAABsbXZoZAAAAAAAAAAAAAAAAAAArEQADXcJAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAy1dHJhawAAAFx0a2hkAAAABwAAAAAAAAAAAAAAAQAAAAAADXVQAAAAAAAAAAAAAAAAAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAA==",
+        transcript="Join our VIP Telegram group. We guarantee 40% monthly returns on options trading with zero risk.",
+    )
+    resp = await deepfake_check(req)
+    assert resp.advisory_signals_detected is True
+    for phrase in resp.flagged_advisory_phrases:
+        assert not phrase.startswith("From video audio:")
+
