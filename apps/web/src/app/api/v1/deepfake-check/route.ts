@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       process.env.API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
       process.env.NEXT_PUBLIC_VERA_API_URL ||
-      "http://127.0.0.1:8000";
+      "https://vera-delhi-ldfinal.onrender.com";
 
     // Forward to FastAPI backend for MesoNet-4 spatiotemporal inference
     try {

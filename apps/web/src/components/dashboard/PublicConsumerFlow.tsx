@@ -233,8 +233,14 @@ function normalizeBrokerSlug(val: string): string {
 }
 
 function getApiBase(): string {
-  // Always use same-origin relative path so requests route through Next.js API route seamlessly
-  return "";
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.NEXT_PUBLIC_VERA_API_URL) return process.env.NEXT_PUBLIC_VERA_API_URL;
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "";
+    }
+  }
+  return "https://vera-delhi-ldfinal.onrender.com";
 }
 
 function normalizeRegistryName(value: string | undefined): string {
