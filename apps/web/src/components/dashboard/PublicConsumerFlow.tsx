@@ -572,43 +572,59 @@ async function extractAudioWavFromVideo(file: File, maxSeconds = 20): Promise<st
   if (typeof window === "undefined" || !file) return "";
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return "";
-    const ctx = new AudioCtx();
+    if (AudioCtx) {
+      const ctx = new AudioCtx();
+      try {
+        // Read file arrayBuffer directly (keep container structures intact)
+        const blobToRead = file.size > 25 * 1024 * 1024 ? file.slice(0, 25 * 1024 * 1024) : file;
+        const arrayBuffer = await blobToRead.arrayBuffer();
+        const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
 
-    // Slicing first 20MB of file is plenty to capture audio tracks
-    const blobToRead = file.size > 20 * 1024 * 1024 ? file.slice(0, 20 * 1024 * 1024) : file;
-    const arrayBuffer = await blobToRead.arrayBuffer();
-    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+        const targetSampleRate = 16000;
+        const duration = Math.min(audioBuffer.duration, maxSeconds);
+        const targetLength = Math.max(1, Math.floor(duration * targetSampleRate));
 
-    const targetSampleRate = 16000;
-    const duration = Math.min(audioBuffer.duration, maxSeconds);
-    const targetLength = Math.max(1, Math.floor(duration * targetSampleRate));
+        const OfflineCtx = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
+        if (OfflineCtx) {
+          const offlineCtx = new OfflineCtx(1, targetLength, targetSampleRate);
+          const source = offlineCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(offlineCtx.destination);
+          source.start(0);
 
-    const OfflineCtx = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
-    if (!OfflineCtx) {
-      ctx.close();
-      return "";
+          const renderedBuffer = await offlineCtx.startRendering();
+          const pcmData = renderedBuffer.getChannelData(0);
+          const wavBytes = encodeWav(pcmData, targetSampleRate);
+          ctx.close();
+
+          const bytes = new Uint8Array(wavBytes);
+          let binary = "";
+          const len = bytes.byteLength;
+          for (let i = 0; i < len; i += 8192) {
+            binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, Math.min(i + 8192, len))));
+          }
+          return "data:audio/wav;base64," + btoa(binary);
+        }
+      } catch (decodeErr) {
+        ctx.close();
+        console.debug("Web Audio decode notice, falling back to container slice:", decodeErr);
+      }
     }
-    const offlineCtx = new OfflineCtx(1, targetLength, targetSampleRate);
-    const source = offlineCtx.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(offlineCtx.destination);
-    source.start(0);
-
-    const renderedBuffer = await offlineCtx.startRendering();
-    const pcmData = renderedBuffer.getChannelData(0);
-    const wavBytes = encodeWav(pcmData, targetSampleRate);
-    ctx.close();
-
-    const bytes = new Uint8Array(wavBytes);
-    let binary = "";
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i += 8192) {
-      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, Math.min(i + 8192, len))));
-    }
-    return "data:audio/wav;base64," + btoa(binary);
   } catch (err) {
     console.debug("Client audio extraction note:", err);
+  }
+
+  // Resilient Fallback: If Web Audio API cannot decode container, send first 3MB slice for server FFmpeg demuxing
+  try {
+    const sliceBlob = file.size > 3 * 1024 * 1024 ? file.slice(0, 3 * 1024 * 1024) : file;
+    const reader = new FileReader();
+    const sliceB64 = await new Promise<string>((resolve) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(sliceBlob);
+    });
+    return sliceB64;
+  } catch {
     return "";
   }
 }

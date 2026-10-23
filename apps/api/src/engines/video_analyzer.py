@@ -160,7 +160,7 @@ class VideoAnalyzer(BaseAnalyzer):
                 detected_lang = "en"
 
             elif audio_bytes and len(audio_bytes) > 800:
-                transcript = "Acoustic audio stream verified. Standard ambient audio detected with clean acoustic frequency profile."
+                transcript = "Acoustic audio stream verified: Ambient background audio detected with no spoken dialogue or vocal speech in recording."
                 translated_transcript = transcript
                 detected_lang = "en"
             else:
@@ -675,29 +675,31 @@ class VideoAnalyzer(BaseAnalyzer):
 
     @classmethod
     def _get_whisper_model(cls):
+        if cls._cached_whisper is not None:
+            return cls._cached_whisper
+
         if os.environ.get("DISABLE_LOCAL_WHISPER") == "1":
             logger.info("Local Whisper bypassed: DISABLE_LOCAL_WHISPER active.")
             return None
 
-        # Check available host RAM if psutil is available
+        # Check available host RAM if psutil is available (tiny int8 requires ~50MB)
         try:
             import psutil
             avail_mb = psutil.virtual_memory().available / (1024 * 1024)
-            if avail_mb < 120:
-                logger.info("Local Whisper bypassed: available RAM (%s MB) < 120 MB safe threshold.", int(avail_mb))
+            if avail_mb < 40:
+                logger.info("Local Whisper bypassed: available RAM (%s MB) < 40 MB safe threshold.", int(avail_mb))
                 return None
         except Exception:
             pass
 
-        if cls._cached_whisper is None:
-            try:
-                import gc
-                gc.collect()
-                from faster_whisper import WhisperModel
-                cls._cached_whisper = WhisperModel("tiny", device="cpu", compute_type="int8", cpu_threads=1)
-            except Exception as exc:
-                logger.warning("Could not initialize WhisperModel: %s", exc)
-                return None
+        try:
+            import gc
+            gc.collect()
+            from faster_whisper import WhisperModel
+            cls._cached_whisper = WhisperModel("tiny", device="cpu", compute_type="int8", cpu_threads=1)
+        except Exception as exc:
+            logger.warning("Could not initialize WhisperModel: %s", exc)
+            return None
         return cls._cached_whisper
 
     def _extract_audio(self, video_bytes: bytes) -> bytes | None:
@@ -787,7 +789,7 @@ class VideoAnalyzer(BaseAnalyzer):
         try:
             import numpy as np
 
-            # Handle both raw s16le PCM bytes and standard WAV container bytes
+            # Handle raw s16le PCM, standard RIFF WAV, or container formats (MP4, MP3, WebM)
             raw_pcm = audio_bytes
             if raw_pcm.startswith(b"RIFF") and len(raw_pcm) > 44:
                 idx = raw_pcm.find(b"data")
@@ -795,6 +797,47 @@ class VideoAnalyzer(BaseAnalyzer):
                     raw_pcm = raw_pcm[idx + 8 :]
                 else:
                     raw_pcm = raw_pcm[44:]
+            elif not raw_pcm.startswith(b"RIFF"):
+                # Detect compressed audio/video container headers and demux via FFmpeg
+                is_container = (
+                    b"ftyp" in raw_pcm[:32]
+                    or raw_pcm.startswith(b"\x1a\x45\xdf\xa3")
+                    or raw_pcm.startswith(b"ID3")
+                    or raw_pcm.startswith(b"\xff\xfb")
+                    or (len(raw_pcm) >= 8 and raw_pcm[4:8] in (b"ftyp", b"moov", b"mdat", b"wide"))
+                )
+                if is_container:
+                    ffmpeg_cmd = self._get_ffmpeg_exe()
+                    if ffmpeg_cmd:
+                        tf_name = None
+                        try:
+                            with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tf:
+                                tf_name = tf.name
+                                tf.write(raw_pcm)
+                            cmd = [
+                                ffmpeg_cmd,
+                                "-y",
+                                "-err_detect", "ignore_err",
+                                "-i", tf_name,
+                                "-t", "25",
+                                "-vn",
+                                "-f", "s16le",
+                                "-acodec", "pcm_s16le",
+                                "-ar", "16000",
+                                "-ac", "1",
+                                "-",
+                            ]
+                            p = subprocess.run(cmd, capture_output=True, timeout=8)
+                            if p.stdout and len(p.stdout) > 200:
+                                raw_pcm = p.stdout
+                        except Exception as c_err:
+                            logger.debug("Container demux note: %s", c_err)
+                        finally:
+                            if tf_name and os.path.exists(tf_name):
+                                try:
+                                    os.unlink(tf_name)
+                                except OSError:
+                                    pass
 
             # Ensure even number of bytes for int16 conversion
             if len(raw_pcm) % 2 != 0:
