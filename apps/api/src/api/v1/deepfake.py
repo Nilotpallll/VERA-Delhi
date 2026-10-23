@@ -216,7 +216,13 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
 
         reg_record = None
         registry_data: dict[str, Any] = {}
-        for p in [Path("data/sebi-registry.json"), Path("apps/web/data/sebi-registry.json"), Path("../../data/sebi-registry.json")]:
+        for p in [
+            Path("data/sebi-registry.json"),
+            Path("apps/web/data/sebi-registry.json"),
+            Path("../../data/sebi-registry.json"),
+            Path("../data/sebi-registry.json"),
+            Path("/app/data/sebi-registry.json"),
+        ]:
             if p.exists():
                 try:
                     with open(p, encoding="utf-8") as f:

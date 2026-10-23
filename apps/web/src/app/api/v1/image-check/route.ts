@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
+      const timeout = setTimeout(() => controller.abort(), 45000);
       const pyResp = await fetch(`${backendUrl}/api/v1/image-check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

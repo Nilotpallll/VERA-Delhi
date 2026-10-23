@@ -191,6 +191,9 @@ export async function GET(request: NextRequest) {
           path.join(process.cwd(), "apps", "web", "data", "sebi-registry.json"),
           path.join(process.cwd(), "data", "sebi-registry.local.json"),
           path.join(process.cwd(), "apps", "web", "data", "sebi-registry.local.json"),
+          path.resolve(__dirname, "../../../../../data/sebi-registry.json"),
+          path.resolve(__dirname, "../../../../data/sebi-registry.json"),
+          path.resolve(__dirname, "../../../data/sebi-registry.json"),
         ];
     let snapshotText: string | undefined;
     for (const registryPath of registryPaths) {

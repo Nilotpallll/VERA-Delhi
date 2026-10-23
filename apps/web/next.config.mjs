@@ -15,6 +15,9 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ["tesseract.js"],
+    outputFileTracingIncludes: {
+      "/api/**/*": ["./data/**/*", "./apps/web/data/**/*"],
+    },
   },
 };
 
