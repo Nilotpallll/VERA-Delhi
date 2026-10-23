@@ -48,6 +48,10 @@ class DeepfakeCheckRequest(BaseModel):
         default="",
         description="Optional custom spoken dialogue override for interactive testing.",
     )
+    ocr_text: str | None = Field(
+        default="",
+        description="Optional on-screen text from video frames via OCR.",
+    )
 
 
 class FrameAnalysis(BaseModel):
@@ -78,6 +82,10 @@ class DeepfakeCheckResponse(BaseModel):
     advisory_risk_tier: str | None = "NONE"
     advisory_violations: list[str] = []
     flagged_advisory_phrases: list[str] = []
+    ocr_text: str | None = None
+    ocr_violations: list[str] = []
+    flagged_ocr_phrases: list[str] = []
+    ocr_analysis: dict[str, Any] | None = None
     visual_integrity: str | None = None
     transcript_segments: list[dict[str, Any]] = []
     translated_transcript: str | None = None
@@ -177,6 +185,7 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
             "filename": body.filename or "",
             "transcript": body.transcript or "",
             "custom_transcript": body.transcript or "",
+            "ocr_text": body.ocr_text or "",
             "frames_b64": body.frames_b64 or [],
             "audio_b64": body.audio_b64 or "",
         },
@@ -224,17 +233,19 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
     composite_risk_tier = findings.get("composite_risk_tier") or risk_tier
     composite_score = findings.get("composite_score")
 
-    # Check if transcript contains SEBI registration number or advisor name
+    # Check if speech transcript OR on-screen frame OCR contains SEBI registration number or advisor name
     full_transcript = (findings.get("transcript") or body.transcript or "").strip()
+    full_ocr = (findings.get("ocr_text") or body.ocr_text or "").strip()
+    combined_media_text = f"{full_transcript} {full_ocr}".strip()
     advisor_verification = None
-    if full_transcript:
+    if combined_media_text:
         import json
         import re
         from pathlib import Path
         # SEBI Registration IDs: e.g. INA000015509, INH000000001, INZ000031633. Must require valid SEBI prefix and >= 4 digits!
         sebi_id_match = re.search(
             r"\b(INA|INH|INP|INZ|INB|INF|INM|INR|IN[A-Z]{1,2})[-\s]?([0-9OIL|]{4,14})\b",
-            full_transcript,
+            combined_media_text,
             re.IGNORECASE,
         )
         claimed_id = None
@@ -334,6 +345,10 @@ async def deepfake_check(body: DeepfakeCheckRequest) -> DeepfakeCheckResponse:
         advisory_risk_tier=findings.get("advisory_risk_tier", "NONE"),
         advisory_violations=findings.get("advisory_violations", []),
         flagged_advisory_phrases=findings.get("flagged_advisory_phrases", []),
+        ocr_text=findings.get("ocr_text"),
+        ocr_violations=findings.get("ocr_violations", []),
+        flagged_ocr_phrases=findings.get("flagged_ocr_phrases", []),
+        ocr_analysis=findings.get("ocr_analysis"),
         visual_integrity=findings.get("visual_integrity"),
         transcript_segments=findings.get("transcript_segments", []),
         translated_transcript=findings.get("translated_transcript"),

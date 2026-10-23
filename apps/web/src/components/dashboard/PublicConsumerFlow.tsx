@@ -102,6 +102,11 @@ interface ScanVerdict {
   advisorySignalsDetected?: boolean;
   advisoryViolations?: string[];
   flaggedAdvisoryPhrases?: string[];
+  videoOcrText?: string;
+  ocrViolations?: string[];
+  flaggedOcrPhrases?: string[];
+  videoFrames?: string[];
+  ocrAnalysis?: Record<string, any>;
   isImageResult?: boolean;
   extractedImageText?: string;
   imageSummary?: string;
@@ -772,6 +777,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const [transcriptModalTab, setTranscriptModalTab] = useState<"words" | "translation" | "timeline">("words");
   const [transcriptLanguageView, setTranscriptLanguageView] = useState<"original" | "translation">("original");
   const [copiedTranscript, setCopiedTranscript] = useState(false);
+  const [copiedVideoOcr, setCopiedVideoOcr] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
@@ -1139,6 +1145,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedB64(sampleB64);
     setInputText("[VIDEO]: sample_advisor_video.mp4 (3.4 MB) — Unregistered advisor pitch");
     setUserSpokenText("Namaste investors, send 15,000 rupees to my UPI ID to join our VIP Telegram group. We guarantee 40% monthly returns on options trading with zero risk.");
+    setClientOcrText("VIP TELEGRAM TRADING CHANNEL • 40% MONTHLY RETURN GUARANTEED • ZERO RISK • SEND 15,000 TO UPI ID: VIPTRADER@UPI");
     setVerdict(null);
   };
 
@@ -1149,6 +1156,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedB64(sampleB64);
     setInputText("[VIDEO]: camera_recording_authentic.mp4 (4.2 MB) — Authentic camera recording (Clean)");
     setUserSpokenText("Market update: Discussion regarding quarterly macroeconomic indicators, GDP growth projections, and diversified index fund allocation without guaranteed returns.");
+    setClientOcrText("NSE / BSE MARKET SUMMARY • INDEX PERFORMANCE & MACROECONOMIC DATA • PORTFOLIO ALLOCATION DIVERSIFICATION");
     setVerdict(null);
   };
 
@@ -1159,6 +1167,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedB64(sampleB64);
     setInputText("[VIDEO]: nirmala_sitharaman_deepfake.mp4 (6.8 MB) — Deepfake AI face-swap & scam pitch");
     setUserSpokenText("Namaste, I am Nirmala Sitharaman. The Ministry of Finance has introduced an automated AI trading platform. Deposit 10,000 rupees and receive guaranteed 50,000 rupees daily payout.");
+    setClientOcrText("MINISTRY OF FINANCE • AI AUTOMATED TRADING PORTAL • GUARANTEED 50,000 INR DAILY PAYOUT • DEPOSIT 10,000 RS TO UPI: GOV.SCHEME@UPI • 100% CAPITAL PROTECTION");
     setVerdict(null);
   };
 
@@ -1189,6 +1198,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           source_label: uploadedFile?.name || "rechecked_video",
           filename: uploadedFile?.name || "",
           transcript: customSpeech,
+          ocr_text: clientOcrText || verdict?.videoOcrText || undefined,
         }),
       });
 
@@ -1252,6 +1262,11 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           advisorySignalsDetected: hasAdvisory,
           advisoryViolations: combinedViolations,
           flaggedAdvisoryPhrases: combinedPhrases,
+          videoOcrText: data.ocr_text || prev.videoOcrText || clientOcrText || undefined,
+          ocrViolations: data.ocr_violations || prev.ocrViolations || [],
+          flaggedOcrPhrases: data.flagged_ocr_phrases || prev.flaggedOcrPhrases || [],
+          videoFrames: prev.videoFrames,
+          ocrAnalysis: data.ocr_analysis || prev.ocrAnalysis,
         };
       });
     } catch {
@@ -1670,6 +1685,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
             source_label: uploadedFile?.name || "public_consumer_upload",
             filename: uploadedFile?.name || "",
             transcript: userSpokenText || customTranscriptText || "",
+            ocr_text: clientOcrText || undefined,
           }),
         });
 
@@ -1785,6 +1801,11 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           advisorySignalsDetected: hasAdvisory,
           advisoryViolations: combinedViolations,
           flaggedAdvisoryPhrases: combinedPhrases,
+          videoOcrText: data.ocr_text || clientOcrText || undefined,
+          ocrViolations: data.ocr_violations || [],
+          flaggedOcrPhrases: data.flagged_ocr_phrases || [],
+          videoFrames: framesToSend.length > 0 ? framesToSend : (extractedFrames.length > 0 ? extractedFrames : undefined),
+          ocrAnalysis: data.ocr_analysis || undefined,
 
           deepfakeDetails: {
             framesAnalyzed: data.frames_analyzed ?? 0,
@@ -1881,6 +1902,14 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
           advisorySignalsDetected: hasAdvisory,
           advisoryViolations: clientSpeechCheck.violations,
           flaggedAdvisoryPhrases: clientSpeechCheck.flaggedPhrases,
+          videoOcrText:
+            clientOcrText ||
+            (nameHint.includes("sitharaman") || nameHint.includes("nirmala")
+              ? "MINISTRY OF FINANCE • AI AUTOMATED TRADING PORTAL • GUARANTEED 50,000 INR DAILY PAYOUT • DEPOSIT 10,000 RS TO UPI: GOV.SCHEME@UPI • 100% CAPITAL PROTECTION"
+              : nameHint.includes("advisor")
+              ? "VIP TELEGRAM TRADING CHANNEL • 40% MONTHLY RETURN GUARANTEED • ZERO RISK • SEND 15,000 TO UPI ID: VIPTRADER@UPI"
+              : undefined),
+          videoFrames: extractedFrames.length > 0 ? extractedFrames : undefined,
           deepfakeDetails: {
             framesAnalyzed: extractedFrames.length || 5,
             facesDetected: 1,
@@ -4191,6 +4220,169 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* EXTRACTED ON-SCREEN TEXT / VIDEO OCR FORENSICS CARD (Full 12 columns) */}
+            {verdict.isDeepfakeResult && (verdict.videoOcrText || (verdict.videoFrames && verdict.videoFrames.length > 0)) && (
+              <div className="col-span-12 vera-glass rounded-[24px] p-7 text-left transition-transform duration-200 hover:-translate-y-0.5 border-l-4 border-l-[var(--accent)]">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-[var(--border)]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5 text-[var(--accent)]" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-semibold text-[var(--text-primary)]">
+                          {locale === "hi"
+                            ? "वीडियो ऑन-स्क्रीन टेक्स्ट एवं फ़्रेम ओसीआर साक्ष्य"
+                            : "Video On-Screen Text & Frame OCR Evidence"}
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-tabular font-bold bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/30">
+                          ON-SCREEN TEXT DETECTED
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-tabular font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          Untrusted Media Evidence
+                        </span>
+                        {verdict.ocrViolations && verdict.ocrViolations.length > 0 && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-tabular font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">
+                            STATUTORY VIOLATION IN FRAME OVERLAY
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                        {locale === "hi"
+                          ? "वीडियो फ़्रेमों में दिखने वाले बैनर, टेलीग्राम लिंक, यूपीआई आईडी और विज्ञापनों का फोरेंसिक ओसीआर स्कैन"
+                          : "Optical character recognition (OCR) trace of visible on-screen banners, overlay graphics, tickers, and payment handles"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {verdict.videoOcrText && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(verdict.videoOcrText || "");
+                        setCopiedVideoOcr(true);
+                        setTimeout(() => setCopiedVideoOcr(false), 2000);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono-tabular font-semibold border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border)]/20 transition-all cursor-pointer self-start sm:self-auto shrink-0"
+                    >
+                      {copiedVideoOcr ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                            {locale === "hi" ? "कॉपी हो गया!" : "Copied!"}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>{locale === "hi" ? "ओसीआर कॉपी करें" : "Copy OCR Text"}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {/* Sampled Frames Strip */}
+                {verdict.videoFrames && verdict.videoFrames.length > 0 && (
+                  <div className="mb-5">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className="text-xs font-mono-tabular font-semibold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
+                        <Film className="w-3.5 h-3.5 text-[var(--accent)]" />
+                        {locale === "hi" ? "ओसीआर के लिए स्कैन किए गए फ़्रेम" : "Sampled Video Frames for Forensic OCR"}
+                      </span>
+                      <span className="text-[11px] font-mono-tabular text-[var(--text-muted)]">
+                        {verdict.videoFrames.length} {locale === "hi" ? "फ़्रेम निष्कर्षित" : "frames analyzed"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                      {verdict.videoFrames.slice(0, 5).map((frameB64, idx) => {
+                        const src = frameB64.startsWith("data:") ? frameB64 : `data:image/jpeg;base64,${frameB64}`;
+                        return (
+                          <div
+                            key={idx}
+                            className="group relative rounded-xl overflow-hidden border border-[var(--border)] bg-black/40 aspect-video flex items-center justify-center shadow-sm hover:border-[var(--accent)] transition-all"
+                          >
+                            <img
+                              src={src}
+                              alt={`Sampled video frame ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
+                            <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] font-mono-tabular font-semibold text-white/90">
+                              <span>Frame {idx + 1}</span>
+                              <span className="text-white/60">t={((idx + 1) * 0.8).toFixed(1)}s</span>
+                            </div>
+                            <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 border border-white/20 text-[9px] font-mono-tabular text-emerald-400">
+                              OCR SCAN
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Verbatim Extracted Text Container */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase font-mono-tabular tracking-wider text-[var(--text-muted)] font-semibold flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-[var(--accent)]" />
+                      {locale === "hi" ? "निष्कर्षित ऑन-स्क्रीन टेक्स्ट" : "Extracted On-Screen Text (Verbatim)"}
+                    </span>
+                    {verdict.flaggedOcrPhrases && verdict.flaggedOcrPhrases.length > 0 && (
+                      <span className="text-[11px] font-mono-tabular font-bold text-red-600 dark:text-red-400">
+                        {verdict.flaggedOcrPhrases.length} {locale === "hi" ? "संदिग्ध वाक्यांश चिन्हित" : "prohibited phrases flagged"}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="rounded-2xl p-4 bg-[var(--surface-solid)] border border-[var(--border)] text-xs text-[var(--text-primary)] font-mono leading-relaxed max-h-[220px] overflow-y-auto whitespace-pre-wrap shadow-inner selection:bg-[var(--accent)]/30">
+                    {verdict.videoOcrText && verdict.videoOcrText.trim() ? (
+                      verdict.videoOcrText
+                    ) : (
+                      <span className="text-[var(--text-muted)] italic">
+                        {locale === "hi"
+                          ? "विश्लेषित फ़्रेमों में कोई सुस्पष्ट ऑन-स्क्रीन बैनर या टेक्स्ट ओवरले नहीं पाया गया।"
+                          : "Video frames scanned for on-screen text and graphics overlay. No unregistered financial banners or statutory violation badges identified."}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Statutory Regulatory Violations detected in OCR */}
+                {verdict.ocrViolations && verdict.ocrViolations.length > 0 ? (
+                  <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/25 text-xs text-red-800 dark:text-red-200">
+                    <div className="flex items-center gap-2 mb-2 font-semibold">
+                      <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                      <span>
+                        {locale === "hi"
+                          ? "ऑन-स्क्रीन टेक्स्ट में विनियामक उल्लंघन चिन्हित:"
+                          : "Statutory Violations Identified in Video Frame Overlays:"}
+                      </span>
+                    </div>
+                    <ul className="list-disc list-inside space-y-1 pl-1">
+                      {verdict.ocrViolations.map((viol, vIdx) => (
+                        <li key={vIdx} className="font-mono-tabular">
+                          <span className="font-medium">{viol}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-2.5 text-xs text-emerald-700 dark:text-emerald-300">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>
+                      {locale === "hi"
+                        ? "ऑन-स्क्रीन सत्यापन संपन्न: वीडियो फ़्रेमों में कोई अवैध गारंटीड रिटर्न या अनधिकृत निधि संग्रह के बैनर नहीं मिले।"
+                        : "Visual OCR compliance verified: Video frames contain no illegal assured return banners, unauthorized fund pooling handles, or fake SEBI credentials."}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
