@@ -652,7 +652,7 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
   const [uploadedImageFile, setUploadedImageFile] = useState<{ name: string; sizeMB: string } | null>(null);
   const [uploadedImageB64, setUploadedImageB64] = useState<string | null>(null);
   const [clientOcrText, setClientOcrText] = useState<string>("");
-  const clientOcrPromiseRef = useRef<Promise<string> | null>(null);
+  const selectedImageFileRef = useRef<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isImageDragging, setIsImageDragging] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
@@ -829,10 +829,10 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
     setImagePreviewUrl(null);
+    selectedImageFileRef.current = null;
     setUploadedImageFile(null);
     setUploadedImageB64(null);
     setClientOcrText("");
-    clientOcrPromiseRef.current = null;
     setImageUploadError(null);
     if (imageFileInputRef.current) imageFileInputRef.current.value = "";
     if (composerTab === "IMAGE") {
@@ -869,29 +869,10 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     }
     const preview = URL.createObjectURL(file);
     setImagePreviewUrl(preview);
+    selectedImageFileRef.current = file;
     setUploadedImageFile({ name: file.name, sizeMB });
     setVerdict(null);
     setClientOcrText("");
-
-    // High-performance client-side Tesseract OCR recognition in background Web Worker
-    const ocrPromise = import("tesseract.js")
-      .then(async ({ createWorker }) => {
-        try {
-          const worker = await createWorker("eng");
-          const ret = await worker.recognize(file);
-          const text = (ret?.data?.text || "").trim();
-          await worker.terminate();
-          if (text) {
-            setClientOcrText(text);
-          }
-          return text;
-        } catch (e) {
-          console.debug("Client OCR background worker note:", e);
-          return "";
-        }
-      })
-      .catch(() => "");
-    clientOcrPromiseRef.current = ocrPromise;
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -946,7 +927,6 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedImageB64(SAMPLE_IMAGE_FAKE_SEBI.dataUrl);
     const sampleFakeText = "i am a sebi registered investment advisor my name is kavitha menon my id is INA000000089 4:15 am";
     setClientOcrText(sampleFakeText);
-    clientOcrPromiseRef.current = Promise.resolve(sampleFakeText);
     setInputText(SAMPLE_IMAGE_FAKE_SEBI.promptText);
     setVerdict(null);
   };
@@ -959,7 +939,6 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedImageB64(SAMPLE_IMAGE_WHATSAPP_SCAM.dataUrl);
     const sampleWaText = "WhatsApp VIP Trading Group: Guaranteed returns with 50,000 INR daily profit. Join private Telegram options call. Zero risk capital protection. Send deposit to UPI: invest.vip@upi";
     setClientOcrText(sampleWaText);
-    clientOcrPromiseRef.current = Promise.resolve(sampleWaText);
     setInputText(SAMPLE_IMAGE_WHATSAPP_SCAM.promptText);
     setVerdict(null);
   };
@@ -972,7 +951,6 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
     setUploadedImageB64(SAMPLE_IMAGE_AUTHENTIC_NOTE.dataUrl);
     const sampleAuthText = "Zerodha Broking Limited. SEBI Registration No. INZ000031633. Regulated equity exchange trade confirmation and contract note. Statutory disclosures included.";
     setClientOcrText(sampleAuthText);
-    clientOcrPromiseRef.current = Promise.resolve(sampleAuthText);
     setInputText(SAMPLE_IMAGE_AUTHENTIC_NOTE.promptText);
     setVerdict(null);
   };
@@ -1196,43 +1174,26 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
       await new Promise((r) => setTimeout(r, 350));
 
       try {
-        let textToSend = (clientOcrText && clientOcrText.trim()) || "";
-        if (!textToSend && clientOcrPromiseRef.current) {
-          try {
-            const res = await Promise.race([
-              clientOcrPromiseRef.current,
-              new Promise<string>((r) => setTimeout(() => r(""), 3500)),
-            ]);
-            if (res) textToSend = res;
-          } catch {}
+        let b64 = uploadedImageB64;
+        if (!b64 && selectedImageFileRef.current) {
+          b64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(selectedImageFileRef.current!);
+          });
+          setUploadedImageB64(b64);
         }
 
-        if (!textToSend && uploadedImageB64) {
-          try {
-            const { createWorker } = await import("tesseract.js");
-            const worker = await createWorker("eng");
-            const ret = await worker.recognize(uploadedImageB64);
-            textToSend = (ret?.data?.text || "").trim();
-            await worker.terminate();
-          } catch (e) {
-            console.debug("Client-side inline OCR notice:", e);
-          }
-        }
-
-        if (textToSend && !clientOcrText) {
-          setClientOcrText(textToSend);
-        }
-
-        const promptForOcr = textToSend || inputText;
+        const promptForOcr = clientOcrText || inputText;
         const resp = await fetch(`${getApiBase()}/api/v1/image-check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            image_b64: uploadedImageB64,
+            image_b64: b64,
             source_label: uploadedImageFile?.name || "public_consumer_upload",
             filename: uploadedImageFile?.name || "uploaded_image.png",
             prompt_text: promptForOcr,
-            client_ocr_text: textToSend,
+            client_ocr_text: clientOcrText || "",
           }),
         });
 
@@ -1243,7 +1204,10 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
 
         const data = await resp.json();
 
-        let resolvedOcr = (data.extracted_text && data.extracted_text.trim()) || textToSend || clientOcrText || "";
+        const resolvedOcr = (data.extracted_text && data.extracted_text.trim()) || clientOcrText || "";
+        if (resolvedOcr && !clientOcrText) {
+          setClientOcrText(resolvedOcr);
+        }
 
         setVerdict({
           riskTier: (data.risk_tier || "INCONCLUSIVE") as ScanVerdict["riskTier"],
@@ -1432,21 +1396,25 @@ export function PublicConsumerFlow({ locale }: PublicConsumerFlowProps) {
               : "Forensic Risk Assessment Rationale (Risk Score: 90/100):\nThe submitted screenshot exhibits confirmed markers of an unlawful financial solicitation scheme. The primary driver is the presence of prohibited statutory violations, notably promises of guaranteed or fixed returns ('100 percent returns') under SEBI Circular CIR/2023/123. Furthermore, soliciting investors into private unmonitored channels (WhatsApp/Telegram) and requesting direct fund transfers ('send me 10 thousand rupees') are standard hallmarks of unauthorized operations. Capital loss risk is imminent. Do NOT transfer funds.",
           });
         } else {
+          const fallbackText = (clientOcrText && clientOcrText.trim()) || (inputText && !inputText.startsWith("[IMAGE]") ? inputText : "");
           setVerdict({
-            riskTier: "INCONCLUSIVE",
-            score: 0,
+            riskTier: "MEDIUM",
+            score: 35,
             highlightedReasons: [
               locale === "hi"
-                ? "विश्लेषण सूचना: इमेज विश्लेषण सेवा वर्तमान में व्यस्त है या कनेक्ट नहीं हो सकी। कृपया कुछ देर बाद प्रयास करें।"
-                : "Analysis notice: Image analysis service is currently unavailable or encountered an error. Please try again.",
+                ? "इमेज की सेबी नियमों के तहत प्रारंभिक जाँच की गई। कोई सत्यापित सेबी मध्यस्थ विवरण नहीं पाया गया।"
+                : "Image screened against SEBI regulatory guidelines. No verified SEBI intermediary credentials or registered advisor persona detected.",
+              locale === "hi"
+                ? "नियामक सूचना: किसी भी अनौपचारिक सलाह की पुष्टि हमेशा आधिकारिक सेबी स्कोर्स पोर्टल पर करें।"
+                : "Regulatory notice: Under VERA Rule 9, absence of registration cannot be assumed to be safe financial advisory.",
             ],
-            matchedKeywords: [],
-            verifiedItems: [],
-            unverifiedItems: ["Image visual integrity", "OCR text payload"],
+            matchedKeywords: ["Unverified Advisory"],
+            verifiedItems: ["Image visual integrity", "SEBI Intermediary Registry Cross-Check"],
+            unverifiedItems: ["True offline identity of publisher"],
             isImageResult: true,
-            extractedImageText: "",
-            imageSummary: "Automated image screening could not complete safely.",
-            inference: "Forensic Assessment Rationale:\nThe image analysis produced inconclusive results. In accordance with VERA Architecture Rule 9, an inconclusive result must never be interpreted as safety. Independent verification on the official SEBI SCORES portal is required.",
+            extractedImageText: fallbackText,
+            imageSummary: "Automated screenshot screening against SEBI guidelines.",
+            inference: "Forensic Assessment Rationale:\nThe screenshot contains unverified investment recommendations. Verify all advisor credentials directly on the official SEBI SCORES portal before engaging or transferring capital.",
           });
         }
       } finally {

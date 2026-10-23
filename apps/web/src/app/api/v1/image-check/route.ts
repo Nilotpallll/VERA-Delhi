@@ -40,7 +40,8 @@ async function getSebiRegistry() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null);
-    if (!body || !body.image_b64) {
+    const rawImagePayload = body?.image_b64 || body?.image_base64 || body?.image;
+    if (!body || !rawImagePayload) {
       return NextResponse.json(
         { detail: "image_b64 must not be empty." },
         { status: 422 }
@@ -48,12 +49,12 @@ export async function POST(req: NextRequest) {
     }
 
     const {
-      image_b64,
       source_label = "public_consumer_upload",
       filename = "",
       prompt_text = "",
       client_ocr_text = "",
     } = body;
+    const image_b64 = rawImagePayload;
 
     const cleanB64 = String(image_b64).trim();
     const rawB64 = cleanB64.replace(/^data:image\/[a-zA-Z0-9.+]+;base64,/, "");
@@ -70,9 +71,40 @@ export async function POST(req: NextRequest) {
       try {
         const { createWorker } = await import("tesseract.js");
         const os = await import("node:os");
-        const worker = await createWorker("eng", 1, {
-          cachePath: os.tmpdir(),
-        });
+        const fs = await import("node:fs");
+
+        const trainedDataCandidates = [
+          path.join(process.cwd(), "apps", "web", "data", "eng.traineddata"),
+          path.join(process.cwd(), "data", "eng.traineddata"),
+          path.join(process.cwd(), "apps", "web", "eng.traineddata"),
+          path.join(process.cwd(), "eng.traineddata"),
+          path.resolve(__dirname, "../../../../../data/eng.traineddata"),
+          path.resolve(__dirname, "../../../../data/eng.traineddata"),
+          path.resolve(__dirname, "../../../../../apps/web/data/eng.traineddata"),
+          path.resolve(__dirname, "../../../../apps/web/data/eng.traineddata"),
+        ];
+
+        let localLangDir: string | null = null;
+        for (const cand of trainedDataCandidates) {
+          try {
+            if (fs.existsSync(cand)) {
+              localLangDir = path.dirname(cand);
+              break;
+            }
+          } catch {}
+        }
+
+        const workerOpts: any = localLangDir
+          ? {
+              langPath: localLangDir,
+              gzip: false,
+              cacheMethod: "none",
+            }
+          : {
+              cachePath: os.tmpdir(),
+            };
+
+        const worker = await createWorker("eng", 1, workerOpts);
         const ocrPromise = worker.recognize(imgBuffer);
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("OCR extraction timed out after 15s")), 15000)
@@ -657,7 +689,7 @@ export async function POST(req: NextRequest) {
         composite_score: score,
         summary,
         inference,
-        extracted_text: extractedText || "No readable text detected in image.",
+        extracted_text: extractedText || "",
         highlighted_reasons: highlightedReasons,
         matched_keywords: matchedKeywords,
         advisor_verification: advisorVerification,

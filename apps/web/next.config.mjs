@@ -19,6 +19,8 @@ const nextConfig = {
       "/api/**/*": [
         "./data/**/*",
         "./apps/web/data/**/*",
+        "./eng.traineddata",
+        "./apps/web/eng.traineddata",
         "./node_modules/tesseract.js-core/**/*",
         "../../node_modules/tesseract.js-core/**/*",
       ],
